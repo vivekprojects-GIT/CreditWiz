@@ -27,6 +27,19 @@ def complete(c, item="kyc-document-checklist"):
     return r.json()
 
 
+def _use_catalog(tmp_path, monkeypatch, raw):
+    """Point the app at a modified catalogue on disk and drop the cache."""
+    import json
+
+    from app.learning.store import store as learning_store
+
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(exist_ok=True)
+    (data_dir / "learning.json").write_text(json.dumps(raw), encoding="utf-8")
+    monkeypatch.setenv("CREDITWIZ_DATA_DIR", str(data_dir))
+    learning_store.invalidate()
+
+
 def test_session_required_csrf_and_revocation():
     anon = TestClient(app)
     for route in (
@@ -251,11 +264,14 @@ for _ in range(10):
     )
 
 
-def test_catalog_validation_rejects_cycles_and_unknown_steps(monkeypatch):
+def test_catalog_validation_rejects_cycles_and_unknown_steps(tmp_path, monkeypatch):
+    """Written to a real catalogue file so the whole load path runs: read,
+    parse, validate. No production seam exists just for the test."""
+    import pytest
+
     raw = learning._raw()
     raw["items"][0]["prerequisites"] = [raw["items"][0]["id"]]
-    monkeypatch.setattr(learning, "_raw", lambda: raw)
-    import pytest
+    _use_catalog(tmp_path, monkeypatch, raw)
 
     with pytest.raises(ValueError, match="cycles"):
         learning._load()
@@ -348,7 +364,7 @@ def test_legacy_migration_preserves_files_and_only_imports_once(tmp_path, monkey
     assert old.exists() and (old_dir / "interactions.jsonl").exists()
 
 
-def test_unreviewed_content_hidden_and_unsafe_urls_rejected(monkeypatch):
+def test_unreviewed_content_hidden_and_unsafe_urls_rejected(tmp_path, monkeypatch):
     import pytest
     from app.learning.models import Item
     from app.marketplace.models import Agent
@@ -356,7 +372,7 @@ def test_unreviewed_content_hidden_and_unsafe_urls_rejected(monkeypatch):
     raw = learning._raw()
     raw["items"][0]["review_status"] = "draft"
     hidden_id = raw["items"][0]["id"]
-    monkeypatch.setattr(learning, "_raw", lambda: raw)
+    _use_catalog(tmp_path, monkeypatch, raw)
     assert hidden_id not in {i["id"] for i in client.get("/api/learning/items").json()}
     bad = dict(raw["items"][1], url="javascript:alert(1)")
     with pytest.raises(ValueError):
@@ -430,3 +446,37 @@ def test_deploy_origin_allowlist_includes_the_platform_url(monkeypatch):
     origins = allowed_origins()
     assert "https://mufg-ai-hub.onrender.com" in origins
     assert "http://localhost:5173" in origins
+
+
+def test_cached_catalog_cannot_be_corrupted_by_a_caller():
+    """The catalogue is parsed once and shared, so a caller that edits what it
+    was handed must not poison every later request."""
+    before = len(client.get("/api/learning/items").json())
+
+    raw = learning._raw()
+    raw["items"] = raw["items"][:1]
+    raw["items"][0]["title"] = "MUTATED"
+
+    after = client.get("/api/learning/items").json()
+    assert len(after) == before
+    assert not any(i["title"] == "MUTATED" for i in after)
+
+
+def test_one_request_reads_the_signed_in_profile_once():
+    """visible() runs per record. Without a request-scoped cache this read the
+    same row 65 times for one page."""
+    from app import identity
+
+    reads = {"n": 0}
+    original = identity.DirectoryProfile.model_validate
+
+    def counted(*args, **kwargs):
+        reads["n"] += 1
+        return original(*args, **kwargs)
+
+    identity.DirectoryProfile.model_validate = counted
+    try:
+        assert client.get("/api/learning").status_code == 200
+    finally:
+        identity.DirectoryProfile.model_validate = original
+    assert reads["n"] == 1, f"profile parsed {reads['n']} times in one request"

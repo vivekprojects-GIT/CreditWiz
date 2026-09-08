@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Literal
 
@@ -57,19 +58,44 @@ def _read(name: str) -> dict:
     return raw
 
 
+# permissions.visible() is called once per record, and each call needs the
+# profile: one /api/learning request read the same row 65 times. The profile
+# cannot change mid-request, so hold it for the duration of one. Reset by the
+# session middleware, so nothing leaks between requests or between users.
+_current: ContextVar[tuple[str, "DirectoryProfile"] | None] = ContextVar(
+    "creditwiz_profile", default=None
+)
+
+
+def reset_profile_cache():
+    """Returns a token the caller passes to `identity.restore(token)`."""
+    return _current.set(None)
+
+
+def restore(token) -> None:
+    _current.reset(token)
+
+
 def load_profile() -> DirectoryProfile:
     from .auth import user_id
     from .database import connect
 
+    uid = user_id()
+    cached = _current.get()
+    if cached is not None and cached[0] == uid:
+        return cached[1]
+
     with connect() as conn:
         row = conn.execute(
-            "SELECT profile FROM users WHERE id=? AND active=1", (user_id(),)
+            "SELECT profile FROM users WHERE id=? AND active=1", (uid,)
         ).fetchone()
     if row is None:
         from fastapi import HTTPException
 
         raise HTTPException(401, "Account unavailable")
-    return DirectoryProfile.model_validate(json.loads(row[0]))
+    profile = DirectoryProfile.model_validate(json.loads(row[0]))
+    _current.set((uid, profile))
+    return profile
 
 
 def load_mapping() -> dict:

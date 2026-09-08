@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import threading
 from datetime import datetime, timezone
 from contextlib import contextmanager
 from pathlib import Path
@@ -145,16 +146,35 @@ def _migrate(conn: sqlite3.Connection) -> None:
         raise
 
 
+# Creating the schema and checking the migration on every single connection cost
+# more than the queries themselves: one /api/learning request opened 69
+# connections. Do it once per database file. Keyed by path, not a bare flag, so
+# tests that point VAR_DIR at a fresh tmp_path still get their schema built.
+_ready: set[str] = set()
+_ready_lock = threading.Lock()
+
+
+def _ensure_ready(conn: sqlite3.Connection, path: str) -> None:
+    if path in _ready:
+        return
+    with _ready_lock:
+        if path in _ready:
+            return
+        conn.executescript(SCHEMA)
+        _migrate(conn)
+        _ready.add(path)
+
+
 @contextmanager
 def connect(*, write: bool = False):
     VAR_DIR.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(VAR_DIR / "hub.db", timeout=15, isolation_level=None)
+    database = str((VAR_DIR / "hub.db").resolve())
+    conn = sqlite3.connect(database, timeout=15, isolation_level=None)
     conn.row_factory = sqlite3.Row
     try:
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA foreign_keys=ON")
-        conn.executescript(SCHEMA)
-        _migrate(conn)
+        _ensure_ready(conn, database)
         if write:
             conn.execute("BEGIN IMMEDIATE")
         yield conn

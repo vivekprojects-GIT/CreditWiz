@@ -83,12 +83,14 @@ async def session_boundary(request: Request, call_next):
     if not public and not uid:
         return JSONResponse({"detail": "Sign in to the MUFG AI Hub"}, status_code=401)
     token = auth.current_id.set(uid)
+    profile_token = identity.reset_profile_cache()
     try:
         response = await call_next(request)
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response
     finally:
+        identity.restore(profile_token)
         auth.current_id.reset(token)
 
 

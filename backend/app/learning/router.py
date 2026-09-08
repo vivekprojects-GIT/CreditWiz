@@ -12,6 +12,7 @@ from ..marketplace.store import store as marketplace_store
 from ..context import store as context_store
 from . import progress as progress_store
 from . import ratings as ratings_store
+from .store import store as catalog_store
 from .models import (
     Item,
     ItemDetail,
@@ -39,7 +40,8 @@ _DOC_TYPES = ("documentation", "guide", "confluence")
 
 
 def _raw() -> dict:
-    return json.loads((_DATA_DIR / "learning.json").read_text(encoding="utf-8"))
+    """The catalogue as authored. Parsed once and cached by the store."""
+    return catalog_store.raw
 
 
 def validate_catalog(raw: dict) -> tuple[list[LearningPath], list[Item]]:
@@ -79,7 +81,12 @@ def validate_catalog(raw: dict) -> tuple[list[LearningPath], list[Item]]:
 
 
 def _load() -> tuple[list[LearningPath], list[Item]]:
-    paths, items = validate_catalog(_raw())
+    """Catalogue narrowed to what the signed-in user may see.
+
+    Parsing and validation are cached; visibility depends on the user's groups
+    so it stays per-request.
+    """
+    paths, items = catalog_store.catalog
     items = [i for i in items if visible(i)]
     allowed = {i.id for i in items}
     paths = [
@@ -90,11 +97,7 @@ def _load() -> tuple[list[LearningPath], list[Item]]:
 
 
 def _persona_paths():
-    return {
-        k: v
-        for k, v in _raw().get("persona_paths", {}).items()
-        if not k.startswith("_")
-    }
+    return catalog_store.persona_paths
 
 
 def _derived_persona_id():
