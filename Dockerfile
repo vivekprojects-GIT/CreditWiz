@@ -18,7 +18,12 @@ RUN npm run build
 # backend/pyproject.toml sets python-preference = "only-managed" to work around a
 # Windows issue, and `uv sync` would honour it and try to download a second
 # interpreter into an image that already has one.
-FROM ghcr.io/astral-sh/uv:0.11.8 AS deps
+#
+# The uv release image is distroless: it carries the binary and no shell, so a
+# RUN step there fails with `exec: "/bin/sh": no such file or directory`. Copy
+# the binary into an image that has one.
+FROM python:3.12-slim AS deps
+COPY --from=ghcr.io/astral-sh/uv:0.11.8 /uv /usr/local/bin/uv
 WORKDIR /lock
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv export --no-dev --frozen --no-emit-project \
