@@ -1,4 +1,4 @@
-import { Bell, LogOut, Search, Settings, User } from 'lucide-react'
+import { Bell, LogOut, Menu, Search, Settings, User } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fetchNotifications, isAbort, searchHub, postJson, announceSessionChange } from '../lib/api'
@@ -7,6 +7,8 @@ import { useClickOutside } from '../lib/useClickOutside'
 
 interface Props {
   user: CurrentUser
+  /** Opens the navigation drawer. Only rendered below the desktop breakpoint. */
+  onMenu?: () => void
 }
 
 function timeAgo(iso: string): string {
@@ -18,7 +20,7 @@ function timeAgo(iso: string): string {
   return d === 1 ? 'yesterday' : `${d}d ago`
 }
 
-export function TopBar({ user }: Props) {
+export function TopBar({ user, onMenu }: Props) {
   const navigate = useNavigate()
 
   // ---- search
@@ -130,6 +132,9 @@ export function TopBar({ user }: Props) {
 
   return (
     <header className="topbar">
+      <button type="button" className="topbar__menu" onClick={onMenu} aria-label="Open navigation">
+        <Menu size={20} strokeWidth={2.2} />
+      </button>
       <div className="search" ref={searchRef}>
         <Search className="search__icon" strokeWidth={2.2} />
         <input

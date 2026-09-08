@@ -1108,3 +1108,33 @@
   justify-items: end;
   gap: 2px;
 }
+
+@media (max-width: 600px) {
+  /* Three columns on a phone left the bar a stub next to a wrapped topic name.
+     Put the label and count on one line and give the bar the full width. */
+  .coverage li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "topic count"
+      "bar bar";
+    row-gap: 6px;
+  }
+
+  .coverage__topic {
+    grid-area: topic;
+  }
+
+  .coverage__count {
+    grid-area: count;
+  }
+
+  .coverage__bar {
+    grid-area: bar;
+  }
+
+  /* Path actions stack rather than crowding at the card foot. */
+  .pathcard__actions {
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+}

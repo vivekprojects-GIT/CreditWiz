@@ -46,11 +46,27 @@ function Skeleton() {
 
 function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
   const pillars = state.status === 'ready' ? state.data.pillars : []
+  const [navOpen, setNavOpen] = useState(false)
+  const { pathname } = useLocation()
+
+  // Navigating is the point of the drawer, so close it once the route changes.
+  useEffect(() => setNavOpen(false), [pathname])
+
+  // Stop the page behind the drawer from scrolling under the user's finger.
+  useEffect(() => {
+    if (!navOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [navOpen])
+
   return (
     <div className="shell">
       <ScrollToTop />
       <div className="frame">
-        <Sidebar pillars={pillars} />
+        <Sidebar pillars={pillars} open={navOpen} onClose={() => setNavOpen(false)} />
         <main className="main">
           {state.status === 'loading' && <Skeleton />}
           {state.status === 'error' && (
@@ -66,7 +82,7 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
           {state.status === 'ready' && (
             <HubContext.Provider value={state.data}>
               <PersonaProvider key={state.data.user.id} derived={state.data.user.persona}>
-                <TopBar user={state.data.user} />
+                <TopBar user={state.data.user} onMenu={() => setNavOpen(true)} />
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/help" element={<HelpPage />} />

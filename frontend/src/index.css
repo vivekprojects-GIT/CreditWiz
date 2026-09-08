@@ -753,6 +753,9 @@ h3 {
 .crumbs {
   display: flex;
   align-items: center;
+  /* Without wrapping, a long page title is squeezed into a narrow column and
+     breaks a word per line on a phone. */
+  flex-wrap: wrap;
   gap: var(--s-1);
   font-size: var(--t-sm);
   color: var(--ink-400);
@@ -2566,6 +2569,26 @@ a.plain {
    RESPONSIVE
    ============================================================================ */
 
+/* Navigation drawer trigger. Hidden on desktop, where the sidebar is permanent. */
+.topbar__menu {
+  display: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink-700);
+  cursor: pointer;
+  transition: border-color var(--fast), color var(--fast);
+}
+
+.topbar__menu:hover {
+  border-color: var(--line-strong);
+  color: var(--ink-950);
+}
+
 @media (max-width: 1440px) {
   .home-split {
     grid-template-columns: minmax(0, 1fr) 292px;
@@ -2596,8 +2619,74 @@ a.plain {
     grid-template-columns: 1fr;
   }
 
+  /* The sidebar was simply hidden here, which left the hub with no navigation
+     at all on a phone. It is now an off-canvas drawer opened from the topbar. */
   .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 60;
+    width: min(300px, 84vw);
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform var(--base);
+    box-shadow: var(--e-4);
+  }
+
+  .sidebar--open {
+    transform: none;
+  }
+
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    border: 0;
+    padding: 0;
+    background: rgba(13, 14, 17, 0.45);
+    cursor: pointer;
+  }
+
+  .topbar__menu {
+    display: grid;
+  }
+
+  /* The persona preview refuses to shrink, which squeezed the carousel title to
+     zero width ("Recommended / for / you") and pushed the arrows off-screen. */
+  .carousel__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Arrows are a pointer affordance; the rail is swipeable on touch. */
+  .carousel__nav {
     display: none;
+  }
+
+  /* Comfortable thumb targets. */
+  .starinput__btn {
+    padding: 6px;
+  }
+
+  /* The persona badge and its picker sat on one row and wrapped a word at a
+     time. Let them stack, and stop the chip text breaking mid-phrase. */
+  .carousel__extra {
+    width: 100%;
+  }
+
+  .pbadge {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .pbadge__chip {
+    white-space: nowrap;
+  }
+
+  .pbadge__select {
+    flex: 1;
+    min-width: 0;
   }
 
   .content {
@@ -3010,5 +3099,11 @@ button:disabled {
   }
   .signin__accounts {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
   }
 }

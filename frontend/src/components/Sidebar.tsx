@@ -1,11 +1,14 @@
 import { CircleHelp, Home } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { PillarGlyph } from '../lib/icons'
 import { pillarBasePath, type Pillar } from '../lib/types'
 
 interface Props {
   pillars: Pillar[]
+  /** Below the desktop breakpoint the sidebar is an off-canvas drawer. */
+  open?: boolean
+  onClose?: () => void
 }
 
 function cls(base: string) {
@@ -35,9 +38,21 @@ function MufgLogo() {
   )
 }
 
-export function Sidebar({ pillars }: Props) {
+export function Sidebar({ pillars, open = false, onClose }: Props) {
+  // Escape closes the drawer, the same as tapping the scrim.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose?.()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
   return (
-    <aside className="sidebar" aria-label="Primary">
+    <>
+      {open && <button type="button" className="scrim" aria-label="Close menu" onClick={onClose} />}
+      <aside className={`sidebar${open ? ' sidebar--open' : ''}`} aria-label="Primary">
       <NavLink to="/" className="brand" aria-label="MUFG AI Hub home">
         <div className="brand__logo">
           <MufgLogo />
@@ -71,6 +86,7 @@ export function Sidebar({ pillars }: Props) {
           <span className="nav__label">Help &amp; support</span>
         </NavLink>
       </nav>
-    </aside>
+      </aside>
+    </>
   )
 }
