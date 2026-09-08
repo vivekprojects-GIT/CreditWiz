@@ -9,7 +9,9 @@ from .. import personas as hub_personas
 from ..identity import derive_persona, load_profile
 from ..permissions import visible, resolve_persona
 from ..marketplace.store import store as marketplace_store
+from ..context import store as context_store
 from . import progress as progress_store
+from . import ratings as ratings_store
 from .models import (
     Item,
     ItemDetail,
@@ -18,6 +20,7 @@ from .models import (
     LearningPath,
     MyLearning,
     ProgressIn,
+    RatingIn,
     Section,
     TopicCoverage,
 )
@@ -158,7 +161,9 @@ def _with_progress(items, persona_id):
     _, allowed_items = _load()
     allowed = {i.id for i in allowed_items}
     agents = {a.id for a in marketplace_store.agents if visible(a)}
-    rows = progress_store.all_for(_user_id())
+    uid = _user_id()
+    rows = progress_store.all_for(uid)
+    stars = ratings_store.summaries(uid)
     out = []
     for i in items:
         if i.id not in allowed:
@@ -175,6 +180,7 @@ def _with_progress(items, persona_id):
         out.append(
             ItemWithProgress(
                 **payload,
+                **stars.get(i.id, ratings_store.empty()),
                 status=row.get("status", "not_started"),
                 progress=row.get("progress", 0),
                 required=persona_id in i.required_for,
@@ -406,6 +412,43 @@ def set_progress(body: ProgressIn):
         "meta": {"path": current.path, "measurement": "self_reported_completion"},
     }
     progress_store.record(_user_id(), current.id, body.status, body.progress, event)
+    return _with_progress([current], pid)[0]
+
+
+@router.post("/ratings", response_model=ItemWithProgress)
+def rate(body: RatingIn):
+    """Rate an item you have actually opened.
+
+    Requiring a start is what keeps this from becoming a popularity vote among
+    people who never watched the thing.
+    """
+    _, items = _load()
+    current = next((i for i in items if i.id == body.item_id), None)
+    if current is None:
+        raise HTTPException(404, "Learning item not found")
+    pid = _derived_persona_id()
+    uid = _user_id()
+    if _with_progress([current], pid)[0].status == "not_started":
+        raise HTTPException(409, "Open this item before rating it.")
+
+    if body.stars is None:
+        ratings_store.clear(uid, current.id)
+    else:
+        ratings_store.record(uid, current.id, body.stars)
+        context_store.record_event(
+            {
+                "pillar": "learning",
+                "type": "rating",
+                "subject_id": current.id,
+                "subject_type": current.type,
+                "persona": pid,
+                "topics": current.topics + current.tags,
+                "meta": {"stars": body.stars, "path": current.path},
+            },
+            uid=uid,
+            # One footprint per rating, not one per revision of it.
+            event_key=f"rating:{uid}:{current.id}",
+        )
     return _with_progress([current], pid)[0]
 
 

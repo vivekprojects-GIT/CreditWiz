@@ -3,13 +3,22 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError, isAbort } from '../../lib/api'
 import { track } from '../../lib/context'
-import { TYPE_LABEL, duration, fetchItem, recordProgress, type ItemDetail, type LearningStatus } from '../../lib/learning'
+import {
+  TYPE_LABEL,
+  duration,
+  fetchItem,
+  rateItem,
+  recordProgress,
+  type ItemDetail,
+  type LearningStatus,
+} from '../../lib/learning'
 import { usePersona } from '../../lib/personaContext'
 import { BackButton } from '../BackButton'
 import { Markdown } from '../Markdown'
 import { NotFound } from '../SimplePages'
 import { FeedbackPrompt } from '../marketplace/FeedbackPrompt'
 import { ItemCard } from './ItemCard'
+import { RatingInput, RatingSummary } from './StarRating'
 import { Player } from './Player'
 
 export function ItemPage() {
@@ -27,6 +36,7 @@ function ItemContent() {
   const [attempt, setAttempt] = useState(0)
   const fromAgent = params.get('from') ?? ''
   const [item, setItem] = useState<ItemDetail | null | undefined>(undefined)
+  const [rating, setRating] = useState(false)
   const [status, setStatus] = useState<LearningStatus>('not_started')
   const [progress, setProgress] = useState(0)
 
@@ -241,6 +251,31 @@ function ItemContent() {
               </a>
             </section>
           )}
+
+          <section className="panel rate">
+            <div>
+              <h2 className="panel__title">Rate this {TYPE_LABEL[item.type].toLowerCase()}</h2>
+              <p className="panel__text">
+                {item.status === 'not_started'
+                  ? 'Open it first, then tell other people in your role whether it was worth their time.'
+                  : 'Tell other people in your role whether this was worth their time.'}
+              </p>
+            </div>
+            <div className="rate__right">
+              <RatingInput
+                value={item.my_rating}
+                disabled={item.status === 'not_started' || rating}
+                onRate={(stars) => {
+                  setRating(true)
+                  rateItem(item.id, stars)
+                    .then((updated) => setItem((prev) => (prev ? { ...prev, ...updated } : prev)))
+                    .catch(() => undefined)
+                    .finally(() => setRating(false))
+                }}
+              />
+              <RatingSummary average={item.rating_average} count={item.rating_count} />
+            </div>
+          </section>
 
           <FeedbackPrompt pillar="learning" context="item" subjectId={item.id} resetKey={item.id} question="Was this useful?" />
 

@@ -34,6 +34,7 @@ EventType = Literal[
     "collaborate",
     "learning_view",
     "learning_complete",
+    "rating",
     "feedback_positive",
     "feedback_negative",
     # legacy marketplace names, still accepted so older clients keep working

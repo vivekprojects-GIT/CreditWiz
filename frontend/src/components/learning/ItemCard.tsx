@@ -2,6 +2,7 @@ import { BookOpen, Check, Clock, FileText, GraduationCap, Layers, ListChecks, Pl
 import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 import { TYPE_LABEL, duration, itemHref, type Item, type ItemType } from '../../lib/learning'
+import { RatingSummary } from './StarRating'
 
 const ICON: Record<ItemType, ComponentType<{ size?: number; strokeWidth?: number }>> = {
   video: PlayCircle,
@@ -57,11 +58,14 @@ export function ItemCard({ item, fromAgentId, compact }: { item: Item; fromAgent
         {(item.blocked_by?.length > 0 || item.prerequisite_unavailable) && <span className="icard__required">Prerequisite needed</span>}
         {item.recommendation_reason && <span className="icard__desc">{item.recommendation_reason}</span>}
         {!compact && <span className="icard__desc">{item.description}</span>}
-        {!isVideo && time && (
-          <span className="icard__time">
-            <Clock size={12} strokeWidth={2.4} /> {time}
-          </span>
-        )}
+        <span className="icard__foot">
+          {!isVideo && time && (
+            <span className="icard__time">
+              <Clock size={12} strokeWidth={2.4} /> {time}
+            </span>
+          )}
+          <RatingSummary average={item.rating_average} count={item.rating_count} />
+        </span>
       </div>
     </Link>
   )

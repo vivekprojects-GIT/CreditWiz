@@ -86,6 +86,13 @@ class Item(BaseModel):
 class ItemWithProgress(Item):
     status: Status = "not_started"
     progress: int = 0
+    # Ratings are displayed, never ranked on. `rating_average` is withheld until
+    # the item clears learning.ratings.MIN_SHOWN; `rating_weighted` is the
+    # shrunk value a future rating-aware ranker would sort on.
+    rating_count: int = 0
+    rating_average: float | None = None
+    rating_weighted: float | None = None
+    my_rating: int | None = None
     required: bool = False
     recommendation_reason: str = ""
     blocked_by: list[str] = []
@@ -121,6 +128,12 @@ class ProgressIn(BaseModel):
     item_id: str
     status: Status
     progress: int | None = Field(default=None, ge=0, le=100)
+
+
+class RatingIn(BaseModel):
+    item_id: str
+    # null clears the learner's own rating
+    stars: int | None = Field(default=None, ge=1, le=5)
 
 
 class TopicCoverage(BaseModel):

@@ -19,6 +19,9 @@ _WEIGHTS = {
     "architecture_click": 1.0,
     "collaborate": 1.2,
     "learning_complete": 1.8,
+    # A deliberate act on a specific item, so it outweighs a passing view, but it
+    # is one click and should not rival finishing the content.
+    "rating": 1.2,
     "feedback_positive": 0.5,
     "feedback_negative": 0.2,
 }

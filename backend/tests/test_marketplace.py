@@ -413,6 +413,106 @@ def test_my_learning_reports_progress_and_coverage_not_proficiency():
     assert not any("proficiency" in k.lower() and k != "proficiency_note" for k in me)
 
 
+def test_rating_requires_the_learner_to_have_opened_the_item():
+    """A rating from someone who never opened the content is not a signal."""
+    assert (
+        client.post(
+            "/api/learning/ratings",
+            json={"item_id": "kyc-verifier-walkthrough", "stars": 5},
+        ).status_code
+        == 409
+    )
+    client.post(
+        "/api/learning/progress",
+        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+    )
+    body = client.post(
+        "/api/learning/ratings",
+        json={"item_id": "kyc-verifier-walkthrough", "stars": 5},
+    ).json()
+    assert body["my_rating"] == 5 and body["rating_count"] == 1
+
+
+def test_average_is_withheld_until_enough_ratings_but_weighted_value_exists():
+    """One 5-star vote must not be published as "5.0"."""
+    from app.learning import ratings
+
+    client.post(
+        "/api/learning/progress",
+        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+    )
+    body = client.post(
+        "/api/learning/ratings",
+        json={"item_id": "kyc-verifier-walkthrough", "stars": 5},
+    ).json()
+    assert body["rating_count"] == 1 < ratings.MIN_SHOWN
+    assert body["rating_average"] is None
+    # Shrinkage pulls a lone 5 back toward the catalogue, so it cannot win a sort.
+    assert body["rating_weighted"] < 5.0
+
+
+def test_rating_again_replaces_rather_than_accumulates():
+    client.post(
+        "/api/learning/progress",
+        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+    )
+    for stars in (2, 4):
+        body = client.post(
+            "/api/learning/ratings",
+            json={"item_id": "kyc-verifier-walkthrough", "stars": stars},
+        ).json()
+    assert body["my_rating"] == 4 and body["rating_count"] == 1
+
+    cleared = client.post(
+        "/api/learning/ratings",
+        json={"item_id": "kyc-verifier-walkthrough", "stars": None},
+    ).json()
+    assert cleared["my_rating"] is None and cleared["rating_count"] == 0
+
+
+def test_average_appears_once_the_item_clears_the_threshold():
+    """Three learners, three different scores: the mean becomes publishable."""
+    from app.learning import ratings
+
+    item = "kyc-verifier-walkthrough"
+    for user, stars in (("u-1001", 5), ("demo-compliance", 4), ("demo-operations", 3)):
+        assert client.post("/api/auth/demo", json={"user_id": user}).status_code == 200
+        client.post("/api/learning/progress", json={"item_id": item, "status": "in_progress"})
+        body = client.post(
+            "/api/learning/ratings", json={"item_id": item, "stars": stars}
+        ).json()
+
+    assert body["rating_count"] == ratings.MIN_SHOWN == 3
+    assert body["rating_average"] == 4.0
+    # Each learner still sees only their own vote reflected back.
+    assert body["my_rating"] == 3
+
+
+def test_ratings_are_collected_but_never_ranked_on():
+    """The chosen stance: collect now, rank later. Curation stays explainable."""
+    client.post(
+        "/api/learning/progress",
+        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+    )
+    before = client.get("/api/learning/curation").json()
+    client.post(
+        "/api/learning/ratings",
+        json={"item_id": "kyc-verifier-walkthrough", "stars": 1},
+    )
+    after = client.get("/api/learning/curation").json()
+    assert before["ranked"] == after["ranked"]
+    assert not any("rating" in k for r in after["ranked"] for k in r["components"])
+
+    # It is collected, though: the rating lands in the shared footprint stream
+    # that a future ranker reads.
+    learning = next(
+        p
+        for p in client.get("/api/context/summary").json()["by_pillar"]
+        if p["pillar"] == "learning"
+    )
+    assert learning["types"].get("rating") == 1
+
+
 def test_progress_is_sqlite_and_survives_reads(tmp_path):
     """Progress is mutable state, so it lives in SQLite rather than a rewritten JSON file."""
     import sqlite3

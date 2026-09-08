@@ -699,10 +699,23 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: auto;
-  padding-top: var(--s-2);
   font-size: var(--t-xs);
   color: var(--ink-400);
+}
+
+/* Duration and rating share the base of the card, so equal-height cards line
+   their metadata up rather than leaving it floating mid-card. */
+.icard__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-top: auto;
+  padding-top: var(--s-2);
+}
+
+.icard__foot:empty {
+  display: none;
 }
 
 .icard--compact .icard__title {
@@ -1009,4 +1022,89 @@
   .path-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---------------------------------------------------------------- ratings */
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--t-xs);
+  color: var(--ink-600);
+  white-space: nowrap;
+}
+
+.rating svg {
+  color: var(--red);
+  flex: none;
+}
+
+.rating strong {
+  font-weight: 700;
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.rating__n {
+  color: var(--ink-400);
+}
+
+/* Too few ratings to publish an average, so we show the count instead of a
+   number that would read as more authoritative than it is. */
+.rating--thin {
+  color: var(--ink-400);
+}
+
+.rating--thin svg {
+  color: var(--ink-300);
+}
+
+.starinput {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.starinput__btn {
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: var(--ink-300);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: color var(--fast), transform var(--fast);
+}
+
+.starinput__btn.is-on {
+  color: var(--red);
+}
+
+.starinput__btn:hover:not(:disabled) {
+  transform: scale(1.12);
+}
+
+.starinput__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.starinput__btn:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+}
+
+.rate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-5);
+  flex-wrap: wrap;
+}
+
+.rate__right {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
 }

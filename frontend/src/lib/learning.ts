@@ -42,6 +42,12 @@ export interface Item {
   status: LearningStatus
   progress: number
   required: boolean
+  rating_count: number
+  /** null until the item clears the minimum rating count; an average of one vote is noise. */
+  rating_average: number | null
+  /** Shrunk toward the catalogue mean. Not displayed; this is what a future ranker would sort on. */
+  rating_weighted: number | null
+  my_rating: number | null
 }
 
 export interface ItemDetail extends Item {
@@ -116,6 +122,11 @@ export const fetchAgentLearning = (agentId: string, persona: string, signal?: Ab
 /** Learning state, owned by the Learning pillar. Separate from hub footprints. */
 export async function recordProgress(item_id: string, status: LearningStatus, progress?: number) {
   return postJson<Item>('/api/learning/progress', { item_id, status, progress })
+}
+
+/** Rate an item you have opened. Pass null to withdraw your rating. */
+export async function rateItem(item_id: string, stars: number | null) {
+  return postJson<Item>('/api/learning/ratings', { item_id, stars })
 }
 
 export const fetchAgentDocs = (agentId: string, signal?: AbortSignal) =>

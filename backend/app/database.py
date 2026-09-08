@@ -34,6 +34,13 @@ CREATE TABLE IF NOT EXISTS learning_progress (
  started_at TEXT, completed_at TEXT, updated_at TEXT NOT NULL,
  PRIMARY KEY(user_id, item_id)
 );
+CREATE TABLE IF NOT EXISTS learning_ratings (
+ user_id TEXT NOT NULL REFERENCES users(id), item_id TEXT NOT NULL,
+ stars INTEGER NOT NULL CHECK(stars BETWEEN 1 AND 5),
+ created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+ PRIMARY KEY(user_id, item_id)
+);
+CREATE INDEX IF NOT EXISTS learning_ratings_item ON learning_ratings(item_id);
 CREATE TABLE IF NOT EXISTS events (
  id TEXT PRIMARY KEY, user_id TEXT NOT NULL, at TEXT NOT NULL, payload TEXT NOT NULL,
  event_key TEXT UNIQUE
