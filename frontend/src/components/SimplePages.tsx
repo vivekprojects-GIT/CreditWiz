@@ -22,7 +22,7 @@ export function HelpPage() {
       <section className="more-grid">
         <Link to="/learning?path=getting-started" className="scard scard--teal">
           <span className="scard__title">Getting started</span>
-          <span className="scard__blurb">Your first hour with AI at CreditWiz.</span>
+          <span className="scard__blurb">Your first hour with AI at MUFG.</span>
           <span className="scard__go">
             Open <ArrowRight size={18} strokeWidth={2.4} />
           </span>

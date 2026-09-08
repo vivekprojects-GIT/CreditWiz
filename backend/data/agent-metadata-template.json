@@ -1,5 +1,5 @@
 {
-  "$comment": "CreditWiz AI Hub - canonical Agent Metadata Template (one object per agent). Fill what you know; fields marked optional can stay empty. Agent owners may instead supply the simpler intake format shown in docs/agent-metadata-template.md; the hub normalises both.",
+  "$comment": "MUFG AI Hub - canonical Agent Metadata Template (one object per agent). Fill what you know; fields marked optional can stay empty. Agent owners may instead supply the simpler intake format shown in docs/agent-metadata-template.md; the hub normalises both.",
   "_IDENTITY": "----------------------------------------------------------------",
   "id": "required. Stable slug: lowercase, hyphens. Example: kyc-verification-agent",
   "name": "required. Display name. Example: KYC Verification Agent",

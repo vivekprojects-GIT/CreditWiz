@@ -1,6 +1,6 @@
 # Agent Metadata Template
 
-The canonical model every agent in the CreditWiz AI Hub is described with. It is what the marketplace displays, searches and curates on. The machine-readable version is `backend/data/agent-metadata-template.json`.
+The canonical model every agent in the MUFG AI Hub is described with. It is what the marketplace displays, searches and curates on. The machine-readable version is `backend/data/agent-metadata-template.json`.
 
 ## Structure
 

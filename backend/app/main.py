@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from . import data, identity, auth  # noqa: E402
 from .permissions import visible
@@ -30,7 +31,7 @@ async def lifespan(app):
 
 
 app = FastAPI(
-    title="CreditWiz Enterprise AI Hub API", version="0.2.0", lifespan=lifespan
+    title="MUFG AI Hub API", version="0.2.0", lifespan=lifespan
 )
 app.include_router(auth.router)
 app.include_router(account_router)
@@ -39,13 +40,31 @@ app.include_router(learning_router)
 app.include_router(context_router)
 
 
+def allowed_origins() -> list[str]:
+    """Origins allowed to make state-changing calls.
+
+    The hosting platform assigns the public URL at deploy time, so it cannot be
+    written into CREDITWIZ_ORIGINS ahead of time. Render exposes it as
+    RENDER_EXTERNAL_URL; trust that in addition to whatever is configured.
+    """
+    origins = [
+        o.strip()
+        for o in os.environ.get(
+            "CREDITWIZ_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+        ).split(",")
+        if o.strip()
+    ]
+    external = os.environ.get("RENDER_EXTERNAL_URL", "").strip().rstrip("/")
+    if external and external not in origins:
+        origins.append(external)
+    return origins
+
+
 @app.middleware("http")
 async def session_boundary(request: Request, call_next):
     if not request.url.path.startswith("/api/") or request.method == "OPTIONS":
         return await call_next(request)
-    origins = os.environ.get(
-        "CREDITWIZ_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
-    ).split(",")
+    origins = allowed_origins()
     if request.method not in ("GET", "HEAD"):
         origin = request.headers.get("origin")
         if (origin and origin not in origins) or request.headers.get(
@@ -62,7 +81,7 @@ async def session_boundary(request: Request, call_next):
     )
     uid = auth.resolve_session(request.cookies.get(auth.COOKIE))
     if not public and not uid:
-        return JSONResponse({"detail": "Sign in to CreditWiz"}, status_code=401)
+        return JSONResponse({"detail": "Sign in to the MUFG AI Hub"}, status_code=401)
     token = auth.current_id.set(uid)
     try:
         response = await call_next(request)
@@ -75,9 +94,7 @@ async def session_boundary(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get(
-        "CREDITWIZ_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
-    ).split(","),
+    allow_origins=allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -220,3 +237,40 @@ def search(q: str = Query(default="", max_length=200)) -> SearchResponse:
         or needle in " ".join([i.title, i.description, *i.topics, *i.tags]).lower()
     ]
     return SearchResponse(query=q, results=(agent_hits + learning_hits)[:20])
+
+
+# --- built frontend ---------------------------------------------------------
+# Every API call in the SPA is a relative /api/... with credentials:'same-origin',
+# so the app and the API must share an origin. Serving the build from here keeps
+# the session cookie working and removes CORS from the deployment entirely.
+# Registered last so every API route is matched first.
+
+def static_root() -> Path:
+    """Resolved at request time, not import time, so it is testable and so a
+    dev server without a build still starts."""
+    return Path(
+        os.environ.get(
+            "CREDITWIZ_STATIC_DIR",
+            Path(__file__).resolve().parents[2] / "frontend" / "dist",
+        )
+    ).resolve()
+
+
+@app.get("/{asset_path:path}", include_in_schema=False)
+def spa(asset_path: str):
+    root = static_root()
+    if asset_path.startswith("api/") or not (root / "index.html").is_file():
+        raise HTTPException(status_code=404, detail="Not found")
+    target = (root / asset_path).resolve()
+    # is_relative_to rejects ../ traversal out of the build directory.
+    if asset_path and target.is_file() and target.is_relative_to(root):
+        # Vite fingerprints filenames under assets/, so those are immutable.
+        cache = (
+            "public, max-age=31536000, immutable"
+            if asset_path.startswith("assets/")
+            else "no-cache"
+        )
+        return FileResponse(target, headers={"Cache-Control": cache})
+    # Any other path is a client-side route. index.html must never be cached
+    # or a redeploy leaves browsers asking for asset names that are gone.
+    return FileResponse(root / "index.html", headers={"Cache-Control": "no-cache"})

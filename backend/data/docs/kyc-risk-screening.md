@@ -57,4 +57,4 @@ Yes. Each run writes the hits, the evidence and the disposition to the case audi
 
 ## Support
 
-Owner: **Daniel Okafor**, Financial Crime Technology. Email [daniel.okafor@creditwiz.example](mailto:daniel.okafor@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Daniel Okafor**, Financial Crime Technology. Email [daniel.okafor@mufg.example](mailto:daniel.okafor@mufg.example) or use **Collaborate with the owner** on the agent page.

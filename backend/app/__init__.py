@@ -1,4 +1,4 @@
-"""CreditWiz application configuration shared by the API and management CLI."""
+"""MUFG AI Hub application configuration shared by the API and management CLI."""
 
 from pathlib import Path
 from dotenv import load_dotenv

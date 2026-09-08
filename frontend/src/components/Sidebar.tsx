@@ -38,13 +38,13 @@ function MufgLogo() {
 export function Sidebar({ pillars }: Props) {
   return (
     <aside className="sidebar" aria-label="Primary">
-      <NavLink to="/" className="brand" aria-label="CreditWiz home">
+      <NavLink to="/" className="brand" aria-label="MUFG AI Hub home">
         <div className="brand__logo">
           <MufgLogo />
         </div>
         <div className="brand__product">
-          <div className="brand__wordmark">CreditWiz</div>
-          <div className="brand__tagline">Enterprise AI Hub · Americas</div>
+          <div className="brand__wordmark">MUFG AI Hub</div>
+          <div className="brand__tagline">Enterprise · Americas</div>
         </div>
       </NavLink>
 

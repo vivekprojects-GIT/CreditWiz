@@ -1,0 +1,26 @@
+# Keep the build context small and never ship local state or secrets.
+.git
+.gitignore
+.claude
+.ruff_cache
+.pytest_cache
+**/__pycache__
+**/*.pyc
+
+# Secrets. The image takes configuration from the environment.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Rebuilt inside the image.
+frontend/node_modules
+frontend/dist
+backend/.venv
+
+# Local runtime state: databases, footprints, progress.
+backend/var
+
+# Not needed at runtime.
+docs
+README.md
+backend/tests

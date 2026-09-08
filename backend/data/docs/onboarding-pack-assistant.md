@@ -57,4 +57,4 @@ It calls the verifier for identity checks and includes the result in the summary
 
 ## Support
 
-Owner: **Sofia Alvarez**, Onboarding Experience. Email [sofia.alvarez@creditwiz.example](mailto:sofia.alvarez@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Sofia Alvarez**, Onboarding Experience. Email [sofia.alvarez@mufg.example](mailto:sofia.alvarez@mufg.example) or use **Collaborate with the owner** on the agent page.

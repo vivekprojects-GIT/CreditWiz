@@ -41,7 +41,7 @@ export const fetchPreferences = (signal?: AbortSignal) => getJson<Preferences>('
 /** Notify other tabs that the shared cookie has changed accounts. */
 export function announceSessionChange() {
   try {
-    localStorage.setItem('creditwiz.session-change', crypto.randomUUID())
+    localStorage.setItem('mufg.session-change', crypto.randomUUID())
   } catch {
     /* storage may be unavailable */
   }

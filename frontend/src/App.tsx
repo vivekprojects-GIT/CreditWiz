@@ -56,7 +56,7 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
           {state.status === 'error' && (
             <div className="state state--error" role="alert">
               <p className="state__title">The AI Hub is unavailable right now.</p>
-              <p>We couldn't reach the CreditWiz service. Try again in a moment.</p>
+              <p>We couldn't reach the MUFG AI Hub service. Try again in a moment.</p>
               <button type="button" className="btn btn--blue btn--inline" onClick={retry}>
                 Retry
               </button>
@@ -106,7 +106,7 @@ export default function App() {
     const signedOut = () => setState({ status: 'signed-out' })
     window.addEventListener('creditwiz:signed-out', signedOut)
     const storage = (event: StorageEvent) => {
-      if (event.key === 'creditwiz.session-change') signedOut()
+      if (event.key === 'mufg.session-change') signedOut()
     }
     window.addEventListener('storage', storage)
     return () => {

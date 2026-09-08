@@ -31,7 +31,7 @@ def production() -> bool:
 def user_id() -> str:
     value = current_id.get()
     if not value:
-        raise HTTPException(401, "Sign in to CreditWiz")
+        raise HTTPException(401, "Sign in to the MUFG AI Hub")
     return value
 
 
@@ -116,7 +116,7 @@ def seed_users() -> None:
                         name=name,
                         first_name=name.split()[0],
                         initials="".join(n[0] for n in name.split()),
-                        email=f"{uid}@creditwiz.example",
+                        email=f"{uid}@mufg.example",
                         job_title=role,
                         department=dept,
                         groups=["AI-Hub-Users", *groups],

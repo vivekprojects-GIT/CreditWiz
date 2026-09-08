@@ -1,0 +1,65 @@
+# Render Blueprint. In the dashboard: New > Blueprint, point it at this repo.
+#
+# One service, not two. The SPA calls the API with relative paths and
+# credentials:'same-origin', so a separate static site would be a second origin
+# and the session cookie would never be sent. The Dockerfile builds the frontend
+# and FastAPI serves it.
+
+services:
+  - type: web
+    name: mufg-ai-hub
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /api/health
+    envVars:
+      # Demo sign-in stays enabled so reviewers can switch personas. Set this to
+      # `production` to disable it, which then REQUIRES the two bootstrap values
+      # below and turns the session cookie Secure-only.
+      - key: CREDITWIZ_ENV
+        value: development
+
+      # No model calls by default, so the deployment costs nothing to run and
+      # search falls back to the local concept lexicon, labelled "Interpreted
+      # locally" in the UI. Set to 0 and add the key below to enable Claude.
+      - key: CREDITWIZ_DISABLE_LLM
+        value: "1"
+
+      # sync:false means Render prompts for the value and never stores it in git.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+      - key: CREDITWIZ_SEARCH_MODEL
+        value: claude-sonnet-5
+
+      # The public URL is only known after the first deploy, so the app also
+      # trusts RENDER_EXTERNAL_URL. This entry is for any extra origin.
+      - key: CREDITWIZ_ORIGINS
+        sync: false
+
+      # Only read when CREDITWIZ_ENV=production. The password must be at least
+      # 12 characters or the service refuses to start.
+      - key: CREDITWIZ_BOOTSTRAP_EMAIL
+        sync: false
+      - key: CREDITWIZ_BOOTSTRAP_PASSWORD
+        sync: false
+
+    # ---------------------------------------------------------------------
+    # WITHOUT A DISK, ALL STATE IS LOST ON EVERY DEPLOY AND RESTART: accounts,
+    # sessions, learning progress, ratings and footprints. Sample agents and
+    # learning content are read from JSON in the image, so the catalogue always
+    # survives -- but anything a reviewer does will not.
+    #
+    # Render disks require a paid instance type. To keep data, change `plan` to
+    # `starter` and uncomment both blocks below.
+    # ---------------------------------------------------------------------
+    # disk:
+    #   name: hub-data
+    #   mountPath: /data
+    #   sizeGB: 1
+    #
+    # and add to envVars:
+    #   - key: CREDITWIZ_VAR_DIR
+    #     value: /data

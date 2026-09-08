@@ -31,9 +31,9 @@ export function SignIn({ onSignIn }: { onSignIn: () => void }) {
   return (
     <main className="signin">
       <div className="signin__brand">
-        MUFG <span>CreditWiz · Enterprise AI Hub</span>
+        MUFG <span>AI Hub</span>
       </div>
-      <h1>Welcome to CreditWiz</h1>
+      <h1>Welcome to the MUFG AI Hub</h1>
       <p>Discover agents and follow learning paths for your role.</p>
       {error && (
         <p role="alert" className="state--error">

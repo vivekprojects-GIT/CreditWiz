@@ -39,7 +39,7 @@ npm ci
 npm run dev
 ```
 
-Open [CreditWiz](http://localhost:5173). Choose a clearly labeled demo account. Sai is the sample hub administrator; the five other accounts demonstrate the role mappings and independent state. Taylor can see builder-restricted learning; Alex cannot.
+Open [MUFG](http://localhost:5173). Choose a clearly labeled demo account. Sai is the sample hub administrator; the five other accounts demonstrate the role mappings and independent state. Taylor can see builder-restricted learning; Alex cannot.
 
 The backend reads `backend/.env`. Copy `.env.example` if needed. Search works without an API key. To enable Claude, set `ANTHROPIC_API_KEY`, `CREDITWIZ_DISABLE_LLM=0` and a model available to the configured Anthropic account. Live Claude calls were not part of verification.
 

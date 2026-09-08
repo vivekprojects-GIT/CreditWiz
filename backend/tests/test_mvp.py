@@ -386,3 +386,47 @@ def test_account_provisioning_revokes_old_sessions():
     )
     assert c.get("/api/me").status_code == 401
     assert validate() == {"agents": 10, "learning_items": 22, "paths": 6}
+
+
+def test_single_origin_deployment_serves_the_spa_and_keeps_api_404s_json(
+    tmp_path, monkeypatch
+):
+    """Deployment shape: one service serves the API and the built SPA.
+
+    The app calls /api/... relatively with credentials:'same-origin', so a
+    separate frontend origin would never send the session cookie.
+    """
+    build = tmp_path / "dist"
+    (build / "assets").mkdir(parents=True)
+    (build / "index.html").write_text("<!doctype html><title>MUFG AI Hub</title>")
+    (build / "assets" / "app-abc123.js").write_text("console.log(1)")
+    (tmp_path / "secret.txt").write_text("must not be served")
+    monkeypatch.setenv("CREDITWIZ_STATIC_DIR", str(build))
+
+    # A client-side route falls back to index.html rather than 404ing.
+    page = client.get("/learning/me")
+    assert page.status_code == 200 and "MUFG AI Hub" in page.text
+    assert page.headers["cache-control"] == "no-cache"
+
+    # Fingerprinted assets are safe to cache forever.
+    asset = client.get("/assets/app-abc123.js")
+    assert asset.status_code == 200 and "immutable" in asset.headers["cache-control"]
+
+    # An unknown API path must stay a JSON 404, not silently become the SPA.
+    missing = client.get("/api/does-not-exist")
+    assert missing.status_code == 404
+    assert missing.headers["content-type"].startswith("application/json")
+
+    # Traversal out of the build directory is refused.
+    assert "must not be served" not in client.get("/../secret.txt").text
+
+
+def test_deploy_origin_allowlist_includes_the_platform_url(monkeypatch):
+    """The public URL is assigned at deploy time, so it cannot be pre-configured."""
+    from app.main import allowed_origins
+
+    monkeypatch.setenv("CREDITWIZ_ORIGINS", "http://localhost:5173")
+    monkeypatch.setenv("RENDER_EXTERNAL_URL", "https://mufg-ai-hub.onrender.com/")
+    origins = allowed_origins()
+    assert "https://mufg-ai-hub.onrender.com" in origins
+    assert "http://localhost:5173" in origins

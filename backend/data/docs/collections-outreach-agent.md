@@ -57,4 +57,4 @@ Every draft is checked against the current rule set and the check result is show
 
 ## Support
 
-Owner: **Grace Mbeki**, Collections Technology. Email [grace.mbeki@creditwiz.example](mailto:grace.mbeki@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Grace Mbeki**, Collections Technology. Email [grace.mbeki@mufg.example](mailto:grace.mbeki@mufg.example) or use **Collaborate with the owner** on the agent page.

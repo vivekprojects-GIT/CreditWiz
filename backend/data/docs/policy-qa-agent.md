@@ -10,7 +10,7 @@ Grounded on the approved policy library (credit, AML, data handling, complaints,
 
 ## Getting started
 
-1. Open to all employees. Sign in with your CreditWiz account.
+1. Open to all employees. Sign in with your MUFG account.
 2. Open the agent from the marketplace with **Launch agent**, or from Internal LangGraph service directly.
 3. Start with one of the example requests below, then adapt it to your case.
 
@@ -57,4 +57,4 @@ No. It answers policy questions only and does not access customer data.
 
 ## Support
 
-Owner: **Tom Brennan**, Governance & Trust. Email [tom.brennan@creditwiz.example](mailto:tom.brennan@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Tom Brennan**, Governance & Trust. Email [tom.brennan@mufg.example](mailto:tom.brennan@mufg.example) or use **Collaborate with the owner** on the agent page.

@@ -57,4 +57,4 @@ Cases within 5 days of a scheme deadline are flagged at the top of the queue.
 
 ## Support
 
-Owner: **Ibrahim Khan**, Cards Operations Technology. Email [ibrahim.khan@creditwiz.example](mailto:ibrahim.khan@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Ibrahim Khan**, Cards Operations Technology. Email [ibrahim.khan@mufg.example](mailto:ibrahim.khan@mufg.example) or use **Collaborate with the owner** on the agent page.

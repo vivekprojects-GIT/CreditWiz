@@ -29,7 +29,7 @@
     "owner": {
       "team": "Financial Crime Technology",
       "name": "Priya Raman",
-      "email": "priya.raman@creditwiz.example"
+      "email": "priya.raman@mufg.example"
     },
     "status": "production",
     "platform": "AWS Bedrock Agents",
@@ -45,11 +45,11 @@
     "access": {
       "type": "request",
       "how": "Available to Onboarding and Compliance teams. Request the KYC-Agent-User role through the access portal.",
-      "launch_url": "https://agents.creditwiz.example/kyc-verifier",
-      "request_url": "https://access.creditwiz.example/request?role=KYC-Agent-User"
+      "launch_url": "https://agents.mufg.example/kyc-verifier",
+      "request_url": "https://access.mufg.example/request?role=KYC-Agent-User"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/kyc-document-verifier",
-    "architecture_url": "https://arch.creditwiz.example/patterns/document-agent",
+    "documentation_url": "https://docs.mufg.example/agents/kyc-document-verifier",
+    "architecture_url": "https://arch.mufg.example/patterns/document-agent",
     "tags": [
       "kyc",
       "onboarding",
@@ -102,7 +102,7 @@
     "owner": {
       "team": "Financial Crime Technology",
       "name": "Daniel Okafor",
-      "email": "daniel.okafor@creditwiz.example"
+      "email": "daniel.okafor@mufg.example"
     },
     "status": "production",
     "platform": "AWS Bedrock Agents",
@@ -117,11 +117,11 @@
     "access": {
       "type": "restricted",
       "how": "Restricted to Financial Crime Compliance. Access is granted by the FCC platform lead after training.",
-      "launch_url": "https://agents.creditwiz.example/kyc-screening",
-      "request_url": "https://access.creditwiz.example/request?role=FCC-Screening"
+      "launch_url": "https://agents.mufg.example/kyc-screening",
+      "request_url": "https://access.mufg.example/request?role=FCC-Screening"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/kyc-risk-screening",
-    "architecture_url": "https://arch.creditwiz.example/patterns/screening-agent",
+    "documentation_url": "https://docs.mufg.example/agents/kyc-risk-screening",
+    "architecture_url": "https://arch.mufg.example/patterns/screening-agent",
     "tags": [
       "kyc",
       "aml",
@@ -148,7 +148,7 @@
     "id": "contract-analyzer",
     "name": "Contract Analyzer",
     "tagline": "Summarises contracts, extracts key clauses and highlights non-standard terms.",
-    "description": "Ingests supplier, partner and customer contracts, identifies the clause types that matter to CreditWiz (termination, liability, data protection, pricing, SLAs), compares them with the approved playbook and highlights deviations. Produces a one-page summary and a clause table that legal and procurement can review in minutes.",
+    "description": "Ingests supplier, partner and customer contracts, identifies the clause types that matter to MUFG (termination, liability, data protection, pricing, SLAs), compares them with the approved playbook and highlights deviations. Produces a one-page summary and a clause table that legal and procurement can review in minutes.",
     "business_domains": [
       "Legal",
       "Operations"
@@ -173,7 +173,7 @@
     "owner": {
       "team": "Legal Technology",
       "name": "Hannah Weiss",
-      "email": "hannah.weiss@creditwiz.example"
+      "email": "hannah.weiss@mufg.example"
     },
     "status": "production",
     "platform": "Azure AI Foundry",
@@ -188,12 +188,12 @@
     ],
     "access": {
       "type": "open",
-      "how": "Open to all employees. Sign in with your CreditWiz account.",
-      "launch_url": "https://agents.creditwiz.example/contract-analyzer",
+      "how": "Open to all employees. Sign in with your MUFG account.",
+      "launch_url": "https://agents.mufg.example/contract-analyzer",
       "request_url": ""
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/contract-analyzer",
-    "architecture_url": "https://arch.creditwiz.example/patterns/document-agent",
+    "documentation_url": "https://docs.mufg.example/agents/contract-analyzer",
+    "architecture_url": "https://arch.mufg.example/patterns/document-agent",
     "tags": [
       "contract",
       "legal",
@@ -245,7 +245,7 @@
     "owner": {
       "team": "Recovery Operations",
       "name": "Marcus Lee",
-      "email": "marcus.lee@creditwiz.example"
+      "email": "marcus.lee@mufg.example"
     },
     "status": "pilot",
     "platform": "Internal LangGraph service",
@@ -260,11 +260,11 @@
     "access": {
       "type": "restricted",
       "how": "Pilot limited to the Recovery Operations team. Contact the owner to join the pilot.",
-      "launch_url": "https://agents.creditwiz.example/asset-locator",
-      "request_url": "https://access.creditwiz.example/request?role=Recovery-Pilot"
+      "launch_url": "https://agents.mufg.example/asset-locator",
+      "request_url": "https://access.mufg.example/request?role=Recovery-Pilot"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/asset-locator",
-    "architecture_url": "https://arch.creditwiz.example/patterns/research-agent",
+    "documentation_url": "https://docs.mufg.example/agents/asset-locator",
+    "architecture_url": "https://arch.mufg.example/patterns/research-agent",
     "tags": [
       "collections",
       "recovery",
@@ -316,7 +316,7 @@
     "owner": {
       "team": "Onboarding Experience",
       "name": "Sofia Alvarez",
-      "email": "sofia.alvarez@creditwiz.example"
+      "email": "sofia.alvarez@mufg.example"
     },
     "status": "beta",
     "platform": "Microsoft Agent 365",
@@ -331,11 +331,11 @@
     "access": {
       "type": "request",
       "how": "Beta for onboarding teams. Request access via the Onboarding Experience team channel.",
-      "launch_url": "https://agents.creditwiz.example/onboarding-assistant",
-      "request_url": "https://access.creditwiz.example/request?role=Onboarding-Beta"
+      "launch_url": "https://agents.mufg.example/onboarding-assistant",
+      "request_url": "https://access.mufg.example/request?role=Onboarding-Beta"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/onboarding-assistant",
-    "architecture_url": "https://arch.creditwiz.example/patterns/workflow-agent",
+    "documentation_url": "https://docs.mufg.example/agents/onboarding-assistant",
+    "architecture_url": "https://arch.mufg.example/patterns/workflow-agent",
     "tags": [
       "onboarding",
       "application",
@@ -388,7 +388,7 @@
     "owner": {
       "team": "Cards Operations Technology",
       "name": "Ibrahim Khan",
-      "email": "ibrahim.khan@creditwiz.example"
+      "email": "ibrahim.khan@mufg.example"
     },
     "status": "production",
     "platform": "AWS Bedrock Agents",
@@ -403,11 +403,11 @@
     "access": {
       "type": "request",
       "how": "Available to Cards Operations. Request the Disputes-Agent role through the access portal.",
-      "launch_url": "https://agents.creditwiz.example/disputes",
-      "request_url": "https://access.creditwiz.example/request?role=Disputes-Agent"
+      "launch_url": "https://agents.mufg.example/disputes",
+      "request_url": "https://access.mufg.example/request?role=Disputes-Agent"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/dispute-resolution",
-    "architecture_url": "https://arch.creditwiz.example/patterns/workflow-agent",
+    "documentation_url": "https://docs.mufg.example/agents/dispute-resolution",
+    "architecture_url": "https://arch.mufg.example/patterns/workflow-agent",
     "tags": [
       "dispute",
       "chargeback",
@@ -458,7 +458,7 @@
     "owner": {
       "team": "Fraud Analytics",
       "name": "Elena Petrova",
-      "email": "elena.petrova@creditwiz.example"
+      "email": "elena.petrova@mufg.example"
     },
     "status": "production",
     "platform": "AWS Bedrock Agents",
@@ -473,11 +473,11 @@
     "access": {
       "type": "restricted",
       "how": "Restricted to Fraud Operations and Fraud Analytics. Access managed by the Fraud platform lead.",
-      "launch_url": "https://agents.creditwiz.example/fraud-summariser",
-      "request_url": "https://access.creditwiz.example/request?role=Fraud-Agent"
+      "launch_url": "https://agents.mufg.example/fraud-summariser",
+      "request_url": "https://access.mufg.example/request?role=Fraud-Agent"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/fraud-case-summariser",
-    "architecture_url": "https://arch.creditwiz.example/patterns/summarisation-agent",
+    "documentation_url": "https://docs.mufg.example/agents/fraud-case-summariser",
+    "architecture_url": "https://arch.mufg.example/patterns/summarisation-agent",
     "tags": [
       "fraud",
       "investigation",
@@ -502,7 +502,7 @@
   {
     "id": "policy-qa-agent",
     "name": "Policy Q&A Agent",
-    "tagline": "Answers questions about CreditWiz policies with citations to the source document.",
+    "tagline": "Answers questions about MUFG policies with citations to the source document.",
     "description": "Grounded on the approved policy library (credit, AML, data handling, complaints, acceptable use). Answers plain-language questions, always cites the policy section it relied on, and says clearly when a question is outside the library rather than guessing. Used by front-line teams and compliance alike.",
     "business_domains": [
       "Compliance",
@@ -531,7 +531,7 @@
     "owner": {
       "team": "Governance & Trust",
       "name": "Tom Brennan",
-      "email": "tom.brennan@creditwiz.example"
+      "email": "tom.brennan@mufg.example"
     },
     "status": "production",
     "platform": "Internal LangGraph service",
@@ -544,12 +544,12 @@
     ],
     "access": {
       "type": "open",
-      "how": "Open to all employees. Sign in with your CreditWiz account.",
-      "launch_url": "https://agents.creditwiz.example/policy-qa",
+      "how": "Open to all employees. Sign in with your MUFG account.",
+      "launch_url": "https://agents.mufg.example/policy-qa",
       "request_url": ""
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/policy-qa",
-    "architecture_url": "https://arch.creditwiz.example/patterns/rag-agent",
+    "documentation_url": "https://docs.mufg.example/agents/policy-qa",
+    "architecture_url": "https://arch.mufg.example/patterns/rag-agent",
     "tags": [
       "policy",
       "regulation",
@@ -601,7 +601,7 @@
     "owner": {
       "team": "Collections Technology",
       "name": "Grace Mbeki",
-      "email": "grace.mbeki@creditwiz.example"
+      "email": "grace.mbeki@mufg.example"
     },
     "status": "production",
     "platform": "Microsoft Agent 365",
@@ -616,11 +616,11 @@
     "access": {
       "type": "request",
       "how": "Available to Collections agents and team leads. Request the Collections-Agent role through the access portal.",
-      "launch_url": "https://agents.creditwiz.example/collections-outreach",
-      "request_url": "https://access.creditwiz.example/request?role=Collections-Agent"
+      "launch_url": "https://agents.mufg.example/collections-outreach",
+      "request_url": "https://access.mufg.example/request?role=Collections-Agent"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/collections-outreach",
-    "architecture_url": "https://arch.creditwiz.example/patterns/workflow-agent",
+    "documentation_url": "https://docs.mufg.example/agents/collections-outreach",
+    "architecture_url": "https://arch.mufg.example/patterns/workflow-agent",
     "tags": [
       "collections",
       "arrears",
@@ -646,14 +646,14 @@
   {
     "id": "code-review-assistant",
     "name": "Code Review Assistant",
-    "tagline": "Reviews pull requests for defects, security issues and CreditWiz coding standards.",
+    "tagline": "Reviews pull requests for defects, security issues and MUFG coding standards.",
     "description": "Runs on every pull request in approved repositories. Flags likely bugs, insecure patterns, missing tests and deviations from the engineering standards, and explains each finding with a suggested fix. Engineers can also ask it to explain unfamiliar code or draft the PR description.",
     "business_domains": [
       "Engineering"
     ],
     "use_cases": [
       "Review a pull request for bugs and security issues",
-      "Check code against CreditWiz engineering standards",
+      "Check code against MUFG engineering standards",
       "Explain an unfamiliar piece of code",
       "Draft a pull request description"
     ],
@@ -670,7 +670,7 @@
     "owner": {
       "team": "Developer Platform",
       "name": "Ravi Menon",
-      "email": "ravi.menon@creditwiz.example"
+      "email": "ravi.menon@mufg.example"
     },
     "status": "production",
     "platform": "GitHub Actions + Internal LangGraph service",
@@ -685,11 +685,11 @@
     "access": {
       "type": "open",
       "how": "Enabled automatically on repositories in the approved GitHub organisation. Ask Developer Platform to onboard a repo.",
-      "launch_url": "https://github.example/creditwiz",
-      "request_url": "https://access.creditwiz.example/request?role=Repo-Onboarding"
+      "launch_url": "https://github.example/mufg",
+      "request_url": "https://access.mufg.example/request?role=Repo-Onboarding"
     },
-    "documentation_url": "https://docs.creditwiz.example/agents/code-review-assistant",
-    "architecture_url": "https://arch.creditwiz.example/patterns/ci-agent",
+    "documentation_url": "https://docs.mufg.example/agents/code-review-assistant",
+    "architecture_url": "https://arch.mufg.example/patterns/ci-agent",
     "tags": [
       "code",
       "pull request",

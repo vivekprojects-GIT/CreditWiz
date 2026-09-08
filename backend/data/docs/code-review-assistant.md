@@ -23,7 +23,7 @@ Runs on every pull request in approved repositories. Flags likely bugs, insecure
 ## What you can ask
 
 - Review a pull request for bugs and security issues
-- Check code against CreditWiz engineering standards
+- Check code against MUFG engineering standards
 - Explain an unfamiliar piece of code
 - Draft a pull request description
 
@@ -53,8 +53,8 @@ Ask Developer Platform in the #dev-platform channel; onboarding takes about a da
 
 **Can I turn off a rule?**
 
-Yes, per repository, through the .creditwiz-review.yml file.
+Yes, per repository, through the .mufg-review.yml file.
 
 ## Support
 
-Owner: **Ravi Menon**, Developer Platform. Email [ravi.menon@creditwiz.example](mailto:ravi.menon@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Ravi Menon**, Developer Platform. Email [ravi.menon@mufg.example](mailto:ravi.menon@mufg.example) or use **Collaborate with the owner** on the agent page.

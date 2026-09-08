@@ -57,4 +57,4 @@ No. It only summarises and recommends.
 
 ## Support
 
-Owner: **Elena Petrova**, Fraud Analytics. Email [elena.petrova@creditwiz.example](mailto:elena.petrova@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Elena Petrova**, Fraud Analytics. Email [elena.petrova@mufg.example](mailto:elena.petrova@mufg.example) or use **Collaborate with the owner** on the agent page.

@@ -106,7 +106,7 @@ PILLARS = [
             Section(
                 title="Getting started",
                 href="/learning?path=getting-started",
-                blurb="Your first hour with AI at CreditWiz.",
+                blurb="Your first hour with AI at MUFG.",
             ),
             Section(
                 title="Best practices",

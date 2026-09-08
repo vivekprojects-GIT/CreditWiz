@@ -1,4 +1,4 @@
-# CreditWiz — Enterprise AI Hub
+# MUFG — Enterprise AI Hub
 
 Implemented MVP: **AI Marketplace & Discovery**, **Learning**, and shared accounts, permissions and SQLite persistence.
 
@@ -171,7 +171,7 @@ npm ci
 npm run dev
 ```
 
-Open [CreditWiz](http://localhost:5173) and choose a demo account. Demo mode is for local use.
+Open [MUFG](http://localhost:5173) and choose a demo account. Demo mode is for local use.
 
 Optional: copy `backend/.env.example` to `backend/.env` and add `ANTHROPIC_API_KEY`, set `CREDITWIZ_DISABLE_LLM=0`, and choose an available model for Claude-interpreted search. Without it the local lexicon is used and everything still works.
 
@@ -191,7 +191,7 @@ npm run build
 
 | Branch | Purpose |
 | --- | --- |
-| `main` | Baseline branch; this MVP completion is on `codex/complete-creditwiz` pending review. |
+| `main` | Baseline branch; this MVP completion is on `codex/complete-mufg` pending review. |
 | `dev` | Integration branch. Feature work merges here first. |
 | `test` | QA and validation before promotion to `main`. |
 | `end` | End-state / target-architecture spikes, including work explicitly out of MVP scope. |

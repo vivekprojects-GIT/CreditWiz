@@ -58,4 +58,4 @@ Yes. Re-run on the same case and it produces an updated report showing what chan
 
 ## Support
 
-Owner: **Priya Raman**, Financial Crime Technology. Email [priya.raman@creditwiz.example](mailto:priya.raman@creditwiz.example) or use **Collaborate with the owner** on the agent page.
+Owner: **Priya Raman**, Financial Crime Technology. Email [priya.raman@mufg.example](mailto:priya.raman@mufg.example) or use **Collaborate with the owner** on the agent page.
