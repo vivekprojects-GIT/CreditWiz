@@ -1,21 +1,36 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator, model_validator
+from ..content_validation import safe_link
 
-ItemType = Literal["video", "course", "confluence", "guide", "documentation", "quick-reference", "best-practice"]
+ItemType = Literal[
+    "video",
+    "course",
+    "confluence",
+    "guide",
+    "documentation",
+    "quick-reference",
+    "best-practice",
+]
 Status = Literal["not_started", "in_progress", "completed"]
 
 
 class LearningPath(BaseModel):
-    id: str
+    id: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
     title: str
     blurb: str
+    owner: str = "Learning team (sample mapping)"
+    version: str = "1"
+    steps: list[str] = []
+    completed_steps: int = 0
+    total_steps: int = 0
+    next_item_id: str | None = None
 
 
 class Item(BaseModel):
     """One piece of learning content, of any type."""
 
-    id: str
+    id: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
     title: str
     type: ItemType
     description: str
@@ -34,12 +49,48 @@ class Item(BaseModel):
     source: str = ""
     # in-app markdown for hub-native content; empty when the item links out
     body: str = ""
+    audience_groups: list[str] = ["AI-Hub-Users"]
+    active: bool = True
+    review_status: Literal["draft", "approved", "retired"] = "approved"
+    reviewed_at: str = ""
+    owner: str = "AI Learning team"
+    prerequisites: list[str] = []
+    priority: int = 0
+    source_kind: Literal["sample", "enterprise"] = "sample"
+
+    _links = field_validator("url", "poster_url")(safe_link)
+
+    @model_validator(mode="after")
+    def reviewed_enterprise(self):
+        if self.source_kind == "enterprise":
+            if (
+                not {
+                    "audience_groups",
+                    "review_status",
+                    "active",
+                    "owner",
+                    "reviewed_at",
+                }
+                <= self.model_fields_set
+            ):
+                raise ValueError(
+                    "Enterprise learning requires explicit ACL, publication and review metadata"
+                )
+            if not self.owner or not self.reviewed_at:
+                raise ValueError(
+                    "Enterprise learning requires an owner and review date"
+                )
+        return self
 
 
 class ItemWithProgress(Item):
     status: Status = "not_started"
     progress: int = 0
     required: bool = False
+    recommendation_reason: str = ""
+    blocked_by: list[str] = []
+    prerequisite_unavailable: bool = False
+    sequence: int | None = None
 
 
 class ItemDetail(ItemWithProgress):
@@ -63,12 +114,13 @@ class LearningHome(BaseModel):
     paths: list[LearningPath]
     sections: list[Section]
     item_count: int
+    role_paths: list[LearningPath] = []
 
 
 class ProgressIn(BaseModel):
     item_id: str
     status: Status
-    progress: int | None = None
+    progress: int | None = Field(default=None, ge=0, le=100)
 
 
 class TopicCoverage(BaseModel):

@@ -34,8 +34,8 @@ export function ItemCard({ item, fromAgentId, compact }: { item: Item; fromAgent
           )}
         </div>
       ) : (
-        <div className="icard__glyph" aria-hidden="true">
-          <Icon size={20} strokeWidth={2} />
+        <div className="icard__cover" aria-hidden="true">
+          <Icon size={compact ? 30 : 44} strokeWidth={1.4} />
         </div>
       )}
 
@@ -48,9 +48,14 @@ export function ItemCard({ item, fromAgentId, compact }: { item: Item; fromAgent
               <Check size={12} strokeWidth={3} /> Completed
             </span>
           )}
-          {item.status === 'in_progress' && <span className="icard__pct">{item.progress}%</span>}
+          {item.status === 'in_progress' && <span className="icard__pct">{item.progress ? `${item.progress}%` : 'Started'}</span>}
         </span>
-        <span className="icard__title">{item.title}</span>
+        <span className="icard__title">
+          {item.sequence ? `${item.sequence}. ` : ''}
+          {item.title}
+        </span>
+        {(item.blocked_by?.length > 0 || item.prerequisite_unavailable) && <span className="icard__required">Prerequisite needed</span>}
+        {item.recommendation_reason && <span className="icard__desc">{item.recommendation_reason}</span>}
         {!compact && <span className="icard__desc">{item.description}</span>}
         {!isVideo && time && (
           <span className="icard__time">

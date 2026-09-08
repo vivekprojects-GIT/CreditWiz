@@ -35,12 +35,12 @@ export function PillarPage() {
         compact
       />
 
+      <p className="state">Planned pillar · Outside the Marketplace + Learning MVP.</p>
       {current ? (
         <section className="panel">
           <h2 className="panel__title">{current.title}</h2>
           <p className="panel__text">
-            This area is being connected to its service. In the meantime, browse the other parts of{' '}
-            {pillar.short_title} below or go back to the pillar overview.
+            This area is outside the Marketplace + Learning MVP. It shows the planned hub structure; its workflows are not implemented.
           </p>
           <Link className="mcard__link" to={base}>
             Back to {pillar.short_title} <ArrowRight strokeWidth={2.4} />
@@ -48,7 +48,7 @@ export function PillarPage() {
         </section>
       ) : null}
 
-      <h2 className="section-title">{current ? `More in ${pillar.short_title}` : 'What you can do here'}</h2>
+      <h2 className="section-title">{current ? `More in ${pillar.short_title}` : 'Planned capabilities'}</h2>
       <section className="more-grid" aria-label={`${pillar.short_title} sections`}>
         {pillar.sections
           .filter((s) => s.href !== current?.href)

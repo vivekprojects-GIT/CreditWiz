@@ -1,32 +1,45 @@
 {
   "$comment": "CreditWiz AI Hub - canonical Agent Metadata Template (one object per agent). Fill what you know; fields marked optional can stay empty. Agent owners may instead supply the simpler intake format shown in docs/agent-metadata-template.md; the hub normalises both.",
-
   "_IDENTITY": "----------------------------------------------------------------",
   "id": "required. Stable slug: lowercase, hyphens. Example: kyc-verification-agent",
   "name": "required. Display name. Example: KYC Verification Agent",
   "tagline": "required. One sentence under 90 characters: what it does for the user",
   "version": "optional. Example: 1.2",
-
   "_BUSINESS": "----------------------------------------------------------------",
   "description": "required. 2-4 sentences: what it is and how it works at a high level",
   "problem_solved": "optional but valuable. Why it exists / the business problem it removes",
-  "business_domains": ["required. One or more: Onboarding, Compliance, Collections, Cards, Lending, Fraud & Risk, Legal, Operations, Customer Service, Engineering"],
-  "use_cases": ["required. Concrete tasks in plain language. Example: Review customer onboarding documents for completeness"],
-  "personas": ["required. Target personas: business_user, compliance_user, risk_analyst, operations_user, developer (labels like 'Compliance User' are accepted)"],
-
+  "business_domains": [
+    "required. One or more: Onboarding, Compliance, Collections, Cards, Lending, Fraud & Risk, Legal, Operations, Customer Service, Engineering"
+  ],
+  "use_cases": [
+    "required. Concrete tasks in plain language. Example: Review customer onboarding documents for completeness"
+  ],
+  "personas": [
+    "required. Target personas: business_user, compliance_user, risk_analyst, operations_user, developer (labels like 'Compliance User' are accepted)"
+  ],
   "_CAPABILITIES": "------------------------------------------------------------",
-  "capabilities": ["required. What it can do. Examples: Document extraction, Identity verification, Summarisation, Risk scoring"],
-  "services": ["optional. Services it exposes to other systems, if any"],
-  "example_tasks": ["optional. Literal prompts a user could give it"],
-  "tags": ["optional. Extra search keywords. Examples: kyc, onboarding, ocr"],
+  "capabilities": [
+    "required. What it can do. Examples: Document extraction, Identity verification, Summarisation, Risk scoring"
+  ],
+  "services": [
+    "optional. Services it exposes to other systems, if any"
+  ],
+  "example_tasks": [
+    "optional. Literal prompts a user could give it"
+  ],
+  "tags": [
+    "optional. Extra search keywords. Examples: kyc, onboarding, ocr"
+  ],
   "category": "required for carousels. One of: Compliance & Risk, Document Intelligence, Customer Operations, Knowledge & Policy, Developer Tools (derived from domain if omitted)",
-
   "_TECHNICAL": "---------------------------------------------------------------",
   "platform": "required. Where it runs. Examples: AWS Bedrock Agents, Azure AI Foundry, Microsoft Agent 365, Internal service",
-  "tools_services": ["optional. Systems and tools it calls. Examples: OCR service, Sanctions API, ServiceNow"],
-  "models": ["optional. Models used. Examples: Claude Opus 5, GPT-5, In-house classifier"],
+  "tools_services": [
+    "optional. Systems and tools it calls. Examples: OCR service, Sanctions API, ServiceNow"
+  ],
+  "models": [
+    "optional. Models used. Examples: Claude Opus 5, GPT-5, In-house classifier"
+  ],
   "architecture_pattern": "optional. Name of the reference pattern. Example: Document agent",
-
   "_GOVERNANCE": "--------------------------------------------------------------",
   "owner": {
     "team": "required. Owning team",
@@ -40,16 +53,19 @@
     "launch_url": "optional. Opens the agent when the user already has access",
     "request_url": "optional. Access request form or ticket"
   },
-
   "_RESOURCES": "---------------------------------------------------------------",
   "documentation_url": "optional. User guide / runbook",
   "architecture_url": "optional. Architecture pattern or design doc",
-
   "_LIFECYCLE": "---------------------------------------------------------------",
   "created_at": "required. ISO date, e.g. 2026-03-14",
   "updated_at": "required. ISO date, e.g. 2026-08-29",
-
   "_CURATION": "----------------------------------------------------------------",
   "featured": false,
-  "popularity": 0
+  "popularity": 0,
+  "audience_groups": [
+    "required for enterprise. Explicit allowed directory groups; empty denies all."
+  ],
+  "active": "required for enterprise. Boolean; false hides listing.",
+  "review_status": "required for enterprise. draft | approved | retired. Only approved is visible.",
+  "source_kind": "sample | enterprise. Sample destinations are not presented as live integrations."
 }

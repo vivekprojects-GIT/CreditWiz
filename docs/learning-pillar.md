@@ -101,12 +101,13 @@ persona affinity     +5 / +3 / +1
 Progress is **learning state**, not personalisation, so it is tracked from Day 1.
 
 ```text
-User opens item      →  started (5%)
-User plays / reads   →  in progress (n%)
+User opens an unblocked item → started (0%)
+Native video playback       → in progress (position %)
+YouTube / reading           → started; no inferred completion %
 User marks complete  →  completed (100%)
 ```
 
-Status never regresses and progress never decreases. On completion Learning also emits a `learning_complete` footprint to the shared hub layer, so other pillars can see it.
+Status never regresses and progress never decreases. Learning writes its completion and exactly one `learning_complete` footprint in one SQL transaction, including across concurrent processes. The shared API returns only the signed-in user's records.
 
 **My Learning** shows completed, in progress, not started, required progress, and topic coverage as counts:
 
@@ -125,8 +126,8 @@ The split is deliberate and is the production shape:
 
 | Data | Store | Why |
 | --- | --- | --- |
-| Learning progress | **SQLite** (`backend/var/learning.db`) | Mutable per-user state with read-modify-write; needs atomic upsert and survives concurrent workers |
-| Footprints | **JSONL** (`backend/var/interactions.jsonl`) | Append-only event stream, ships straight to analytics |
+| Learning progress | **SQLite** (`backend/var/hub.db`) | Mutable per-user state with read-modify-write; needs atomic upsert and survives concurrent workers |
+| Footprints | **SQLite** (`backend/var/hub.db`, events table) | Append-only event stream, ships straight to analytics |
 | Content, personas, mappings | **JSON files** (`backend/data/`) | Authored, version-controlled, handed to the client |
 
 SQLite needs no server and is a single file. Swap `progress.py` for the enterprise store when there is one; the API does not change.
@@ -140,7 +141,7 @@ SQLite needs no server and is a single file. Swap `progress.py` for the enterpri
 ✗ An invented proficiency score
 ```
 
-Footprints and progress are both collected. Neither feeds ranking. Later:
+Footprints do not feed relevance ranking. Progress filters completed items and selects continuing learning without inferring preferences. Later:
 
 ```text
 Role / Persona
@@ -167,3 +168,9 @@ The cross-pillar example, completing several KYC learning items raising KYC agen
 | `GET /api/learning/my-learning` | Progress counts and topic coverage |
 | `GET /api/learning/for-agent/{id}?persona=` | Content that teaches an agent (consumed by the Marketplace) |
 | `GET /api/learning/curation` | Per-component curation breakdown |
+
+## Authored paths and access
+
+Each path defines ordered `steps`, an owner and a version. Items declare prerequisites, owner/review metadata, audience groups, active/review status, source kind and optional editorial priority. The loader validates IDs, references and cycles. Only active, approved, authorized material reaches the frontend. Required work is listed first; role candidates are filtered before the display limit is applied. Catalog filters do not change path order.
+
+See [MVP completion and operations](mvp-completion.md) for the current requirements, session model, account provisioning and test commands.

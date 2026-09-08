@@ -1,28 +1,84 @@
-from pathlib import Path
-
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import os
+from contextlib import asynccontextmanager
 
-# backend/.env holds ANTHROPIC_API_KEY and optional CREDITWIZ_* settings.
-# Real environment variables win over the file.
-load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
-
-from . import data, identity  # noqa: E402
+from . import data, identity, auth  # noqa: E402
+from .permissions import visible
+from .account import router as account_router
 from .context.router import router as context_router
 from .learning.router import router as learning_router
 from .marketplace.router import router as marketplace_router
 from .marketplace.store import store as marketplace_store
-from .models import CurrentUser, Domain, HomeResponse, Notification, PersonaInfo, Pillar, SearchResponse, SearchResult
+from .models import (
+    CurrentUser,
+    Domain,
+    HomeResponse,
+    Notification,
+    PersonaInfo,
+    Pillar,
+    SearchResponse,
+    SearchResult,
+)
 
-app = FastAPI(title="CreditWiz Enterprise AI Hub API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app):
+    auth.seed_users()
+    yield
+
+
+app = FastAPI(
+    title="CreditWiz Enterprise AI Hub API", version="0.2.0", lifespan=lifespan
+)
+app.include_router(auth.router)
+app.include_router(account_router)
 app.include_router(marketplace_router)
 app.include_router(learning_router)
 app.include_router(context_router)
 
+
+@app.middleware("http")
+async def session_boundary(request: Request, call_next):
+    if not request.url.path.startswith("/api/") or request.method == "OPTIONS":
+        return await call_next(request)
+    origins = os.environ.get(
+        "CREDITWIZ_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+    ).split(",")
+    if request.method not in ("GET", "HEAD"):
+        origin = request.headers.get("origin")
+        if (origin and origin not in origins) or request.headers.get(
+            "X-CreditWiz-Request"
+        ) != "1":
+            return JSONResponse(
+                {"detail": "Request verification failed"}, status_code=403
+            )
+    public = request.url.path in (
+        "/api/health",
+        "/api/auth/options",
+        "/api/auth/login",
+        "/api/auth/demo",
+    )
+    uid = auth.resolve_session(request.cookies.get(auth.COOKIE))
+    if not public and not uid:
+        return JSONResponse({"detail": "Sign in to CreditWiz"}, status_code=401)
+    token = auth.current_id.set(uid)
+    try:
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+    finally:
+        auth.current_id.reset(token)
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=os.environ.get(
+        "CREDITWIZ_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+    ).split(","),
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,7 +100,8 @@ def current_user() -> CurrentUser:
         location=profile.location,
         manager=profile.manager,
         is_admin=identity.is_admin(profile),
-        unread_notifications=len([n for n in data.NOTIFICATIONS if not n.read]),
+        unread_notifications=len([n for n in notifications() if not n.read]),
+        demo_mode=not auth.production(),
         persona=PersonaInfo(**persona.model_dump()),
     )
 
@@ -65,7 +122,20 @@ def me() -> CurrentUser:
 
 @app.get("/api/domains", response_model=list[Domain])
 def domains() -> list[Domain]:
-    return data.DOMAINS
+    return [
+        Domain(id="all", name="All business domains"),
+        *[
+            Domain(id=d, name=d)
+            for d in sorted(
+                {
+                    d
+                    for a in marketplace_store.agents
+                    if visible(a)
+                    for d in a.business_domains
+                }
+            )
+        ],
+    ]
 
 
 @app.get("/api/pillars", response_model=list[Pillar])
@@ -78,7 +148,7 @@ def home() -> HomeResponse:
     user = current_user()
     return HomeResponse(
         user=user,
-        domains=data.DOMAINS,
+        domains=domains(),
         pillars=visible_pillars(user),
     )
 
@@ -93,7 +163,36 @@ def pillar(pillar_id: str) -> Pillar:
 
 @app.get("/api/notifications", response_model=list[Notification])
 def notifications() -> list[Notification]:
-    return data.NOTIFICATIONS
+    from .database import connect
+
+    with connect() as conn:
+        read = {
+            r[0]
+            for r in conn.execute(
+                "SELECT notification_id FROM notification_reads WHERE user_id=?",
+                (auth.user_id(),),
+            )
+        }
+    from .account import preferences
+
+    show_learning = preferences().show_learning_reminders
+    return [
+        n.model_copy(update={"read": n.id in read or n.read})
+        for n in data.NOTIFICATIONS
+        if show_learning or not n.href.startswith("/learning")
+    ]
+
+
+@app.post("/api/notifications/read")
+def mark_notifications_read():
+    from .database import connect
+
+    with connect(write=True) as conn:
+        conn.executemany(
+            "INSERT OR IGNORE INTO notification_reads VALUES (?,?)",
+            [(auth.user_id(), n.id) for n in data.NOTIFICATIONS],
+        )
+    return {"ok": True}
 
 
 @app.get("/api/search", response_model=SearchResponse)
@@ -104,7 +203,20 @@ def search(q: str = Query(default="", max_length=200)) -> SearchResponse:
     agent_hits = [
         SearchResult(kind="agent", title=a.name, href=f"/marketplace/agents/{a.id}")
         for a in marketplace_store.agents
-        if needle in a.name.lower() or needle in a.tagline.lower() or any(needle in t for t in a.tags)
+        if visible(a)
+        and (
+            needle in a.name.lower()
+            or needle in a.tagline.lower()
+            or any(needle in t.lower() for t in a.tags)
+        )
     ]
-    other_hits = [r for r in data.SEARCH_INDEX if r.kind != "agent" and (needle in r.title.lower() or needle in r.kind)]
-    return SearchResponse(query=q, results=(agent_hits + other_hits)[:8])
+    from .learning.router import _load
+
+    _, items = _load()
+    learning_hits = [
+        SearchResult(kind="learning", title=i.title, href=f"/learning/items/{i.id}")
+        for i in items
+        if needle == "learning"
+        or needle in " ".join([i.title, i.description, *i.topics, *i.tags]).lower()
+    ]
+    return SearchResponse(query=q, results=(agent_hits + learning_hits)[:20])

@@ -37,10 +37,10 @@ Marketplace Learning  Community    Prompts    Skills    other pillars…
 
 | Piece | Where | Owner |
 | --- | --- | --- |
-| Directory profile (mocked) | `backend/data/user.json` | Hub |
+| Signed-in directory-style profile | `backend/var/hub.db` (development seeds from `backend/data/user.json`) | Hub |
 | Persona mapping | `backend/data/persona-mapping.json` | Hub |
 | Persona derivation | `backend/app/identity.py` | Hub |
-| Footprint + feedback store | `backend/app/context/store.py` → `backend/var/interactions.jsonl`, `feedback.jsonl` | Hub |
+| Footprint + feedback store | `backend/app/context/store.py` → `backend/var/hub.db` (per-user events and feedback tables) | Hub |
 | Shared API | `backend/app/context/router.py` → `/api/context/*` | Hub |
 | Shared client | `frontend/src/lib/context.ts` → `track()`, `sendFeedback()` | Hub |
 | Agent metadata, search, carousels, agent detail | `backend/app/marketplace/`, `backend/data/agents.json` | Swim Lane 1 |
@@ -105,7 +105,7 @@ Interests
              Event Collection            ← exists today (shared)
                      │
                      ▼
-          Shared User Context Store      ← JSONL today, real store later
+          Shared User Context Store      ← SQLite hub.db, user-scoped
                      │
                      ▼
          Personalization / Curation      ← future, hub-owned

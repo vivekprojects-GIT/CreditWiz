@@ -1,3 +1,4 @@
+import { Preferences } from './Preferences'
 import { ArrowRight, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useHub } from '../lib/hub'
@@ -17,7 +18,7 @@ export function HelpPage() {
   return (
     <div className="content">
       <Crumbs title="Help" />
-      <PageBand title="Help &amp; support" lead="Get unstuck fast. Start with the guides, then ask the community." compact />
+      <PageBand title="Help &amp; support" lead="Browse the getting-started path, agent documentation, and learning catalog." compact />
       <section className="more-grid">
         <Link to="/learning?path=getting-started" className="scard scard--teal">
           <span className="scard__title">Getting started</span>
@@ -26,16 +27,16 @@ export function HelpPage() {
             Open <ArrowRight size={18} strokeWidth={2.4} />
           </span>
         </Link>
-        <Link to="/community/faqs" className="scard scard--blue">
-          <span className="scard__title">FAQs</span>
-          <span className="scard__blurb">Answers to the most common questions.</span>
+        <Link to="/learning/catalog" className="scard scard--blue">
+          <span className="scard__title">Learning catalog</span>
+          <span className="scard__blurb">Find guides, quick references, courses, and videos.</span>
           <span className="scard__go">
             Open <ArrowRight size={18} strokeWidth={2.4} />
           </span>
         </Link>
-        <Link to="/community/forums" className="scard scard--blue">
-          <span className="scard__title">Ask the community</span>
-          <span className="scard__blurb">Post a question and get answers from SMEs.</span>
+        <Link to="/marketplace/agents" className="scard scard--blue">
+          <span className="scard__title">Agent documentation</span>
+          <span className="scard__blurb">Open an agent to read its documentation and contact details.</span>
           <span className="scard__go">
             Open <ArrowRight size={18} strokeWidth={2.4} />
           </span>
@@ -46,7 +47,7 @@ export function HelpPage() {
 }
 
 export function SettingsPage() {
-  const { user, domains } = useHub()
+  const { user } = useHub()
   return (
     <div className="content">
       <Crumbs title="Profile" />
@@ -83,32 +84,12 @@ export function SettingsPage() {
       <section className="panel">
         <h2 className="panel__title">Persona</h2>
         <p className="panel__text">
-          <strong>{user.persona.label}</strong>. Derived by the hub from your directory profile ({user.persona.rule}); it is not stored on your
-          profile. It shapes which agents and learning are recommended to you.
+          <strong>{user.persona.label}</strong>. Derived by the hub from your directory profile ({user.persona.rule}); it is not stored on
+          your profile. It shapes which agents and learning are recommended to you.
         </p>
       </section>
 
-      <section className="panel">
-        <h2 className="panel__title">Preferences</h2>
-        <label className="field">
-          <span>Default business domain</span>
-          <select className="domain__select domain__select--plain" defaultValue={domains[0]?.id}>
-            {domains.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field field--row">
-          <input type="checkbox" defaultChecked />
-          <span>Email me a weekly digest of new solutions and courses</span>
-        </label>
-        <label className="field field--row">
-          <input type="checkbox" defaultChecked />
-          <span>Notify me when someone replies to my forum posts</span>
-        </label>
-      </section>
+      <Preferences />
     </div>
   )
 }

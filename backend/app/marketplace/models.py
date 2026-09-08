@@ -1,6 +1,7 @@
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
+from ..content_validation import safe_link
 
 AgentStatus = Literal["production", "pilot", "beta", "in_development", "deprecated"]
 AccessType = Literal["open", "request", "restricted"]
@@ -18,12 +19,14 @@ class Access(BaseModel):
     launch_url: str = ""
     request_url: str = ""
 
+    _links = field_validator("launch_url", "request_url")(safe_link)
+
 
 class Agent(BaseModel):
     """Canonical agent metadata. Grouped as in docs/agent-metadata-template.md."""
 
     # identity
-    id: str
+    id: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
     name: str
     tagline: str
     version: str = ""
@@ -57,6 +60,24 @@ class Agent(BaseModel):
     # curation
     featured: bool = False
     popularity: int = 0
+    audience_groups: list[str] = ["AI-Hub-Users"]
+    active: bool = True
+    review_status: Literal["draft", "approved", "retired"] = "approved"
+    source_kind: Literal["sample", "enterprise"] = "sample"
+
+    _links = field_validator("documentation_url", "architecture_url")(safe_link)
+
+    @model_validator(mode="after")
+    def reviewed_enterprise(self):
+        if (
+            self.source_kind == "enterprise"
+            and not {"audience_groups", "review_status", "active"}
+            <= self.model_fields_set
+        ):
+            raise ValueError(
+                "Enterprise agents require explicit ACL and publication metadata"
+            )
+        return self
 
 
 class PersonaInterests(BaseModel):

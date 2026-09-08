@@ -3,32 +3,85 @@
     {
       "id": "getting-started",
       "title": "Getting started",
-      "blurb": "Your first hour with AI at CreditWiz."
+      "blurb": "Your first hour with AI at CreditWiz.",
+      "steps": [
+        "ai-hub-getting-started",
+        "responsible-ai-fundamentals",
+        "ai-hub-onboarding-checklist"
+      ],
+      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "version": "1"
     },
     {
       "id": "business",
       "title": "Business users",
-      "blurb": "Get work done with agents, no code required."
+      "blurb": "Get work done with agents, no code required.",
+      "steps": [
+        "ai-hub-getting-started",
+        "prompting-for-analysts",
+        "prompt-patterns-one-pager",
+        "writing-agent-requests-guide",
+        "contract-analyzer-in-5"
+      ],
+      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "version": "1"
     },
     {
       "id": "compliance",
       "title": "Compliance and risk",
-      "blurb": "KYC, screening and policy agents in practice."
+      "blurb": "KYC, screening and policy agents in practice.",
+      "steps": [
+        "responsible-ai-fundamentals",
+        "kyc-verifier-walkthrough",
+        "kyc-document-checklist",
+        "sanctions-screening-basics",
+        "sanctions-screening-cheatsheet",
+        "kyc-agent-runbook-confluence"
+      ],
+      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "version": "1"
     },
     {
       "id": "operations",
       "title": "Operations",
-      "blurb": "Collections, disputes and servicing workflows."
+      "blurb": "Collections, disputes and servicing workflows.",
+      "steps": [
+        "ai-hub-getting-started",
+        "human-in-the-loop-best-practice",
+        "collections-conduct-guide",
+        "collections-outreach-demo",
+        "disputes-triage-walkthrough"
+      ],
+      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "version": "1"
     },
     {
       "id": "governance",
       "title": "Governance",
-      "blurb": "Responsible AI, policy and model risk."
+      "blurb": "Responsible AI, policy and model risk.",
+      "steps": [
+        "responsible-ai-fundamentals",
+        "human-in-the-loop-best-practice",
+        "grounding-agents-best-practice",
+        "responsible-ai-certification"
+      ],
+      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "version": "1"
     },
     {
       "id": "builders",
       "title": "Builders",
-      "blurb": "Design, build and evaluate agents on approved patterns."
+      "blurb": "Design, build and evaluate agents on approved patterns.",
+      "steps": [
+        "ai-hub-getting-started",
+        "responsible-ai-fundamentals",
+        "how-to-build-a-kyc-agent",
+        "document-agent-pattern-doc",
+        "agent-metadata-standard-doc",
+        "code-review-assistant-for-engineers"
+      ],
+      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "version": "1"
     }
   ],
   "persona_paths": {
@@ -103,7 +156,16 @@
       "url": "https://www.youtube.com/watch?v=F8NKVhkZZWI",
       "youtube_id": "F8NKVhkZZWI",
       "poster_url": "https://i.ytimg.com/vi/F8NKVhkZZWI/hqdefault.jpg",
-      "source": "IBM Technology"
+      "source": "IBM Technology",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "kyc-verifier-walkthrough",
@@ -142,7 +204,16 @@
       "url": "https://www.youtube.com/watch?v=-pgckssdA14",
       "youtube_id": "-pgckssdA14",
       "poster_url": "https://i.ytimg.com/vi/-pgckssdA14/hqdefault.jpg",
-      "source": "CAMS Online Training"
+      "source": "CAMS Online Training",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "how-to-build-a-kyc-agent",
@@ -179,7 +250,16 @@
       "url": "https://www.youtube.com/watch?v=FAgmR9VV0GQ",
       "youtube_id": "FAgmR9VV0GQ",
       "poster_url": "https://i.ytimg.com/vi/FAgmR9VV0GQ/hqdefault.jpg",
-      "source": "AWS Developers"
+      "source": "AWS Developers",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "sanctions-screening-basics",
@@ -215,7 +295,16 @@
       "url": "https://www.youtube.com/watch?v=-N17VmifpOQ",
       "youtube_id": "-N17VmifpOQ",
       "poster_url": "https://i.ytimg.com/vi/-N17VmifpOQ/hqdefault.jpg",
-      "source": "RapidAML"
+      "source": "RapidAML",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "responsible-ai-fundamentals",
@@ -260,7 +349,16 @@
       "url": "https://www.youtube.com/watch?v=w_3L1Bf2P_g",
       "youtube_id": "w_3L1Bf2P_g",
       "poster_url": "https://i.ytimg.com/vi/w_3L1Bf2P_g/hqdefault.jpg",
-      "source": "Google Cloud"
+      "source": "Google Cloud",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "contract-analyzer-in-5",
@@ -295,7 +393,16 @@
       "url": "https://www.youtube.com/watch?v=b4k1YYH1nOY",
       "youtube_id": "b4k1YYH1nOY",
       "poster_url": "https://i.ytimg.com/vi/b4k1YYH1nOY/hqdefault.jpg",
-      "source": "Litera"
+      "source": "Litera",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "prompting-for-analysts",
@@ -331,7 +438,16 @@
       "url": "https://www.youtube.com/watch?v=1c9iyoVIwDs",
       "youtube_id": "1c9iyoVIwDs",
       "poster_url": "https://i.ytimg.com/vi/1c9iyoVIwDs/hqdefault.jpg",
-      "source": "IBM Technology"
+      "source": "IBM Technology",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "collections-outreach-demo",
@@ -364,7 +480,18 @@
       "url": "https://www.youtube.com/watch?v=JRTnj6OXiMo",
       "youtube_id": "JRTnj6OXiMo",
       "poster_url": "https://i.ytimg.com/vi/JRTnj6OXiMo/hqdefault.jpg",
-      "source": "Webio"
+      "source": "Webio",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": [
+        "collections-conduct-guide"
+      ]
     },
     {
       "id": "code-review-assistant-for-engineers",
@@ -398,7 +525,16 @@
       "url": "https://www.youtube.com/watch?v=8hyvYP5PCks",
       "youtube_id": "8hyvYP5PCks",
       "poster_url": "https://i.ytimg.com/vi/8hyvYP5PCks/hqdefault.jpg",
-      "source": "GitHub"
+      "source": "GitHub",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "id": "disputes-triage-walkthrough",
@@ -436,7 +572,16 @@
       "url": "https://www.youtube.com/watch?v=m6XUHucbS4g",
       "youtube_id": "m6XUHucbS4g",
       "poster_url": "https://i.ytimg.com/vi/m6XUHucbS4g/hqdefault.jpg",
-      "source": "FinCrime Agent"
+      "source": "FinCrime Agent",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -474,7 +619,16 @@
       "type": "quick-reference",
       "description": "One page: get access, find an agent, understand its status, and know who to ask.",
       "path": "getting-started",
-      "level": "Beginner"
+      "level": "Beginner",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -510,7 +664,16 @@
       "type": "quick-reference",
       "description": "Which documents satisfy identification and verification, and the expiry rules that catch people out.",
       "path": "compliance",
-      "level": "Beginner"
+      "level": "Beginner",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -547,7 +710,18 @@
       "type": "quick-reference",
       "description": "How to record a disposition on a screening hit so it survives audit.",
       "path": "compliance",
-      "level": "Intermediate"
+      "level": "Intermediate",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": [
+        "sanctions-screening-basics"
+      ]
     },
     {
       "topics": [
@@ -583,7 +757,16 @@
       "type": "quick-reference",
       "description": "Four patterns that reliably improve answers from hub agents, with before and after examples.",
       "path": "business",
-      "level": "Beginner"
+      "level": "Beginner",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -623,7 +806,16 @@
       "type": "best-practice",
       "description": "When an agent may draft, when a person must approve, and how to evidence the approval.",
       "path": "governance",
-      "level": "Intermediate"
+      "level": "Intermediate",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -660,7 +852,16 @@
       "type": "best-practice",
       "description": "How the Policy Q&A agent stays accurate: retrieval scope, citations, and refusing to answer.",
       "path": "governance",
-      "level": "Advanced"
+      "level": "Advanced",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -695,7 +896,19 @@
       "type": "documentation",
       "description": "The reference architecture behind the KYC Document Verifier and Contract Analyzer.",
       "path": "builders",
-      "level": "Advanced"
+      "level": "Advanced",
+      "audience_groups": [
+        "AI-Builders",
+        "AI-Hub-Admins"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": [
+        "how-to-build-a-kyc-agent"
+      ]
     },
     {
       "topics": [
@@ -726,7 +939,16 @@
       "type": "documentation",
       "description": "The fields every agent must publish so the hub can display, search and curate it consistently.",
       "path": "builders",
-      "level": "Intermediate"
+      "level": "Intermediate",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -751,18 +973,29 @@
         "kyc-document-verifier",
         "kyc-risk-screening"
       ],
-      "url": "https://confluence.creditwiz.example/display/FCT/KYC+Agent+Runbook",
+      "url": "",
       "youtube_id": "",
       "poster_url": "",
       "source": "Confluence · Financial Crime Technology",
       "duration_seconds": 900,
-      "body": "",
+      "body": "# KYC agent runbook\n\nThis is illustrative catalog content. The enterprise source and its owner must be confirmed before this resource is published for employees.",
       "id": "kyc-agent-runbook-confluence",
       "title": "KYC agent runbook",
       "type": "confluence",
       "description": "Operational runbook: escalation paths, known failure modes and the weekly reconciliation.",
       "path": "compliance",
-      "level": "Intermediate"
+      "level": "Intermediate",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": [
+        "kyc-document-checklist"
+      ]
     },
     {
       "topics": [
@@ -785,18 +1018,29 @@
         "assessment"
       ],
       "related_agents": [],
-      "url": "https://learning.creditwiz.example/courses/responsible-ai",
+      "url": "",
       "youtube_id": "",
       "poster_url": "",
       "source": "CreditWiz Learning",
       "duration_seconds": 5400,
-      "body": "# Responsible AI certification\n\nFour modules and a short assessment. Required before you can be named the owner or approver of an agent.\n\n## Modules\n1. **Principles** — fairness, transparency, accountability, safety.\n2. **Model risk at CreditWiz** — risk tiers, what each tier requires, who signs off.\n3. **Human in the loop** — where judgement must sit with a person.\n4. **Monitoring** — what to watch after release and when to pull an agent.\n\n## Assessment\nTwenty questions. You need 80% to pass. You may retake it.\n\n## Time\nAbout ninety minutes end to end. It does not have to be one sitting.\n",
+      "body": "# Responsible AI certification\n\nFour modules and a short assessment. Required before you can be named the owner or approver of an agent.\n\n## Modules\n1. **Principles** — fairness, transparency, accountability, safety.\n2. **Model risk at CreditWiz** — risk tiers, what each tier requires, who signs off.\n3. **Human in the loop** — where judgement must sit with a person.\n4. **Monitoring** — what to watch after release and when to pull an agent.\n\n## Assessment\nTwenty questions. You need 80% to pass. You may retake it.\n\n## Time\nAbout ninety minutes end to end. It does not have to be one sitting.\n\n\nThis is illustrative catalog content. The enterprise source and its owner must be confirmed before this resource is published for employees.",
       "id": "responsible-ai-certification",
       "title": "Responsible AI certification",
       "type": "course",
       "description": "Four modules and an assessment. Required before you can own or approve an agent.",
       "path": "governance",
-      "level": "Intermediate"
+      "level": "Intermediate",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": [
+        "responsible-ai-fundamentals"
+      ]
     },
     {
       "topics": [
@@ -828,7 +1072,16 @@
       "type": "guide",
       "description": "How to describe a use case so intake can assess it quickly, with two worked examples.",
       "path": "business",
-      "level": "Beginner"
+      "level": "Beginner",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     },
     {
       "topics": [
@@ -865,7 +1118,16 @@
       "type": "guide",
       "description": "The conduct constraints every collections message must satisfy, and how the agent checks them.",
       "path": "operations",
-      "level": "Intermediate"
+      "level": "Intermediate",
+      "audience_groups": [
+        "AI-Hub-Users"
+      ],
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-09-08",
+      "source_kind": "sample",
+      "owner": "AI Learning team (sample)",
+      "prerequisites": []
     }
   ]
 }

@@ -54,6 +54,7 @@ class CurrentUser(BaseModel):
     is_admin: bool
     unread_notifications: int
     persona: PersonaInfo
+    demo_mode: bool = False
 
 
 class Domain(BaseModel):

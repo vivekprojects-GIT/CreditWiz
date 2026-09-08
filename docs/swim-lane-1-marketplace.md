@@ -94,7 +94,7 @@ Recommended for you: agents built for the persona first, then interest overlap, 
 Search: +20% for agents built for the persona, +5% per interest overlap
 ```
 
-The persona is **derived, not stored**. The directory profile (mocked in `backend/data/user.json`, standing in for Active Directory) carries name, job title, department, business unit, location, manager and groups, but no persona field. `backend/app/identity.py` derives it with `backend/data/persona-mapping.json`:
+The persona is **derived, not stored**. The signed-in directory-style profile (stored in SQLite; development seeds include `backend/data/user.json`, standing in for Active Directory) carries name, job title, department, business unit, location, manager and groups, but no persona field. `backend/app/identity.py` derives it with `backend/data/persona-mapping.json`:
 
 ```text
 Directory profile: Role = "Compliance Analyst", Department = "Compliance"

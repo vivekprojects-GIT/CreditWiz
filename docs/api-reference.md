@@ -2,17 +2,36 @@
 
 Every endpoint in the hub. Overview and screenshots are in the [README](../README.md).
 
+## Session and mutation rules
+
+All API routes except health and sign-in endpoints require the HttpOnly session cookie. All POST/PUT requests, including sign-in, require `X-CreditWiz-Request: 1`. Browser origins must be in `CREDITWIZ_ORIGINS`. Unknown or hidden resources return 404. Persona overrides require a hub administrator; they do not alter content permissions or the progress account.
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/auth/options` | Development demo choices, or production password mode |
+| `POST /api/auth/demo` | Development only: `{user_id}` |
+| `POST /api/auth/login` | `{email,password}`; creates an eight-hour session |
+| `POST /api/auth/logout` | Revokes the session |
+| `GET /api/preferences` | Saved default domain and learning-announcement preference |
+| `PUT /api/preferences` | `{default_domain,show_learning_reminders}` |
+| `POST /api/notifications/read` | Persists read status for the current user |
+| `GET /api/access-requests` | Current user's local pending requests |
+| `POST /api/access-requests` | `{agent_id,reason}`; one pending request per user/agent |
+| `GET /api/learning/recommended` | Uncompleted, eligible role recommendations |
+
+Learning item filters: `path`, `type` (or `docs` for documentation/guide/Confluence), `topic`, `agent`, `status`, `q`, optional admin `persona`. Path results have sequence numbers. The learning landing includes `paths` and `role_paths` with ordered steps, progress counts and next-item links. Progress rejects blocked prerequisites (409), accepts only 0–100, and emits completion events server-side; direct client `learning_complete` events are rejected.
+
 ## Endpoints
 
 | Endpoint | Purpose |
 | --- | --- |
 | `GET /api/home` | Current user, business domains, the nine pillars with their sections |
-| `GET /api/me` | Current user from the mocked directory profile (`backend/data/user.json`) with the persona derived via `persona-mapping.json` |
+| `GET /api/me` | Current signed-in user from SQLite (development seed in `backend/data/user.json`) with the persona derived via `persona-mapping.json` |
 | `GET /api/pillars` | Pillars visible to the current user (admin-only pillars filtered) |
 | `GET /api/pillars/{id}` | One pillar with its sections, 404 if hidden or unknown |
 | `GET /api/notifications` | Notifications for the current user |
 | `GET /api/domains` | Business domain filter options |
-| `GET /api/search?q=` | Search across solutions, agents, prompts and learning |
+| `GET /api/search?q=` | Search the authorized agent and complete learning catalogs |
 | `GET /api/health` | Liveness |
 | `GET /api/marketplace/home?persona=` | Personas, domains and persona-ranked carousels |
 | `GET /api/marketplace/agents` | All agents, filter by `domain`, `category`, `persona`, `status` |
@@ -38,10 +57,10 @@ Every endpoint in the hub. Overview and screenshots are in the [README](../READM
 
 ## Marketplace (Swim Lane 1)
 
-The MVP metadata source is a static JSON file: `backend/data/agents.json` (personas in `personas.json`, carousel definitions in `carousels.json`). Records may use the canonical template or the simple camelCase intake format; both are normalised on load. See [docs/agent-metadata-template.md](docs/agent-metadata-template.md). Point `CREDITWIZ_DATA_DIR` at another directory to swap the source. Copy `backend/.env.example` to `backend/.env` and set `ANTHROPIC_API_KEY` to have Claude interpret search requests (`CREDITWIZ_SEARCH_MODEL` picks the model, default `claude-sonnet-5`); without a key a local lexicon does the job. Footprints and feedback are hub-wide, not pillar-owned: every pillar posts to `/api/context/*` and they land in `backend/var/interactions.jsonl` and `feedback.jsonl`. Architecture: [docs/shared-user-context.md](docs/shared-user-context.md). Ranking and curation: [docs/discovery-and-curation.md](docs/discovery-and-curation.md). Learning pillar: [docs/learning-pillar.md](docs/learning-pillar.md). Full write-up: [docs/swim-lane-1-marketplace.md](docs/swim-lane-1-marketplace.md).
+The MVP metadata source is a static JSON file: `backend/data/agents.json` (personas in `personas.json`, carousel definitions in `carousels.json`). Records may use the canonical template or the simple camelCase intake format; both are normalised on load. See [agent-metadata-template.md](agent-metadata-template.md). Point `CREDITWIZ_DATA_DIR` at another directory to swap the source. Copy `backend/.env.example` to `backend/.env` and set `ANTHROPIC_API_KEY` to have Claude interpret search requests (`CREDITWIZ_SEARCH_MODEL` picks the model, default `claude-sonnet-5`); without a key a local lexicon does the job. Footprints and feedback are hub-wide, not pillar-owned: every pillar posts to `/api/context/*` and they land in `backend/var/hub.db` in user-scoped events and feedback tables. Architecture: [shared-user-context.md](shared-user-context.md). Ranking and curation: [discovery-and-curation.md](discovery-and-curation.md). Learning pillar: [learning-pillar.md](learning-pillar.md). Full write-up: [swim-lane-1-marketplace.md](swim-lane-1-marketplace.md).
 
 ## Routes
 
-`/` home, `/help`, `/settings`, and one route per pillar (`/marketplace`, `/library`, `/learning`, `/intake`, `/governance`, `/knowledge`, `/community`, `/insights`, `/platform`) with section sub-routes such as `/learning/catalog`. The marketplace has real pages: `/marketplace`, `/marketplace/agents`, `/marketplace/agents/{id}`, plus `/docs` and `/architecture` under each agent. Learning is real too: `/learning?path=...` and `/learning/videos/{id}`. Unknown paths show a not-found page.
+`/` home, `/help`, `/settings`, and one route per pillar (`/marketplace`, `/library`, `/learning`, `/intake`, `/governance`, `/knowledge`, `/community`, `/insights`, `/platform`) with section sub-routes such as `/learning/catalog`. The marketplace has real pages: `/marketplace`, `/marketplace/agents`, `/marketplace/agents/{id}`, plus `/docs` and `/architecture` under each agent. Learning includes `/learning/catalog`, `/learning/paths?path=...`, `/learning/best-practices`, `/learning/docs`, `/learning/quick-reference`, `/learning/me` and `/learning/items/{id}`. Legacy video links still resolve. Unknown paths show a not-found page.
 
-Hub content lives in `backend/app/data.py`. Replace it with a real store when the marketplace, learning and community services exist.
+Navigation definitions remain in `backend/app/data.py`; authored catalogs live in `backend/data`; all mutable state is in SQLite. Non-MVP pillar pages show explicit planned-state messaging.

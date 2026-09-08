@@ -1,35 +1,19 @@
-"""Append-only footprint store for the whole hub.
-
-MVP: JSON Lines under backend/var (interactions.jsonl, feedback.jsonl). Every
-pillar writes here through the same API. Swap `_append` / `_read` for a real
-store (DynamoDB, Postgres, an event bus) without touching any pillar.
-"""
+"""User-scoped SQL footprints. No behavioral signal is used for MVP ranking."""
 
 from __future__ import annotations
-
 import json
-import os
-import threading
 import uuid
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
+from .. import database
+from ..auth import user_id
 
-_VAR_DIR = Path(os.environ.get("CREDITWIZ_VAR_DIR", Path(__file__).resolve().parents[2] / "var"))
-_EVENTS = "interactions.jsonl"
-_FEEDBACK = "feedback.jsonl"
-_lock = threading.Lock()
-
-# Topic weight by how much intent the interaction shows.
-_WEIGHTS: dict[str, float] = {
+_WEIGHTS = {
     "search": 1.0,
     "view": 0.6,
-    "agent_view": 0.6,
     "learning_view": 0.8,
     "click": 0.8,
-    "agent_click": 0.8,
     "launch": 2.0,
-    "agent_launch": 2.0,
     "request_access": 1.6,
     "documentation_click": 1.0,
     "architecture_click": 1.0,
@@ -40,91 +24,100 @@ _WEIGHTS: dict[str, float] = {
 }
 
 
-def _append(name: str, record: dict) -> str:
-    record_id = uuid.uuid4().hex[:12]
-    line = {"id": record_id, "at": datetime.now(timezone.utc).isoformat(timespec="seconds"), **record}
-    _VAR_DIR.mkdir(parents=True, exist_ok=True)
-    with _lock, open(_VAR_DIR / name, "a", encoding="utf-8") as fh:
-        fh.write(json.dumps(line, ensure_ascii=False) + "\n")
-    return record_id
+def _insert(
+    conn, table: str, record: dict, uid: str, event_key: str | None = None
+) -> str:
+    rid = uuid.uuid4().hex
+    now = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    values = (rid, uid, now, json.dumps(record, ensure_ascii=False))
+    if table == "events":
+        conn.execute(
+            "INSERT OR IGNORE INTO events(id,user_id,at,payload,event_key) VALUES (?,?,?,?,?)",
+            (*values, event_key),
+        )
+    else:
+        conn.execute(
+            "INSERT INTO feedback(id,user_id,at,payload) VALUES (?,?,?,?)", values
+        )
+    return rid
 
 
-def _read(name: str) -> list[dict]:
-    path = _VAR_DIR / name
-    if not path.exists():
-        return []
-    out: list[dict] = []
-    with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            try:
-                out.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
-    return out
-
-
-def record_event(record: dict) -> str:
-    return _append(_EVENTS, record)
+def record_event(
+    record: dict, *, conn=None, uid: str | None = None, event_key: str | None = None
+) -> str:
+    uid = uid or user_id()
+    if conn is not None:
+        return _insert(conn, "events", record, uid, event_key)
+    with database.connect(write=True) as db:
+        return _insert(db, "events", record, uid, event_key)
 
 
 def record_feedback(record: dict) -> str:
-    return _append(_FEEDBACK, record)
+    with database.connect(write=True) as conn:
+        return _insert(conn, "feedback", record, user_id())
+
+
+def _read(table: str) -> list[dict]:
+    with database.connect() as conn:
+        rows = conn.execute(
+            f"SELECT * FROM {table} WHERE user_id=? ORDER BY at,id", (user_id(),)
+        ).fetchall()
+    return [
+        {
+            **json.loads(r["payload"]),
+            "id": r["id"],
+            "at": r["at"],
+            "user_id": r["user_id"],
+        }
+        for r in rows
+    ]
 
 
 def events() -> list[dict]:
-    return _read(_EVENTS)
+    return _read("events")
 
 
 def feedback() -> list[dict]:
-    return _read(_FEEDBACK)
+    return _read("feedback")
 
 
 def derive_interests(limit: int = 8) -> list[dict]:
-    """Aggregate topics across every pillar into weighted interest signals.
-
-    Demonstrates the shared-context seam. Nothing in the MVP ranks on this:
-    Swim Lane 1 curation uses the derived persona only.
-    """
     weights: dict[str, float] = defaultdict(float)
-    counts: Counter[str] = Counter()
-    pillars: dict[str, set[str]] = defaultdict(set)
-
+    counts: Counter = Counter()
+    pillars: dict[str, set] = defaultdict(set)
     for ev in events():
-        w = _WEIGHTS.get(ev.get("type", ""), 0.5)
-        pillar = ev.get("pillar", "hub")
-        for topic in ev.get("topics") or []:
-            key = str(topic).strip().lower()
-            if not key:
-                continue
-            weights[key] += w
-            counts[key] += 1
-            pillars[key].add(pillar)
-
-    if not weights:
-        return []
-    top = max(weights.values())
-    ranked = sorted(weights.items(), key=lambda kv: -kv[1])[:limit]
+        for topic in {
+            str(t).strip().lower() for t in ev.get("topics", []) if str(t).strip()
+        }:
+            weights[topic] += _WEIGHTS.get(ev.get("type", ""), 0.5)
+            counts[topic] += 1
+            pillars[topic].add(ev.get("pillar", "hub"))
+    maximum = max(weights.values(), default=1)
     return [
-        {"topic": t, "weight": round(w / top, 2), "events": counts[t], "pillars": sorted(pillars[t])}
-        for t, w in ranked
+        {
+            "topic": t,
+            "weight": round(w / maximum, 2),
+            "events": counts[t],
+            "pillars": sorted(pillars[t]),
+        }
+        for t, w in sorted(weights.items(), key=lambda x: -x[1])[:limit]
     ]
 
 
 def summary() -> dict:
-    evs = events()
-    fbs = feedback()
-    by_pillar: dict[str, Counter[str]] = defaultdict(Counter)
+    evs, fbs = events(), feedback()
+    grouped: dict[str, Counter] = defaultdict(Counter)
     for ev in evs:
-        by_pillar[ev.get("pillar", "hub")][ev.get("type", "unknown")] += 1
-    helpful = sum(1 for f in fbs if f.get("helpful"))
+        grouped[ev.get("pillar", "hub")][ev["type"]] += 1
+    positive = sum(bool(f.get("helpful")) for f in fbs)
     return {
         "total_events": len(evs),
         "total_feedback": len(fbs),
-        "helpful": helpful,
-        "not_helpful": len(fbs) - helpful,
+        "helpful": positive,
+        "not_helpful": len(fbs) - positive,
         "by_pillar": [
             {"pillar": p, "events": sum(c.values()), "types": dict(c)}
-            for p, c in sorted(by_pillar.items(), key=lambda kv: -sum(kv[1].values()))
+            for p, c in sorted(grouped.items())
         ],
         "recent_missing": [f["missing"] for f in fbs if f.get("missing")][-10:],
     }

@@ -1,3 +1,4 @@
+import { AccessRequestForm } from './AccessRequestForm'
 import {
   BookOpen,
   Boxes,
@@ -5,9 +6,7 @@ import {
   ChevronRight,
   Cpu,
   ExternalLink,
-  KeyRound,
   Layers,
-  Mail,
   MessageSquare,
   Rocket,
   Server,
@@ -20,7 +19,7 @@ import { isAbort } from '../../lib/api'
 import { fetchAgentLearning, type Item } from '../../lib/learning'
 import { track, type EventType } from '../../lib/context'
 import { ACCESS_LABEL, STATUS_LABEL, fetchAgent, fetchRelated, type Agent } from '../../lib/marketplace'
-import { usePersona } from '../../lib/persona'
+import { usePersona } from '../../lib/personaContext'
 import { BackButton } from '../BackButton'
 import { ItemCard } from '../learning/ItemCard'
 import { NotFound } from '../SimplePages'
@@ -116,8 +115,7 @@ export function AgentDetailPage() {
   }
 
   const forYou = agent.personas.includes(persona)
-  const canLaunch = agent.access.type === 'open' && agent.access.launch_url
-  const collaborateHref = `/community/experts?owner=${encodeURIComponent(agent.owner.email)}`
+  const canLaunch = agent.source_kind === 'enterprise' && !!agent.access.launch_url
 
   return (
     <div className="content agent">
@@ -152,33 +150,24 @@ export function AgentDetailPage() {
         </div>
 
         <div className="agent__actions">
-          {canLaunch ? (
-            <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--blue btn--inline btn--lg">
-              <Rocket size={18} strokeWidth={2.4} /> Launch agent
-            </ExtLink>
-          ) : (
-            <ExtLink
-              href={agent.access.request_url || `mailto:${agent.owner.email}?subject=Access request: ${encodeURIComponent(agent.name)}`}
-              event="request_access"
-              agent={agent}
-              className="btn btn--blue btn--inline btn--lg"
-            >
-              <KeyRound size={18} strokeWidth={2.4} /> Request access
+          {canLaunch && (
+            <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--inline">
+              <Rocket size={18} /> Launch agent
             </ExtLink>
           )}
-          {canLaunch && agent.access.request_url && (
+          {agent.source_kind === 'enterprise' && agent.access.request_url && (
             <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
-              <KeyRound size={16} strokeWidth={2.4} /> Request access
+              Open enterprise access portal
             </ExtLink>
           )}
-          {!canLaunch && agent.access.launch_url && (
-            <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn-outline">
-              <Rocket size={16} strokeWidth={2.4} /> Open (if you already have access)
-            </ExtLink>
-          )}
+          <a className="btn-outline" href="#request-access">
+            Request access
+          </a>
+          {agent.source_kind === 'sample' && <span>Sample listing · Live launch is not configured.</span>}
         </div>
       </header>
 
+      <AccessRequestForm key={agent.id} agentId={agent.id} />
       <div className="agent__layout">
         <div className="agent__main">
           <section className="panel">
@@ -239,7 +228,9 @@ export function AgentDetailPage() {
                   <h2 className="panel__title" style={{ margin: 0 }}>
                     Learning for this agent
                   </h2>
-                  <p className="section-sub">Content that teaches this agent, ordered for your persona. Curated by the Learning pillar.</p>
+                  <p className="section-sub">
+                    Related material selected by Learning. Use your account's Learning page for progress and required steps.
+                  </p>
                 </div>
                 <Link to="/learning" className="textlink">
                   All learning
@@ -302,12 +293,20 @@ export function AgentDetailPage() {
             <p className="owner__name">{agent.owner.name}</p>
             <p className="owner__team">{agent.owner.team}</p>
             <div className="agent__links">
-              <Link to={collaborateHref} className="linkbtn" onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id, subject_type: 'agent', persona })}>
-                <MessageSquare size={16} strokeWidth={2.4} /> Collaborate with the owner
-              </Link>
-              <a className="linkbtn" href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`} onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id, subject_type: 'agent', persona, meta: { via: 'email' } })}>
-                <Mail size={16} strokeWidth={2.4} /> Email {agent.owner.email}
-              </a>
+              {agent.source_kind === 'enterprise' ? (
+                <a
+                  className="linkbtn"
+                  href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`}
+                  onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id })}
+                >
+                  <MessageSquare size={16} /> Collaborate with the owner
+                </a>
+              ) : (
+                <details>
+                  <summary>Collaborate with the owner</summary>
+                  <p>Sample contact: {agent.owner.email}. Enterprise contact will be enabled when the listing is confirmed.</p>
+                </details>
+              )}
             </div>
           </section>
 
@@ -318,9 +317,10 @@ export function AgentDetailPage() {
                 <BookOpen size={16} strokeWidth={2.4} /> Documentation
               </Link>
               <Link to={`/marketplace/agents/${agent.id}/architecture`} className="linkbtn">
-                <Layers size={16} strokeWidth={2.4} /> Architecture pattern{agent.architecture_pattern ? `: ${agent.architecture_pattern}` : ''}
+                <Layers size={16} strokeWidth={2.4} /> Architecture pattern
+                {agent.architecture_pattern ? `: ${agent.architecture_pattern}` : ''}
               </Link>
-              {agent.documentation_url && (
+              {agent.source_kind === 'enterprise' && agent.documentation_url && (
                 <ExtLink href={agent.documentation_url} event="documentation_click" agent={agent} className="linkbtn linkbtn--muted">
                   Source documentation <ExternalLink size={13} strokeWidth={2.4} />
                 </ExtLink>

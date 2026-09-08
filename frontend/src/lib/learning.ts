@@ -1,3 +1,4 @@
+import { getJson, postJson } from './api'
 export type ItemType = 'video' | 'course' | 'confluence' | 'guide' | 'documentation' | 'quick-reference' | 'best-practice'
 export type LearningStatus = 'not_started' | 'in_progress' | 'completed'
 
@@ -5,6 +6,11 @@ export interface LearningPath {
   id: string
   title: string
   blurb: string
+  steps: string[]
+  owner: string
+  completed_steps: number
+  total_steps: number
+  next_item_id: string | null
 }
 
 export interface Item {
@@ -26,6 +32,13 @@ export interface Item {
   poster_url: string
   source: string
   body: string
+  source_kind: 'sample' | 'enterprise'
+  owner: string
+  prerequisites: string[]
+  recommendation_reason: string
+  blocked_by: string[]
+  prerequisite_unavailable: boolean
+  sequence: number | null
   status: LearningStatus
   progress: number
   required: boolean
@@ -48,6 +61,7 @@ export interface LearningHome {
   persona: string
   persona_label: string
   paths: LearningPath[]
+  role_paths: LearningPath[]
   sections: Section[]
   item_count: number
 }
@@ -72,19 +86,12 @@ export interface MyLearning {
 }
 
 export interface DocPage {
+  source_kind: 'sample' | 'enterprise'
   agent_id: string
   agent_name: string
   title: string
   markdown: string
   source_url: string
-}
-
-const JSON_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json' }
-
-async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(url, { signal, headers: { Accept: 'application/json' } })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`)
-  return (await res.json()) as T
 }
 
 export const fetchLearningHome = (persona: string, signal?: AbortSignal) =>
@@ -95,8 +102,7 @@ export const fetchItems = (params: Record<string, string>, signal?: AbortSignal)
   return getJson<Item[]>(`/api/learning/items${qs ? `?${qs}` : ''}`, signal)
 }
 
-export const fetchItem = (id: string, signal?: AbortSignal) =>
-  getJson<ItemDetail>(`/api/learning/items/${encodeURIComponent(id)}`, signal)
+export const fetchItem = (id: string, signal?: AbortSignal) => getJson<ItemDetail>(`/api/learning/items/${encodeURIComponent(id)}`, signal)
 
 export const fetchMyLearning = (signal?: AbortSignal) => getJson<MyLearning>('/api/learning/my-learning', signal)
 
@@ -109,13 +115,7 @@ export const fetchAgentLearning = (agentId: string, persona: string, signal?: Ab
 
 /** Learning state, owned by the Learning pillar. Separate from hub footprints. */
 export async function recordProgress(item_id: string, status: LearningStatus, progress?: number) {
-  const res = await fetch('/api/learning/progress', {
-    method: 'POST',
-    headers: JSON_HEADERS,
-    body: JSON.stringify({ item_id, status, progress }),
-  })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return (await res.json()) as Item
+  return postJson<Item>('/api/learning/progress', { item_id, status, progress })
 }
 
 export const fetchAgentDocs = (agentId: string, signal?: AbortSignal) =>

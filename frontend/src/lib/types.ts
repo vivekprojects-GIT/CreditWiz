@@ -1,15 +1,6 @@
 export type Tone = 'blue' | 'teal' | 'purple'
 
-export type PillarIcon =
-  | 'search'
-  | 'library'
-  | 'graduation'
-  | 'clipboard'
-  | 'shield'
-  | 'database'
-  | 'users'
-  | 'chart'
-  | 'settings'
+export type PillarIcon = 'search' | 'library' | 'graduation' | 'clipboard' | 'shield' | 'database' | 'users' | 'chart' | 'settings'
 
 export interface Link {
   label: string
@@ -49,6 +40,7 @@ export interface PersonaInfo {
 }
 
 export interface CurrentUser {
+  demo_mode: boolean
   id: string
   first_name: string
   display_name: string

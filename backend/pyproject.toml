@@ -14,3 +14,8 @@ dev = [
     "httpx>=0.28.1",
     "pytest>=9.1.1",
 ]
+
+[tool.uv]
+# Never resolve the Microsoft Store python.exe alias: uv cannot query it and
+# fails with a misleading "No module named 'python'". Use uv-managed CPython.
+python-preference = "only-managed"

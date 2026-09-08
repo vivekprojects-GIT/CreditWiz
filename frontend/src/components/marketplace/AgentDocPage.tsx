@@ -1,10 +1,10 @@
 import { BookOpen, ChevronRight, ExternalLink, Layers } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { isAbort } from '../../lib/api'
+import { ApiError, isAbort } from '../../lib/api'
 import { fetchAgentArchitecture, fetchAgentDocs, type DocPage } from '../../lib/learning'
 import { track } from '../../lib/context'
-import { usePersona } from '../../lib/persona'
+import { usePersona } from '../../lib/personaContext'
 import { BackButton } from '../BackButton'
 import { Markdown } from '../Markdown'
 import { NotFound } from '../SimplePages'
@@ -12,6 +12,8 @@ import { NotFound } from '../SimplePages'
 export function AgentDocPage({ kind }: { kind: 'docs' | 'architecture' }) {
   const { id = '' } = useParams()
   const { persona } = usePersona()
+  const [error, setError] = useState('')
+  const [attempt, setAttempt] = useState(0)
   const [page, setPage] = useState<DocPage | null | undefined>(undefined)
 
   useEffect(() => {
@@ -20,6 +22,7 @@ export function AgentDocPage({ kind }: { kind: 'docs' | 'architecture' }) {
     const load = kind === 'docs' ? fetchAgentDocs : fetchAgentArchitecture
     load(id, ctrl.signal)
       .then((p) => {
+        setError('')
         setPage(p)
         track('marketplace', kind === 'docs' ? 'documentation_click' : 'architecture_click', {
           subject_id: id,
@@ -29,12 +32,28 @@ export function AgentDocPage({ kind }: { kind: 'docs' | 'architecture' }) {
         })
       })
       .catch((err: unknown) => {
-        if (!isAbort(err)) setPage(null)
+        if (isAbort(err)) return
+        if (err instanceof ApiError && err.status === 404) setPage(null)
+        else setError(err instanceof Error ? err.message : 'Resource unavailable')
       })
     return () => ctrl.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, kind])
+  }, [id, kind, persona, attempt])
 
+  if (error)
+    return (
+      <div className="content" role="alert">
+        {error}{' '}
+        <button
+          onClick={() => {
+            setError('')
+            setAttempt((a) => a + 1)
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    )
   if (page === null) return <NotFound />
   if (page === undefined) {
     return (
@@ -75,6 +94,9 @@ export function AgentDocPage({ kind }: { kind: 'docs' | 'architecture' }) {
         </div>
       </div>
 
+      {page.source_kind === 'sample' && (
+        <p className="muted">Sample reference documentation for MVP review. Validate against the enterprise implementation before use.</p>
+      )}
       <article className="doc__page">
         <div className="doc__kicker">
           <Icon size={16} strokeWidth={2.4} /> {kind === 'docs' ? 'Documentation' : 'Architecture pattern'}

@@ -596,31 +596,36 @@
   background: var(--red);
 }
 
-/* non-video: an icon tile instead of a thumbnail */
-.icard__glyph {
-  width: 40px;
-  height: 40px;
-  margin: var(--s-4) var(--s-4) 0;
-  border-radius: var(--r-md);
+/* Non-video items have no thumbnail. They still get a media area of the same
+   16:9 ratio -- a typed cover tile -- so a row of mixed types lines up instead
+   of leaving a void under every short card. */
+.icard__cover {
+  aspect-ratio: 16 / 9;
   display: grid;
   place-items: center;
-  background: var(--ink-50);
-  color: var(--ink-700);
-  transition: background var(--base), color var(--base);
+  color: var(--ink-300);
+  border-bottom: 1px solid var(--line);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 9px, rgba(13, 14, 17, 0.03) 9px 10px),
+    var(--ink-50);
+  transition: color var(--base), background-color var(--base);
 }
 
-.icard:hover .icard__glyph {
-  background: var(--red-tint);
+.icard:hover .icard__cover {
   color: var(--red);
 }
 
-.icard--best-practice .icard__glyph {
-  background: var(--red-tint);
+.icard--best-practice .icard__cover {
   color: var(--red);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 9px, rgba(230, 0, 0, 0.05) 9px 10px),
+    var(--red-tint);
 }
 
 .icard__body {
-  display: grid;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: 5px;
   padding: var(--s-3) var(--s-4) var(--s-4);
 }
@@ -695,6 +700,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  margin-top: auto;
+  padding-top: var(--s-2);
   font-size: var(--t-xs);
   color: var(--ink-400);
 }
@@ -703,10 +710,8 @@
   font-size: var(--t-sm);
 }
 
-.icard--compact .icard__glyph {
-  margin: var(--s-3) var(--s-3) 0;
-  width: 32px;
-  height: 32px;
+.icard--compact .icard__body {
+  padding: var(--s-2) var(--s-3) var(--s-3);
 }
 
 /* landing sections */
@@ -818,7 +823,7 @@
 .coverage__bar {
   height: 8px;
   border-radius: var(--r-full);
-  background: var(--ink-100);
+  background: var(--ink-200);
   overflow: hidden;
 }
 
@@ -911,5 +916,98 @@
 
   .coverage li {
     grid-template-columns: 120px minmax(0, 1fr) 64px;
+  }
+}
+
+/* ---------------------------------------------------------------- learning fixes */
+
+/* Every card now has a 16:9 media area, so the default stretch produces even
+   rows rather than the voids that forced `align-items: start` here before. */
+
+/* Role paths */
+
+.path-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin-bottom: var(--s-2);
+}
+
+.pathcard {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-1);
+  transition: box-shadow var(--base), border-color var(--base);
+}
+
+.pathcard:hover {
+  box-shadow: var(--e-2);
+  border-color: var(--line-strong);
+}
+
+.pathcard__title {
+  margin: 0;
+  font-size: var(--t-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-950);
+}
+
+.pathcard__blurb {
+  margin: var(--s-1) 0 0;
+  font-size: var(--t-sm);
+  color: var(--ink-600);
+  line-height: 1.5;
+}
+
+.pathcard__progress {
+  display: grid;
+  gap: 6px;
+  margin: var(--s-4) 0 0;
+}
+
+.pathcard__bar {
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--ink-200);
+  overflow: hidden;
+}
+
+.pathcard__bar span {
+  display: block;
+  height: 100%;
+  background: var(--red);
+  border-radius: var(--r-full);
+  transition: width var(--out);
+}
+
+.pathcard__count {
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the overlap: these two actions previously sat flush against each other */
+.pathcard__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-top: auto;
+  padding-top: var(--s-4);
+}
+
+@media (max-width: 1280px) {
+  .path-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .path-grid {
+    grid-template-columns: 1fr;
   }
 }

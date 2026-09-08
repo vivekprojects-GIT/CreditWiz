@@ -1,3 +1,4 @@
+import { getJson, postJson } from './api'
 /**
  * Shared AI Hub user-context client.
  *
@@ -8,16 +9,7 @@
  */
 
 export type Pillar =
-  | 'marketplace'
-  | 'prompts'
-  | 'learning'
-  | 'intake'
-  | 'governance'
-  | 'knowledge'
-  | 'community'
-  | 'insights'
-  | 'platform'
-  | 'hub'
+  'marketplace' | 'prompts' | 'learning' | 'intake' | 'governance' | 'knowledge' | 'community' | 'insights' | 'platform' | 'hub'
 
 export type EventType =
   | 'search'
@@ -63,17 +55,13 @@ interface TrackPayload {
   meta?: Record<string, unknown>
 }
 
-const JSON_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json' }
+const JSON_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CreditWiz-Request': '1' }
 
 /** Fire-and-forget footprint. Never throws, never blocks the UI. */
 export function track(pillar: Pillar, type: EventType, data: TrackPayload = {}) {
   try {
     const body = JSON.stringify({ pillar, type, ...data })
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon('/api/context/events', new Blob([body], { type: 'application/json' }))
-    } else {
-      void fetch('/api/context/events', { method: 'POST', headers: JSON_HEADERS, body, keepalive: true }).catch(() => {})
-    }
+    void fetch('/api/context/events', { method: 'POST', headers: JSON_HEADERS, body, keepalive: true }).catch(() => {})
   } catch {
     /* footprints are best-effort */
   }
@@ -88,13 +76,9 @@ export async function sendFeedback(body: {
   persona?: string
   missing?: string
 }) {
-  const res = await fetch('/api/context/feedback', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return (await res.json()) as { ok: boolean; id: string }
+  return postJson<{ ok: boolean; id: string }>('/api/context/feedback', body)
 }
 
 export async function fetchUserContext(signal?: AbortSignal) {
-  const res = await fetch('/api/context/me', { signal, headers: { Accept: 'application/json' } })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-  return (await res.json()) as UserContext
+  return getJson<UserContext>('/api/context/me', signal)
 }

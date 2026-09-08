@@ -1,5 +1,5 @@
 import { ExternalLink, Play } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Item } from '../../lib/learning'
 
 /**
@@ -11,6 +11,7 @@ import type { Item } from '../../lib/learning'
  * the poster and a working link out, instead of a black box.
  */
 export function Player({ item, onProgress }: { item: Item; onProgress?: (pct: number) => void }) {
+  const lastReported = useRef(-5)
   const [playing, setPlaying] = useState(false)
   const [failed, setFailed] = useState(false)
   const watchUrl = item.youtube_id ? `https://www.youtube.com/watch?v=${item.youtube_id}` : item.url
@@ -25,7 +26,13 @@ export function Player({ item, onProgress }: { item: Item; onProgress?: (pct: nu
           src={item.url}
           onTimeUpdate={(e) => {
             const el = e.currentTarget
-            if (el.duration) onProgress?.(Math.min(99, Math.round((el.currentTime / el.duration) * 100)))
+            if (Number.isFinite(el.duration) && el.duration > 0) {
+              const pct = Math.min(99, Math.floor((el.currentTime / el.duration) * 100))
+              if (pct >= lastReported.current + 5) {
+                lastReported.current = pct
+                onProgress?.(pct)
+              }
+            }
           }}
         >
           Your browser does not support video playback.
@@ -56,8 +63,8 @@ export function Player({ item, onProgress }: { item: Item; onProgress?: (pct: nu
         className="player__play"
         onClick={() => {
           setPlaying(true)
-          // opening the player counts as meaningful engagement
-          onProgress?.(15)
+          // Starting the iframe does not measure how much was watched.
+          onProgress?.(0)
         }}
         aria-label={`Play ${item.title}`}
       >

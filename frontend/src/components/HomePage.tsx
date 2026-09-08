@@ -1,10 +1,10 @@
 import { ArrowRight, Bell, ChevronDown, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchNotifications, isAbort } from '../lib/api'
+import { fetchNotifications, isAbort, fetchPreferences } from '../lib/api'
 import { useHub } from '../lib/hub'
 import { fetchMarketplaceHome, type Agent } from '../lib/marketplace'
-import { usePersona } from '../lib/persona'
+import { usePersona } from '../lib/personaContext'
 import type { Notification } from '../lib/types'
 import { AgentCard } from './marketplace/AgentCard'
 import { ModuleCard } from './ModuleCard'
@@ -23,7 +23,15 @@ export function HomePage() {
   const data = useHub()
   const { persona } = usePersona()
   const [domainId, setDomainId] = useState(data.domains[0]?.id ?? 'all')
-  const [featured, setFeatured] = useState<Agent[]>([])
+  const [featured, setFeatured] = useState<Agent[] | null>(null)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetchPreferences(ctrl.signal)
+      .then((p) => setDomainId(p.default_domain))
+      .catch(() => {})
+    return () => ctrl.abort()
+  }, [])
   const [personaLabel, setPersonaLabel] = useState('')
   const [news, setNews] = useState<Notification[]>([])
 
@@ -32,20 +40,23 @@ export function HomePage() {
 
   useEffect(() => {
     const ctrl = new AbortController()
-    fetchMarketplaceHome(persona, ctrl.signal)
+    fetchMarketplaceHome(persona, ctrl.signal, domainId)
       .then((h) => {
         const recommended = h.carousels.find((c) => c.id === 'recommended')?.agents ?? []
+        setError('')
         setFeatured(recommended.slice(0, 3))
         setPersonaLabel(h.personas.find((p) => p.id === persona)?.label ?? '')
       })
-      .catch(() => {})
+      .catch((e: unknown) => {
+        if (!isAbort(e)) setError(e instanceof Error ? e.message : 'Could not load agents')
+      })
     fetchNotifications(ctrl.signal)
       .then((n) => setNews(n.slice(0, 4)))
       .catch((err: unknown) => {
         if (!isAbort(err)) setNews([])
       })
     return () => ctrl.abort()
-  }, [persona])
+  }, [persona, domainId])
 
   return (
     <div className="content">
@@ -58,7 +69,11 @@ export function HomePage() {
             <select
               className="domain__select"
               value={domainId}
-              onChange={(e) => setDomainId(e.target.value)}
+              onChange={(e) => {
+                setDomainId(e.target.value)
+                setFeatured(null)
+                setError('')
+              }}
               aria-label="Business domain"
             >
               {data.domains.map((d) => (
@@ -72,6 +87,7 @@ export function HomePage() {
         }
       />
 
+      <p className="muted">Marketplace + Learning MVP · Sample data. Other pillars show planned capabilities.</p>
       <h2 className="section-title section-title--first">Start here</h2>
       <section className="priority-grid" aria-label="Priority modules">
         {priority.map((p) => (
@@ -87,13 +103,17 @@ export function HomePage() {
                 <Sparkles size={18} strokeWidth={2.4} className="section-title__icon" />
                 Agents picked for {personaLabel ? `${personaLabel.toLowerCase()}s` : 'you'}
               </h2>
-              <p className="section-sub">Based on your persona. Change it on the marketplace page.</p>
+              <p className="section-sub">Based on your role and selected business domain.</p>
             </div>
             <Link to="/marketplace" className="textlink">
               Open marketplace <ArrowRight size={16} strokeWidth={2.4} />
             </Link>
           </div>
-          {featured.length > 0 ? (
+          {error ? (
+            <p role="alert">{error}</p>
+          ) : featured && !featured.length ? (
+            <p>No recommended agents in this domain. Try All business domains.</p>
+          ) : featured ? (
             <div className="featured-grid">
               {featured.map((a) => (
                 <AgentCard key={a.id} agent={a} source="home-featured" compact hideForYou />

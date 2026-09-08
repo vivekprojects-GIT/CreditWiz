@@ -1,7 +1,9 @@
+import { getJson, postJson } from './api'
 export type AgentStatus = 'production' | 'pilot' | 'beta' | 'in_development' | 'deprecated'
 export type AccessType = 'open' | 'request' | 'restricted'
 
 export interface Agent {
+  source_kind: 'sample' | 'enterprise'
   id: string
   name: string
   tagline: string
@@ -80,22 +82,8 @@ export interface SearchResponse {
 
 // Footprints and feedback live in the shared hub layer: see lib/context.ts
 
-const JSON_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json' }
-
-async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(url, { signal, headers: { Accept: 'application/json' } })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`)
-  return (await res.json()) as T
-}
-
-async function postJson<T>(url: string, body: unknown, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(url, { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body), signal })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`)
-  return (await res.json()) as T
-}
-
-export function fetchMarketplaceHome(persona: string, signal?: AbortSignal) {
-  const qs = persona ? `?persona=${encodeURIComponent(persona)}` : ''
+export function fetchMarketplaceHome(persona: string, signal?: AbortSignal, domain = '') {
+  const qs = '?' + new URLSearchParams({ ...(persona ? { persona } : {}), ...(domain && domain !== 'all' ? { domain } : {}) }).toString()
   return getJson<MarketplaceHome>(`/api/marketplace/home${qs}`, signal)
 }
 
@@ -113,11 +101,7 @@ export function fetchRelated(id: string, signal?: AbortSignal) {
 }
 
 export function searchAgents(query: string, persona: string, domain: string, signal?: AbortSignal) {
-  return postJson<SearchResponse>(
-    '/api/marketplace/search',
-    { query, persona: persona || null, domain: domain || null, limit: 6 },
-    signal,
-  )
+  return postJson<SearchResponse>('/api/marketplace/search', { query, persona: persona || null, domain: domain || null, limit: 6 }, signal)
 }
 
 export const STATUS_LABEL: Record<AgentStatus, string> = {

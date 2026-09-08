@@ -1,17 +1,10 @@
 import { ArrowRight, Check, ChevronRight, Clock, ExternalLink } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { isAbort } from '../../lib/api'
+import { ApiError, isAbort } from '../../lib/api'
 import { track } from '../../lib/context'
-import {
-  TYPE_LABEL,
-  duration,
-  fetchItem,
-  recordProgress,
-  type ItemDetail,
-  type LearningStatus,
-} from '../../lib/learning'
-import { usePersona } from '../../lib/persona'
+import { TYPE_LABEL, duration, fetchItem, recordProgress, type ItemDetail, type LearningStatus } from '../../lib/learning'
+import { usePersona } from '../../lib/personaContext'
 import { BackButton } from '../BackButton'
 import { Markdown } from '../Markdown'
 import { NotFound } from '../SimplePages'
@@ -21,8 +14,17 @@ import { Player } from './Player'
 
 export function ItemPage() {
   const { id = '' } = useParams()
+  return <ItemContent key={id} />
+}
+function ItemContent() {
+  const { id = '' } = useParams()
   const [params] = useSearchParams()
-  const { persona } = usePersona()
+  const { derived } = usePersona()
+  const persona = derived.id
+  const activeId = useRef(id)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const fromAgent = params.get('from') ?? ''
   const [item, setItem] = useState<ItemDetail | null | undefined>(undefined)
   const [status, setStatus] = useState<LearningStatus>('not_started')
@@ -30,9 +32,11 @@ export function ItemPage() {
 
   useEffect(() => {
     const ctrl = new AbortController()
+    activeId.current = id
     setItem(undefined)
     fetchItem(id, ctrl.signal)
       .then((i) => {
+        setError('')
         setItem(i)
         setStatus(i.status)
         setProgress(i.progress)
@@ -44,34 +48,58 @@ export function ItemPage() {
           meta: { path: i.path, from_agent: fromAgent || undefined },
         })
         // opening an item starts it
-        if (i.status === 'not_started') {
-          void recordProgress(i.id, 'in_progress', 5)
+        if (i.status === 'not_started' && !i.blocked_by.length && !i.prerequisite_unavailable) {
+          void recordProgress(i.id, 'in_progress', 0)
             .then((r) => {
+              if (ctrl.signal.aborted) return
               setStatus(r.status)
               setProgress(r.progress)
             })
-            .catch(() => {})
+            .catch((e: unknown) => {
+              if (!ctrl.signal.aborted) setError(e instanceof Error ? e.message : 'Could not save progress')
+            })
         }
       })
       .catch((err: unknown) => {
-        if (!isAbort(err)) setItem(null)
+        if (isAbort(err)) return
+        if (err instanceof ApiError && err.status === 404) setItem(null)
+        else setError(err instanceof Error ? err.message : 'Could not load this item')
       })
     return () => ctrl.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+  }, [id, persona, fromAgent, attempt])
 
   async function mark(next: LearningStatus, pct?: number) {
     if (!item) return
+    setBusy(true)
+    setError('')
     try {
       const r = await recordProgress(item.id, next, pct)
+      if (activeId.current !== item.id) return
       setStatus(r.status)
       setProgress(r.progress)
-    } catch {
-      /* progress is best-effort */
+    } catch (e) {
+      if (activeId.current === item.id) setError(e instanceof Error ? e.message : 'Could not save progress')
+    } finally {
+      if (activeId.current === item.id) setBusy(false)
     }
   }
 
   if (item === null) return <NotFound />
+  if (item === undefined && error)
+    return (
+      <div className="content" role="alert">
+        {error}{' '}
+        <button
+          onClick={() => {
+            setError('')
+            setAttempt((a) => a + 1)
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    )
   if (item === undefined) {
     return (
       <div className="content">
@@ -106,16 +134,49 @@ export function ItemPage() {
               <Check size={15} strokeWidth={3} /> Completed
             </span>
           ) : (
-            <button type="button" className="btn btn--inline" onClick={() => void mark('completed')}>
+            <button
+              type="button"
+              className="btn btn--inline"
+              disabled={busy || item.blocked_by.length > 0 || item.prerequisite_unavailable}
+              onClick={() => void mark('completed')}
+            >
               <Check size={16} strokeWidth={2.6} /> Mark as complete
             </button>
           )}
         </div>
       </div>
 
+      {error && (
+        <p role="alert" className="state state--error">
+          {error}
+        </p>
+      )}
+      {(item.blocked_by.length > 0 || item.prerequisite_unavailable) && (
+        <section className="panel">
+          <h2 className="panel__title">Complete prerequisites first</h2>
+          {item.blocked_by.map((dep) => (
+            <p key={dep}>
+              <Link to={`/learning/items/${dep}`}>{dep.replaceAll('-', ' ')}</Link>
+            </p>
+          ))}
+          {item.prerequisite_unavailable && <p>A prerequisite is unavailable for your account. Contact the content owner.</p>}
+        </section>
+      )}
+      <p className="muted">
+        {item.source_kind === 'sample' ? 'Sample content · ' : ''}Owner: {item.owner}. Completion is self-reported; it does not certify
+        proficiency.
+      </p>
       <div className="video__layout">
         <div className="video__main">
-          {item.type === 'video' && <Player item={item} onProgress={(p) => void mark('in_progress', p)} />}
+          {item.type === 'video' && (
+            <Player
+              key={item.id}
+              item={item}
+              onProgress={(p) => {
+                if (!item.blocked_by.length && !item.prerequisite_unavailable) void mark('in_progress', p)
+              }}
+            />
+          )}
 
           <div className="video__head">
             <div className="agent__badges">
@@ -158,6 +219,11 @@ export function ItemPage() {
             </article>
           )}
 
+          {item.url.startsWith('/') && !item.url.startsWith('//') && (
+            <Link className="btn btn--inline" to={item.url}>
+              Open linked resource
+            </Link>
+          )}
           {external && (
             <section className="panel">
               <h2 className="panel__title">Open the full content</h2>
@@ -176,13 +242,7 @@ export function ItemPage() {
             </section>
           )}
 
-          <FeedbackPrompt
-            pillar="learning"
-            context="item"
-            subjectId={item.id}
-            resetKey={item.id}
-            question="Was this useful?"
-          />
+          <FeedbackPrompt pillar="learning" context="item" subjectId={item.id} resetKey={item.id} question="Was this useful?" />
 
           {item.related_agents.length > 0 && (
             <section className="panel">

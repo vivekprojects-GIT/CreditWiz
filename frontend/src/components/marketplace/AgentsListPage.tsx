@@ -3,13 +3,18 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
 import { fetchAgents, fetchMarketplaceHome, type Agent, type Persona } from '../../lib/marketplace'
-import { usePersona } from '../../lib/persona'
+import { usePersona } from '../../lib/personaContext'
 import { PageBand } from '../PageBand'
 import { AgentCard } from './AgentCard'
 
 const CATEGORIES = ['Compliance & Risk', 'Document Intelligence', 'Customer Operations', 'Knowledge & Policy', 'Developer Tools']
 
 export function AgentsListPage() {
+  const [params] = useSearchParams()
+  const { persona } = usePersona()
+  return <AgentsListContent key={`${params.toString()}|${persona}`} />
+}
+function AgentsListContent() {
   const { persona } = usePersona()
   const [params, setParams] = useSearchParams()
   const [agents, setAgents] = useState<Agent[] | null>(null)
@@ -66,13 +71,18 @@ export function AgentsListPage() {
       <PageBand
         kicker="AI Marketplace"
         title="All agents"
-        lead="Every agent registered in the hub, with its owner, status and how to get access."
+        lead="Authorized sample listings, with owner, status and access information."
         aside={agents ? <span className="band__count">{agents.length} shown</span> : undefined}
         compact
       />
 
       <div className="filters">
-        <select className="filters__select" value={domain} onChange={(e) => setFilter('domain', e.target.value)} aria-label="Business domain">
+        <select
+          className="filters__select"
+          value={domain}
+          onChange={(e) => setFilter('domain', e.target.value)}
+          aria-label="Business domain"
+        >
           <option value="">All domains</option>
           {domains.map((d) => (
             <option key={d} value={d}>
@@ -102,6 +112,11 @@ export function AgentsListPage() {
       {error && (
         <div className="state state--error" role="alert">
           <p>Could not load agents. {error}</p>
+        </div>
+      )}
+      {!agents && !error && (
+        <div className="state" role="status">
+          Loading agents…
         </div>
       )}
       {agents && agents.length === 0 && <div className="state">No agents match those filters.</div>}

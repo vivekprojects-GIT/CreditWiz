@@ -1,17 +1,24 @@
 """Shared user-context API. Every pillar uses these endpoints; none owns them.
 
-    ALL 9 PILLARS  ──write──>  /api/context/events, /api/context/feedback
-                                        │
-                               shared footprint store
-                                        │
-                   /api/context/me  ──read──>  future personalisation
+ALL 9 PILLARS  ──write──>  /api/context/events, /api/context/feedback
+                                    │
+                           shared footprint store
+                                    │
+               /api/context/me  ──read──>  future personalisation
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from ..identity import derive_persona, load_profile
 from . import store
-from .models import Ack, ContextSummary, EventIn, FeedbackIn, InterestSignal, UserContext
+from .models import (
+    Ack,
+    ContextSummary,
+    EventIn,
+    FeedbackIn,
+    InterestSignal,
+    UserContext,
+)
 
 router = APIRouter(prefix="/api/context", tags=["user context"])
 
@@ -19,13 +26,21 @@ router = APIRouter(prefix="/api/context", tags=["user context"])
 @router.post("/events", response_model=Ack)
 def post_event(ev: EventIn) -> Ack:
     """Record one interaction footprint from any pillar."""
-    return Ack(id=store.record_event(ev.model_dump()))
+    if ev.type == "learning_complete":
+        raise HTTPException(
+            422, "Completion events are recorded by the Learning progress endpoint"
+        )
+    payload = ev.model_dump()
+    payload["persona"] = derive_persona(load_profile()).id
+    return Ack(id=store.record_event(payload))
 
 
 @router.post("/feedback", response_model=Ack)
 def post_feedback(fb: FeedbackIn) -> Ack:
     """Record a 'did you find what you needed' answer from any pillar."""
-    return Ack(id=store.record_feedback(fb.model_dump()))
+    payload = fb.model_dump()
+    payload["persona"] = derive_persona(load_profile()).id
+    return Ack(id=store.record_feedback(payload))
 
 
 @router.get("/me", response_model=UserContext)

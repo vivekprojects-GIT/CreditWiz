@@ -8,17 +8,21 @@ import { ItemCard } from './ItemCard'
 
 export function MyLearningPage() {
   const [data, setData] = useState<MyLearning | null>(null)
+  const [attempt, setAttempt] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const ctrl = new AbortController()
     fetchMyLearning(ctrl.signal)
-      .then(setData)
+      .then((d) => {
+        setData(d)
+        setError(null)
+      })
       .catch((err: unknown) => {
         if (!isAbort(err)) setError(err instanceof Error ? err.message : String(err))
       })
     return () => ctrl.abort()
-  }, [])
+  }, [attempt])
 
   const inProgress = (data?.items ?? []).filter((i) => i.status === 'in_progress')
   const notStarted = (data?.items ?? []).filter((i) => i.status === 'not_started')
@@ -51,9 +55,15 @@ export function MyLearningPage() {
       {error && (
         <div className="state state--error" role="alert">
           <p>Could not load your learning. {error}</p>
+          <button onClick={() => setAttempt((a) => a + 1)}>Retry</button>
         </div>
       )}
 
+      {!data && !error && (
+        <div className="state" role="status">
+          Loading your learning…
+        </div>
+      )}
       {data && (
         <>
           <div className="stats">
@@ -71,7 +81,8 @@ export function MyLearningPage() {
             </div>
             <div className="stat stat--required">
               <span className="stat__n">
-                {data.required_completed}<span className="stat__of">/{data.required_total}</span>
+                {data.required_completed}
+                <span className="stat__of">/{data.required_total}</span>
               </span>
               <span className="stat__l">Required for your role</span>
             </div>
@@ -79,9 +90,7 @@ export function MyLearningPage() {
 
           <section className="panel">
             <h2 className="panel__title">Topic coverage</h2>
-            <p className="panel__text">
-              How much of the learning relevant to your role you have completed, by topic.
-            </p>
+            <p className="panel__text">How much of the learning relevant to your role you have completed, by topic.</p>
             <ul className="coverage">
               {data.coverage.map((c) => (
                 <li key={c.topic}>

@@ -20,7 +20,7 @@ def test_home_has_nine_pillars_with_three_priority():
 def test_search_matches_title_and_kind():
     body = client.get("/api/search", params={"q": "agent"}).json()
     kinds = {r["kind"] for r in body["results"]}
-    assert kinds == {"agent"}
+    assert kinds == {"agent", "learning"}
     assert client.get("/api/search", params={"q": ""}).json()["results"] == []
 
 
@@ -42,18 +42,32 @@ def test_persona_is_derived_from_role_not_stored():
     assert me["job_title"] == "Compliance Analyst"
     assert me["persona"]["id"] == "compliance_user"
     assert me["persona"]["derived_from"] == "role"
-    assert "persona" not in __import__("json").load(open("data/user.json", encoding="utf-8"))
+    assert "persona" not in __import__("json").load(
+        open("data/user.json", encoding="utf-8")
+    )
 
 
 def test_persona_mapping_rules():
     from app.identity import DirectoryProfile, derive_persona
 
     base = dict(id="x", name="X Y", first_name="X", initials="XY")
-    assert derive_persona(DirectoryProfile(**base, job_title="Senior Compliance Analyst")).id == "compliance_user"
-    assert derive_persona(DirectoryProfile(**base, job_title="Software Engineer")).id == "developer"
-    dept = derive_persona(DirectoryProfile(**base, job_title="Associate", department="Collections"))
+    assert (
+        derive_persona(
+            DirectoryProfile(**base, job_title="Senior Compliance Analyst")
+        ).id
+        == "compliance_user"
+    )
+    assert (
+        derive_persona(DirectoryProfile(**base, job_title="Software Engineer")).id
+        == "developer"
+    )
+    dept = derive_persona(
+        DirectoryProfile(**base, job_title="Associate", department="Collections")
+    )
     assert dept.id == "operations_user" and dept.derived_from == "department"
-    default = derive_persona(DirectoryProfile(**base, job_title="Astronaut", department="Space"))
+    default = derive_persona(
+        DirectoryProfile(**base, job_title="Astronaut", department="Space")
+    )
     assert default.id == "business_user" and default.derived_from == "default"
 
 

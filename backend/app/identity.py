@@ -1,6 +1,6 @@
 """Who is signed in, and which persona the hub derives for them.
 
-    Directory / user profile        (mocked in data/user.json for the MVP)
+    Directory / user profile        (signed-in SQL profile; demo seeds in data/user.json)
             ↓
     role + department + business unit
             ↓
@@ -23,7 +23,9 @@ from pydantic import BaseModel
 
 from . import personas as hub_personas
 
-_DATA_DIR = Path(os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[1] / "data"))
+_DATA_DIR = Path(
+    os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[1] / "data")
+)
 
 
 class DirectoryProfile(BaseModel):
@@ -56,7 +58,18 @@ def _read(name: str) -> dict:
 
 
 def load_profile() -> DirectoryProfile:
-    return DirectoryProfile.model_validate(_read("user.json"))
+    from .auth import user_id
+    from .database import connect
+
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT profile FROM users WHERE id=? AND active=1", (user_id(),)
+        ).fetchone()
+    if row is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(401, "Account unavailable")
+    return DirectoryProfile.model_validate(json.loads(row[0]))
 
 
 def load_mapping() -> dict:
@@ -64,10 +77,14 @@ def load_mapping() -> dict:
 
 
 def _label(persona_id: str) -> str:
-    return next((p.label for p in hub_personas.all_personas() if p.id == persona_id), persona_id)
+    return next(
+        (p.label for p in hub_personas.all_personas() if p.id == persona_id), persona_id
+    )
 
 
-def derive_persona(profile: DirectoryProfile, mapping: dict | None = None) -> DerivedPersona:
+def derive_persona(
+    profile: DirectoryProfile, mapping: dict | None = None
+) -> DerivedPersona:
     m = mapping or load_mapping()
     by_role: dict[str, str] = m.get("by_role", {})
     by_dept: dict[str, str] = m.get("by_department", {})
@@ -78,21 +95,48 @@ def derive_persona(profile: DirectoryProfile, mapping: dict | None = None) -> De
     for role, persona in by_role.items():
         if role.lower() == title_l:
             pid = hub_personas.persona_id(persona)
-            return DerivedPersona(id=pid, label=_label(pid), derived_from="role", matched_value=title, rule=f'job title = "{role}"')
+            return DerivedPersona(
+                id=pid,
+                label=_label(pid),
+                derived_from="role",
+                matched_value=title,
+                rule=f'job title = "{role}"',
+            )
     # 2. job title contains a mapped role (e.g. "Senior Compliance Analyst")
     for role, persona in sorted(by_role.items(), key=lambda kv: -len(kv[0])):
         if role.lower() in title_l:
             pid = hub_personas.persona_id(persona)
-            return DerivedPersona(id=pid, label=_label(pid), derived_from="role", matched_value=title, rule=f'job title contains "{role}"')
+            return DerivedPersona(
+                id=pid,
+                label=_label(pid),
+                derived_from="role",
+                matched_value=title,
+                rule=f'job title contains "{role}"',
+            )
     # 3. department, 4. business unit
-    for source, value in (("department", profile.department), ("business_unit", profile.business_unit)):
+    for source, value in (
+        ("department", profile.department),
+        ("business_unit", profile.business_unit),
+    ):
         v_l = value.strip().lower()
         for dept, persona in sorted(by_dept.items(), key=lambda kv: -len(kv[0])):
             if v_l and (dept.lower() == v_l or dept.lower() in v_l):
                 pid = hub_personas.persona_id(persona)
-                return DerivedPersona(id=pid, label=_label(pid), derived_from=source, matched_value=value, rule=f'{source.replace("_", " ")} matches "{dept}"')  # type: ignore[arg-type]
+                return DerivedPersona(
+                    id=pid,
+                    label=_label(pid),
+                    derived_from=source,
+                    matched_value=value,
+                    rule=f'{source.replace("_", " ")} matches "{dept}"',
+                )  # type: ignore[arg-type]
     pid = hub_personas.persona_id(m.get("default", "Business User"))
-    return DerivedPersona(id=pid, label=_label(pid), derived_from="default", matched_value="", rule="no mapping matched; hub default")
+    return DerivedPersona(
+        id=pid,
+        label=_label(pid),
+        derived_from="default",
+        matched_value="",
+        rule="no mapping matched; hub default",
+    )
 
 
 def is_admin(profile: DirectoryProfile, mapping: dict | None = None) -> bool:

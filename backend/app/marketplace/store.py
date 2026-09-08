@@ -24,7 +24,9 @@ from pathlib import Path
 from .. import personas as hub_personas
 from .models import Agent, CarouselDef, Persona
 
-_DATA_DIR = Path(os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data"))
+_DATA_DIR = Path(
+    os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
+)
 _RELOAD_SECONDS = 5.0
 
 _STATUS_ALIASES = {
@@ -97,15 +99,29 @@ def _persona_id(value: str) -> str:
 
 def normalize_agent(raw: dict) -> dict:
     """Map either accepted shape onto the canonical field names."""
-    if "agentId" not in raw and "useCases" not in raw and "id" in raw and "business_domains" in raw:
+    if (
+        "agentId" not in raw
+        and "useCases" not in raw
+        and "id" in raw
+        and "business_domains" in raw
+    ):
         return raw  # already canonical
 
     r = dict(raw)
-    domains = _as_list(r.get("business_domains") or r.get("domains") or r.get("domain") or r.get("businessDomain"))
+    domains = _as_list(
+        r.get("business_domains")
+        or r.get("domains")
+        or r.get("domain")
+        or r.get("businessDomain")
+    )
     description = (r.get("description") or "").strip()
     owner_raw = r.get("owner") or {}
     if isinstance(owner_raw, str):
-        owner = {"team": r.get("team") or owner_raw, "name": owner_raw if r.get("team") else "", "email": r.get("ownerEmail", "")}
+        owner = {
+            "team": r.get("team") or owner_raw,
+            "name": owner_raw if r.get("team") else "",
+            "email": r.get("ownerEmail", ""),
+        }
     else:
         owner = {
             "team": owner_raw.get("team") or r.get("team") or "",
@@ -115,26 +131,49 @@ def normalize_agent(raw: dict) -> dict:
     status_key = str(r.get("status", "production")).strip().lower()
     access_raw = r.get("access") or {}
     if isinstance(access_raw, str):
-        access = {"type": "request", "how": access_raw, "launch_url": r.get("launchUrl", ""), "request_url": r.get("requestUrl", "")}
+        access = {
+            "type": "request",
+            "how": access_raw,
+            "launch_url": r.get("launchUrl", ""),
+            "request_url": r.get("requestUrl", ""),
+        }
     else:
         access = {
-            "type": access_raw.get("type") or r.get("accessType") or ("open" if r.get("launchUrl") and not r.get("accessRequirements") else "request"),
-            "how": access_raw.get("how") or r.get("accessRequirements") or "Contact the owning team for access.",
+            "type": access_raw.get("type")
+            or r.get("accessType")
+            or (
+                "open"
+                if r.get("launchUrl") and not r.get("accessRequirements")
+                else "request"
+            ),
+            "how": access_raw.get("how")
+            or r.get("accessRequirements")
+            or "Contact the owning team for access.",
             "launch_url": access_raw.get("launch_url") or r.get("launchUrl", ""),
             "request_url": access_raw.get("request_url") or r.get("requestUrl", ""),
         }
-    category = r.get("category") or next((_DOMAIN_CATEGORY[d.lower()] for d in domains if d.lower() in _DOMAIN_CATEGORY), "Customer Operations")
+    category = r.get("category") or next(
+        (_DOMAIN_CATEGORY[d.lower()] for d in domains if d.lower() in _DOMAIN_CATEGORY),
+        "Customer Operations",
+    )
 
     return {
         "id": r.get("id") or r.get("agentId") or _slug(r["name"]),
         "name": r["name"],
-        "tagline": r.get("tagline") or r.get("shortDescription") or _first_sentence(description),
+        "tagline": r.get("tagline")
+        or r.get("shortDescription")
+        or _first_sentence(description),
         "version": str(r.get("version", "")),
         "description": description,
         "problem_solved": r.get("problem_solved") or r.get("problemSolved", ""),
         "business_domains": domains,
-        "use_cases": _as_list(r.get("use_cases") or r.get("useCases") or r.get("businessUseCase")),
-        "personas": [_persona_id(p) for p in _as_list(r.get("personas") or r.get("targetPersona"))],
+        "use_cases": _as_list(
+            r.get("use_cases") or r.get("useCases") or r.get("businessUseCase")
+        ),
+        "personas": [
+            _persona_id(p)
+            for p in _as_list(r.get("personas") or r.get("targetPersona"))
+        ],
         "capabilities": _as_list(r.get("capabilities")),
         "services": _as_list(r.get("services")),
         "example_tasks": _as_list(r.get("example_tasks") or r.get("exampleTasks")),
@@ -143,16 +182,30 @@ def normalize_agent(raw: dict) -> dict:
         "platform": r.get("platform", ""),
         "tools_services": _as_list(r.get("tools_services") or r.get("tools")),
         "models": _as_list(r.get("models")),
-        "architecture_pattern": r.get("architecture_pattern") or r.get("architecturePattern", ""),
+        "architecture_pattern": r.get("architecture_pattern")
+        or r.get("architecturePattern", ""),
         "owner": owner,
         "status": _STATUS_ALIASES.get(status_key, "production"),
         "access": access,
-        "documentation_url": r.get("documentation_url") or r.get("documentationUrl", ""),
+        "documentation_url": r.get("documentation_url")
+        or r.get("documentationUrl", ""),
         "architecture_url": r.get("architecture_url") or r.get("architectureUrl", ""),
         "created_at": r.get("created_at") or r.get("createdDate", ""),
-        "updated_at": r.get("updated_at") or r.get("updatedDate") or r.get("createdDate", ""),
+        "updated_at": r.get("updated_at")
+        or r.get("updatedDate")
+        or r.get("createdDate", ""),
         "featured": bool(r.get("featured", False)),
         "popularity": int(r.get("popularity", 0) or 0),
+        "audience_groups": r.get(
+            "audience_groups",
+            [] if r.get("source_kind") == "enterprise" else ["AI-Hub-Users"],
+        ),
+        "active": r.get("active", True),
+        "review_status": r.get(
+            "review_status",
+            "draft" if r.get("source_kind") == "enterprise" else "approved",
+        ),
+        "source_kind": r.get("source_kind", "sample"),
     }
 
 
@@ -176,15 +229,26 @@ class MarketplaceStore:
         with self._lock:
             if now - self._loaded_at < _RELOAD_SECONDS and self._agents:
                 return
-            self._agents = [Agent.model_validate(normalize_agent(a)) for a in _read_json("agents.json")]
-            self._personas = [Persona.model_validate(p) for p in _read_json("personas.json")]
-            self._carousels = [CarouselDef.model_validate(c) for c in _read_json("carousels.json")]
+            self._agents = [
+                Agent.model_validate(normalize_agent(a))
+                for a in _read_json("agents.json")
+            ]
+            if len({a.id for a in self._agents}) != len(self._agents):
+                raise ValueError("Duplicate agent id")
+            self._personas = [
+                Persona.model_validate(p) for p in _read_json("personas.json")
+            ]
+            self._carousels = [
+                CarouselDef.model_validate(c) for c in _read_json("carousels.json")
+            ]
             self._loaded_at = now
 
     @property
     def agents(self) -> list[Agent]:
         self._refresh()
-        return self._agents
+        from ..permissions import visible
+
+        return [a for a in self._agents if visible(a)]
 
     @property
     def personas(self) -> list[Persona]:

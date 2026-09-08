@@ -1,7 +1,7 @@
 import { Bell, LogOut, Search, Settings, User } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { fetchNotifications, isAbort, searchHub } from '../lib/api'
+import { fetchNotifications, isAbort, searchHub, postJson, announceSessionChange } from '../lib/api'
 import type { CurrentUser, Notification, SearchResult } from '../lib/types'
 import { useClickOutside } from '../lib/useClickOutside'
 
@@ -23,18 +23,19 @@ export function TopBar({ user }: Props) {
 
   // ---- search
   const [query, setQuery] = useState('')
+  const [searchError, setSearchError] = useState('')
   const [results, setResults] = useState<SearchResult[] | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [highlight, setHighlight] = useState(0)
   const searchRef = useRef<HTMLDivElement>(null)
-  useClickOutside(searchRef, useCallback(() => setSearchOpen(false), []))
+  useClickOutside(
+    searchRef,
+    useCallback(() => setSearchOpen(false), []),
+  )
 
   useEffect(() => {
     const q = query.trim()
-    if (!q) {
-      setResults(null)
-      return
-    }
+    if (!q) return
     const ctrl = new AbortController()
     const timer = setTimeout(() => {
       searchHub(q, ctrl.signal)
@@ -43,7 +44,10 @@ export function TopBar({ user }: Props) {
           setHighlight(0)
         })
         .catch((err: unknown) => {
-          if (!isAbort(err)) setResults([])
+          if (!isAbort(err)) {
+            setResults([])
+            setSearchError('Search could not load. Try again.')
+          }
         })
     }, 160)
     return () => {
@@ -73,10 +77,14 @@ export function TopBar({ user }: Props) {
   }
 
   // ---- notifications
+  const [actionError, setActionError] = useState('')
   const [notes, setNotes] = useState<Notification[] | null>(null)
   const [notesOpen, setNotesOpen] = useState(false)
   const notesRef = useRef<HTMLDivElement>(null)
-  useClickOutside(notesRef, useCallback(() => setNotesOpen(false), []))
+  useClickOutside(
+    notesRef,
+    useCallback(() => setNotesOpen(false), []),
+  )
 
   useEffect(() => {
     if (!notesOpen || notes !== null) return
@@ -84,23 +92,41 @@ export function TopBar({ user }: Props) {
     fetchNotifications(ctrl.signal)
       .then(setNotes)
       .catch((err: unknown) => {
-        if (!isAbort(err)) setNotes([])
+        if (!isAbort(err)) setActionError('Notifications could not load. Reopen this menu to retry.')
       })
     return () => ctrl.abort()
   }, [notesOpen, notes])
 
   const unread = notes ? notes.filter((n) => !n.read).length : user.unread_notifications
 
-  function markAllRead() {
-    setNotes((prev) => prev?.map((n) => ({ ...n, read: true })) ?? prev)
+  async function markAllRead() {
+    try {
+      await postJson('/api/notifications/read', {})
+      setNotes((prev) => prev?.map((n) => ({ ...n, read: true })) ?? prev)
+      setActionError('')
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Could not save notifications')
+    }
+  }
+  async function signOut() {
+    try {
+      await postJson('/api/auth/logout', {})
+      announceSessionChange()
+      window.dispatchEvent(new Event('creditwiz:signed-out'))
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Could not sign out')
+    }
   }
 
   // ---- account
   const [acctOpen, setAcctOpen] = useState(false)
   const acctRef = useRef<HTMLDivElement>(null)
-  useClickOutside(acctRef, useCallback(() => setAcctOpen(false), []))
+  useClickOutside(
+    acctRef,
+    useCallback(() => setAcctOpen(false), []),
+  )
 
-  const showResults = searchOpen && results !== null
+  const showResults = searchOpen && !!query.trim() && results !== null
 
   return (
     <header className="topbar">
@@ -109,10 +135,12 @@ export function TopBar({ user }: Props) {
         <input
           className="search__input"
           type="search"
-          placeholder="Search AI solutions, prompts and learning"
+          placeholder="Search agents and learning"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value)
+            setResults(null)
+            setSearchError('')
             setSearchOpen(true)
           }}
           onFocus={() => setSearchOpen(true)}
@@ -125,7 +153,7 @@ export function TopBar({ user }: Props) {
         {showResults && (
           <div className="menu search__results" id="hub-search-results" role="listbox">
             {results.length === 0 ? (
-              <div className="menu__empty">No matches for “{query.trim()}”.</div>
+              <div className="menu__empty">{searchError || `No matches for “${query.trim()}”.`}</div>
             ) : (
               results.map((r, i) => (
                 <button
@@ -147,6 +175,11 @@ export function TopBar({ user }: Props) {
       </div>
 
       <div className="topbar__actions">
+        {actionError && (
+          <span role="alert" className="state--error">
+            {actionError}
+          </span>
+        )}
         <div className="menu-anchor" ref={notesRef}>
           <button
             type="button"
@@ -226,7 +259,7 @@ export function TopBar({ user }: Props) {
               <Link to="/settings" className="menu__item" role="menuitem" onClick={() => setAcctOpen(false)}>
                 <Settings size={18} strokeWidth={2} /> Settings
               </Link>
-              <button type="button" className="menu__item" role="menuitem" onClick={() => setAcctOpen(false)}>
+              <button type="button" className="menu__item" role="menuitem" onClick={() => void signOut()}>
                 <LogOut size={18} strokeWidth={2} /> Sign out
               </button>
             </div>

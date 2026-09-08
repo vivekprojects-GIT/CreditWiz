@@ -279,7 +279,9 @@ h3 {
   font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background var(--fast), color var(--fast);
+  transition:
+    background var(--fast),
+    color var(--fast);
   position: relative;
 }
 
@@ -388,7 +390,10 @@ h3 {
   color: var(--ink-900);
   background: var(--ink-50);
   outline: none;
-  transition: background var(--fast), border-color var(--fast), box-shadow var(--fast);
+  transition:
+    background var(--fast),
+    border-color var(--fast),
+    box-shadow var(--fast);
 }
 
 .search__input::placeholder {
@@ -460,7 +465,9 @@ h3 {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background var(--fast), color var(--fast);
+  transition:
+    background var(--fast),
+    color var(--fast);
 }
 
 .iconbtn svg {
@@ -756,7 +763,9 @@ h3 {
   color: var(--ink-600);
   padding: 2px 4px;
   border-radius: var(--r-sm);
-  transition: color var(--fast), background var(--fast);
+  transition:
+    color var(--fast),
+    background var(--fast);
 }
 
 .crumbs a:hover {
@@ -810,7 +819,10 @@ a.plain {
   font-size: var(--t-base);
   font-weight: 650;
   cursor: pointer;
-  transition: background var(--fast), box-shadow var(--fast), transform var(--fast);
+  transition:
+    background var(--fast),
+    box-shadow var(--fast),
+    transform var(--fast);
   white-space: nowrap;
 }
 
@@ -854,7 +866,10 @@ a.plain {
   color: var(--ink-800);
   font-size: var(--t-sm);
   font-weight: 650;
-  transition: border-color var(--fast), color var(--fast), background var(--fast);
+  transition:
+    border-color var(--fast),
+    color var(--fast),
+    background var(--fast);
 }
 
 .btn-outline:hover {
@@ -1100,7 +1115,10 @@ a.plain {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--e-1);
-  transition: box-shadow var(--base), border-color var(--base), transform var(--base);
+  transition:
+    box-shadow var(--base),
+    border-color var(--base),
+    transform var(--base);
 }
 
 .pcard:hover {
@@ -1217,7 +1235,10 @@ a.plain {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--e-1);
-  transition: box-shadow var(--base), border-color var(--base), transform var(--base);
+  transition:
+    box-shadow var(--base),
+    border-color var(--base),
+    transform var(--base);
 }
 
 .mcard:hover {
@@ -1234,7 +1255,9 @@ a.plain {
   place-items: center;
   background: var(--ink-50);
   color: var(--ink-700);
-  transition: background var(--base), color var(--base);
+  transition:
+    background var(--base),
+    color var(--base);
 }
 
 .mcard:hover .mcard__glyph {
@@ -1270,7 +1293,9 @@ a.plain {
   display: grid;
   place-items: center;
   color: var(--ink-400);
-  transition: color var(--base), transform var(--base);
+  transition:
+    color var(--base),
+    transform var(--base);
 }
 
 .mcard__chev svg {
@@ -1415,7 +1440,9 @@ a.plain {
 }
 
 .gsearch:focus-within {
-  box-shadow: 0 0 0 3px rgba(230, 0, 0, 0.5), 0 12px 40px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(230, 0, 0, 0.5),
+    0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
 .gsearch__icon {
@@ -1447,7 +1474,9 @@ a.plain {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background var(--fast), color var(--fast);
+  transition:
+    background var(--fast),
+    color var(--fast);
 }
 
 .gsearch__clear:hover {
@@ -1526,7 +1555,10 @@ a.plain {
   padding: 6px 13px;
   font-size: var(--t-sm);
   cursor: pointer;
-  transition: background var(--fast), border-color var(--fast), color var(--fast);
+  transition:
+    background var(--fast),
+    border-color var(--fast),
+    color var(--fast);
 }
 
 .examples__chip:hover {
@@ -1725,7 +1757,10 @@ a.plain {
   border-radius: var(--r-lg);
   box-shadow: var(--e-1);
   color: var(--ink-900);
-  transition: box-shadow var(--base), border-color var(--base), transform var(--base);
+  transition:
+    box-shadow var(--base),
+    border-color var(--base),
+    transform var(--base);
 }
 
 .acard:hover {
@@ -1902,7 +1937,9 @@ a.plain {
   font-size: var(--t-sm);
   font-weight: 650;
   color: var(--ink-800);
-  transition: color var(--fast), gap var(--fast);
+  transition:
+    color var(--fast),
+    gap var(--fast);
 }
 
 .acard:hover .acard__go {
@@ -1971,7 +2008,10 @@ a.plain {
   place-items: center;
   cursor: pointer;
   color: var(--ink-600);
-  transition: border-color var(--fast), color var(--fast), background var(--fast);
+  transition:
+    border-color var(--fast),
+    color var(--fast),
+    background var(--fast);
 }
 
 .carousel__btn:hover {
@@ -2060,7 +2100,9 @@ a.plain {
   cursor: pointer;
   font-weight: 600;
   font-size: var(--t-sm);
-  transition: border-color var(--fast), color var(--fast);
+  transition:
+    border-color var(--fast),
+    color var(--fast);
 }
 
 .pbadge__select:hover {
@@ -2085,7 +2127,9 @@ a.plain {
   font-size: var(--t-sm);
   font-weight: 650;
   cursor: pointer;
-  transition: border-color var(--fast), color var(--fast);
+  transition:
+    border-color var(--fast),
+    color var(--fast);
 }
 
 .pbadge__reset:hover {
@@ -2140,7 +2184,9 @@ a.plain {
   font-weight: 650;
   cursor: pointer;
   color: var(--ink-800);
-  transition: border-color var(--fast), color var(--fast);
+  transition:
+    border-color var(--fast),
+    color var(--fast);
 }
 
 .feedback__btn:hover {
@@ -2404,7 +2450,9 @@ a.plain {
   border-radius: var(--r-lg);
   box-shadow: var(--e-1);
   color: var(--ink-900);
-  transition: box-shadow var(--base), transform var(--base);
+  transition:
+    box-shadow var(--base),
+    transform var(--base);
 }
 
 .scard:hover {
@@ -2433,7 +2481,9 @@ a.plain {
   font-weight: 650;
   color: var(--ink-800);
   font-size: var(--t-sm);
-  transition: color var(--fast), gap var(--fast);
+  transition:
+    color var(--fast),
+    gap var(--fast);
 }
 
 .scard:hover .scard__go {
@@ -2856,5 +2906,109 @@ a.plain {
 
   .band--compact .band__title {
     font-size: var(--t-xl);
+  }
+}
+
+/* Account and catalog surfaces share the hub's compact spacing and red accent. */
+.signin {
+  max-width: 780px;
+  margin: 8vh auto;
+  padding: 32px;
+  background: white;
+  border: 1px solid #e1e3e6;
+  border-top: 5px solid #c8102e;
+  border-radius: 10px;
+}
+.signin__brand {
+  font-size: 24px;
+  font-weight: 800;
+  color: #c8102e;
+  margin-bottom: 32px;
+}
+.signin__brand span {
+  display: block;
+  margin-top: 6px;
+  color: #5b606a;
+  font-size: 13px;
+  font-weight: 500;
+}
+.signin h1 {
+  margin-bottom: 12px;
+}
+.signin h2 {
+  margin-top: 28px;
+}
+.signin__accounts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.signin__accounts button {
+  text-align: left;
+  cursor: pointer;
+  margin: 0;
+  color: inherit;
+  background: #fff;
+}
+.signin__accounts button:hover {
+  border-color: #c8102e;
+  background: #fff8f9;
+}
+.signin__accounts strong,
+.signin__accounts span {
+  display: block;
+  margin-bottom: 5px;
+}
+.field input:not([type='checkbox']),
+.field select,
+.field textarea {
+  font: inherit;
+  border: 1px solid #ced1d6;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: white;
+  color: #262b34;
+  min-width: 0;
+  max-width: 100%;
+}
+.field textarea {
+  min-height: 90px;
+  resize: vertical;
+  width: 100%;
+}
+.catalog-filters {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin: 24px 0;
+}
+.catalog-filters .field {
+  min-width: 180px;
+  flex: 1;
+}
+.pathbar a {
+  text-decoration: none;
+  display: inline-block;
+}
+.panel .btn {
+  margin: 10px 10px 0 0;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+:focus-visible {
+  outline: 3px solid #bb1535;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .signin {
+    margin: 20px;
+    padding: 20px;
+  }
+  .signin__accounts {
+    grid-template-columns: 1fr;
   }
 }

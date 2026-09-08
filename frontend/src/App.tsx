@@ -12,12 +12,14 @@ import { PillarPage } from './components/PillarPage'
 import { Sidebar } from './components/Sidebar'
 import { HelpPage, NotFound, SettingsPage } from './components/SimplePages'
 import { TopBar } from './components/TopBar'
-import { fetchHome, isAbort } from './lib/api'
+import { SignIn } from './components/SignIn'
+import { ApiError, fetchHome, isAbort } from './lib/api'
 import { HubContext } from './lib/hub'
 import { PersonaProvider } from './lib/persona'
 import type { HomeData } from './lib/types'
 
-type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: HomeData }
+type LoadState =
+  { status: 'loading' } | { status: 'signed-out' } | { status: 'error'; message: string } | { status: 'ready'; data: HomeData }
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -63,25 +65,31 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
           )}
           {state.status === 'ready' && (
             <HubContext.Provider value={state.data}>
-              <PersonaProvider derived={state.data.user.persona}>
-              <TopBar user={state.data.user} />
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/help" element={<HelpPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/marketplace" element={<MarketplacePage />} />
-                <Route path="/marketplace/agents" element={<AgentsListPage />} />
-                <Route path="/marketplace/agents/:id" element={<AgentDetailPage />} />
-                <Route path="/marketplace/agents/:id/docs" element={<AgentDocPage kind="docs" />} />
-                <Route path="/marketplace/agents/:id/architecture" element={<AgentDocPage kind="architecture" />} />
-                <Route path="/learning" element={<LearningPage />} />
-                <Route path="/learning/catalog" element={<LearningPage />} />
-                <Route path="/learning/me" element={<MyLearningPage />} />
-                <Route path="/learning/items/:id" element={<ItemPage />} />
-                <Route path="/learning/videos/:id" element={<ItemPage />} />
-                <Route path="/:base/*" element={<PillarPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <PersonaProvider key={state.data.user.id} derived={state.data.user.persona}>
+                <TopBar user={state.data.user} />
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/help" element={<HelpPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/marketplace" element={<MarketplacePage />} />
+                  <Route path="/marketplace/agents" element={<AgentsListPage />} />
+                  <Route path="/marketplace/solutions" element={<AgentsListPage />} />
+                  <Route path="/marketplace/capabilities" element={<AgentsListPage />} />
+                  <Route path="/marketplace/agents/:id" element={<AgentDetailPage />} />
+                  <Route path="/marketplace/agents/:id/docs" element={<AgentDocPage kind="docs" />} />
+                  <Route path="/marketplace/agents/:id/architecture" element={<AgentDocPage kind="architecture" />} />
+                  <Route path="/learning" element={<LearningPage />} />
+                  <Route path="/learning/catalog" element={<LearningPage />} />
+                  <Route path="/learning/paths" element={<LearningPage />} />
+                  <Route path="/learning/best-practices" element={<LearningPage />} />
+                  <Route path="/learning/docs" element={<LearningPage />} />
+                  <Route path="/learning/quick-reference" element={<LearningPage />} />
+                  <Route path="/learning/me" element={<MyLearningPage />} />
+                  <Route path="/learning/items/:id" element={<ItemPage />} />
+                  <Route path="/learning/videos/:id" element={<ItemPage />} />
+                  <Route path="/:base/*" element={<PillarPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
               </PersonaProvider>
             </HubContext.Provider>
           )}
@@ -94,14 +102,29 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
 export default function App() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    const signedOut = () => setState({ status: 'signed-out' })
+    window.addEventListener('creditwiz:signed-out', signedOut)
+    const storage = (event: StorageEvent) => {
+      if (event.key === 'creditwiz.session-change') signedOut()
+    }
+    window.addEventListener('storage', storage)
+    return () => {
+      window.removeEventListener('creditwiz:signed-out', signedOut)
+      window.removeEventListener('storage', storage)
+    }
+  }, [])
 
   useEffect(() => {
     const ctrl = new AbortController()
-    setState({ status: 'loading' })
     fetchHome(ctrl.signal)
       .then((data) => setState({ status: 'ready', data }))
       .catch((err: unknown) => {
         if (isAbort(err)) return
+        if (err instanceof ApiError && err.status === 401) {
+          setState({ status: 'signed-out' })
+          return
+        }
         setState({ status: 'error', message: err instanceof Error ? err.message : String(err) })
       })
     return () => ctrl.abort()
@@ -109,7 +132,22 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Shell state={state} retry={() => setAttempt((a) => a + 1)} />
+      {state.status === 'signed-out' ? (
+        <SignIn
+          onSignIn={() => {
+            setState({ status: 'loading' })
+            setAttempt((a) => a + 1)
+          }}
+        />
+      ) : (
+        <Shell
+          state={state}
+          retry={() => {
+            setState({ status: 'loading' })
+            setAttempt((a) => a + 1)
+          }}
+        />
+      )}
     </BrowserRouter>
   )
 }

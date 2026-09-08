@@ -64,7 +64,13 @@
     "updated_at": "2026-08-22",
     "version": "1.4",
     "problem_solved": "Analysts spent the first pass of every KYC case checking whether the pack was even complete. This removes that pass so they start at judgement, not triage.",
-    "architecture_pattern": "Document agent"
+    "architecture_pattern": "Document agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "kyc-risk-screening",
@@ -130,7 +136,13 @@
     "updated_at": "2026-08-30",
     "version": "2.1",
     "problem_solved": "Screening hits are mostly false positives that still consumed analyst hours and delayed onboarding. This resolves the obvious ones with evidence and leaves the real ones for people.",
-    "architecture_pattern": "Screening agent"
+    "architecture_pattern": "Screening agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "contract-analyzer",
@@ -196,7 +208,13 @@
     "updated_at": "2026-07-14",
     "version": "3.0",
     "problem_solved": "Legal review queues were the slowest step in supplier onboarding. This turns a 40-page contract into a one-page summary and clause table so lawyers review exceptions, not everything.",
-    "architecture_pattern": "Document agent"
+    "architecture_pattern": "Document agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "asset-locator",
@@ -261,7 +279,13 @@
     "updated_at": "2026-09-01",
     "version": "0.9",
     "problem_solved": "Recovery teams worked from stale contact and asset data, wasting outreach. This builds a verified, sourced evidence pack per account before anyone picks up the phone.",
-    "architecture_pattern": "Research agent"
+    "architecture_pattern": "Research agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "onboarding-pack-assistant",
@@ -325,7 +349,13 @@
     "updated_at": "2026-08-27",
     "version": "1.0",
     "problem_solved": "Applications bounced back and forth with customers over missing items. This catches gaps up front and drafts the request, cutting time-to-decision.",
-    "architecture_pattern": "Workflow agent"
+    "architecture_pattern": "Workflow agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "dispute-resolution-agent",
@@ -391,7 +421,13 @@
     "updated_at": "2026-08-15",
     "version": "2.3",
     "problem_solved": "Disputes were missing scheme deadlines because triage was manual. This classifies, checks the rules and drafts the case so analysts only handle the ambiguous ones.",
-    "architecture_pattern": "Workflow agent"
+    "architecture_pattern": "Workflow agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "fraud-case-summariser",
@@ -455,7 +491,13 @@
     "updated_at": "2026-08-05",
     "version": "1.7",
     "problem_solved": "Investigators lost the first 20 minutes of every case reading raw alerts. This gives them a structured brief and a recommended next step instead.",
-    "architecture_pattern": "Summarisation agent"
+    "architecture_pattern": "Summarisation agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "policy-qa-agent",
@@ -522,7 +564,13 @@
     "updated_at": "2026-08-20",
     "version": "2.0",
     "problem_solved": "Front-line staff could not find the right policy quickly and either guessed or escalated. This answers with a citation or says it does not know.",
-    "architecture_pattern": "RAG agent"
+    "architecture_pattern": "RAG agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "collections-outreach-agent",
@@ -587,7 +635,13 @@
     "updated_at": "2026-08-11",
     "version": "1.2",
     "problem_solved": "Collections messages varied in tone and sometimes breached conduct rules. This drafts compliant, personalised outreach with a human approving every send.",
-    "architecture_pattern": "Workflow agent"
+    "architecture_pattern": "Workflow agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   },
   {
     "id": "code-review-assistant",
@@ -650,6 +704,12 @@
     "updated_at": "2026-08-29",
     "version": "4.2",
     "problem_solved": "Review load on senior engineers slowed every release. This catches the routine defects and standards issues first so human review focuses on design.",
-    "architecture_pattern": "CI agent"
+    "architecture_pattern": "CI agent",
+    "source_kind": "sample",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "active": true,
+    "review_status": "approved"
   }
 ]

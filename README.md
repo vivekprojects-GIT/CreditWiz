@@ -1,6 +1,8 @@
 # CreditWiz — Enterprise AI Hub
 
-Swim Lane 1 prototype: **AI Marketplace & Discovery**, plus a working **Learning** pillar and the shared hub layer both sit on.
+Implemented MVP: **AI Marketplace & Discovery**, **Learning**, and shared accounts, permissions and SQLite persistence.
+
+Start with the [MVP completion and operations guide](docs/mvp-completion.md) for the requirement matrix, account setup, migration, validation, and explicit enterprise dependencies.
 
 React frontend, all-Python backend. Ten sample agents, twenty-two learning items, no external integrations.
 
@@ -20,6 +22,8 @@ For the MVP the metadata source is a **static JSON file**. That keeps the protot
 
 ## Walkthrough
 
+The screenshots below show the original visual walkthrough. Account selection, catalog filters and ordered paths have since been added; the operations guide describes the current behavior.
+
 ### 1. Home — one hub, nine pillars
 
 ![Home](docs/screenshots/01-home.png)
@@ -30,7 +34,7 @@ Persona-picked agents and what's new sit under the three priority modules. The p
 
 ![Marketplace](docs/screenshots/02-marketplace.png)
 
-Two discovery paths, as discussed: generative search at the top, Netflix-style carousels below. The Recommended row carries a visible persona badge and a demo-only "preview as".
+Two discovery paths, as discussed: generative search at the top, Netflix-style carousels below. The Recommended row carries a visible persona badge and an administrator-only "preview as".
 
 ### 3. Generative search — and why it matched
 
@@ -42,19 +46,19 @@ Claude interprets the request into concepts — document validation, onboarding 
 
 > **Why this matched:** This agent supports "Review customer onboarding documents for completeness", covers document extraction, identity verification and completeness checking, works in Onboarding and Compliance. It is built for compliance users.
 
-No key configured? A local concept lexicon does the same job and the badge reads "Interpreted locally". The demo never breaks.
+No key configured? A local concept lexicon does the same job and the badge reads "Interpreted locally". The fallback is labeled explicitly.
 
 ### 4. Agent detail — understand, then act
 
 ![Agent detail](docs/screenshots/04-agent-detail.png)
 
-One page answers what it is, why it exists, what to ask it, who owns it, what it runs on, and how to get access. Actions: Launch, Request access, Documentation, Architecture pattern, Collaborate with the owner. Related learning is consumed from the Learning pillar.
+One page answers what it is, why it exists, what to ask it, who owns it, what it runs on, and how to get access. Actions include local access requests, documentation and architecture. Confirmed enterprise listings also use their configured launch/access URLs and owner email; sample listings explicitly label unavailable live destinations. Related learning is consumed from the Learning pillar.
 
 ### 5. Documentation lives in the hub
 
 ![Agent documentation](docs/screenshots/07-agent-docs.png)
 
-Every agent has real in-app documentation and an architecture pattern page. No dead links in the demo.
+Every sample agent has in-app reference documentation and an architecture pattern page. Sample external destinations are not presented as live resources.
 
 ### 6. Learning — the right content for the role
 
@@ -108,7 +112,7 @@ persona match  +10 | domain +3 each | capability +2 each | tag +1 each | popular
 
 **Related agents** is metadata similarity. **Related learning** is owned by the Learning pillar and consumed here.
 
-**What none of them use:** searches, clicks, views, launches and completions are all collected, and none of it feeds ranking. That stays future work.
+**What none of them use:** behavioral footprints never change relevance scores. Completion only filters completed learning from recommendations and updates the continuing section. That stays future work.
 
 ---
 
@@ -144,12 +148,11 @@ Persona = Compliance User
 Curation
 ```
 
-**Storage split** — the production shape:
+**Storage split** — implemented local MVP:
 
 | Data | Store | Why |
 | --- | --- | --- |
-| Learning progress | SQLite `backend/var/learning.db` | Mutable per-user state; needs atomic upsert |
-| Footprints, feedback | JSONL `backend/var/*.jsonl` | Append-only event stream |
+| Accounts, sessions, learning progress, preferences, notifications, requests, footprints and feedback | SQLite `backend/var/hub.db` | Per-user transactions; completion and its event commit together |
 | Agents, learning, personas | JSON `backend/data/` | Authored, version-controlled, handed over |
 
 ---
@@ -157,20 +160,29 @@ Curation
 ## Run it
 
 ```bash
-cd backend && uv run uvicorn app.main:app --reload --port 8000
+cd backend
+uv sync --frozen
+uv run uvicorn app.main:app --host 127.0.0.1 --reload --port 8000
 ```
 
 ```bash
-cd frontend && npm install && npm run dev
+cd frontend
+npm ci
+npm run dev
 ```
 
-Open http://localhost:5173.
+Open [CreditWiz](http://localhost:5173) and choose a demo account. Demo mode is for local use.
 
-Optional: copy `backend/.env.example` to `backend/.env` and add `ANTHROPIC_API_KEY` for Claude-interpreted search. Without it the local lexicon is used and everything still works.
+Optional: copy `backend/.env.example` to `backend/.env` and add `ANTHROPIC_API_KEY`, set `CREDITWIZ_DISABLE_LLM=0`, and choose an available model for Claude-interpreted search. Without it the local lexicon is used and everything still works.
 
 ```bash
-cd backend && uv run pytest -q      # 32 tests
-cd frontend && npm run build
+cd backend
+uv run pytest -q
+uv run python -m app.manage validate
+cd ../frontend
+npm test
+npm run lint
+npm run build
 ```
 
 ---
@@ -179,7 +191,7 @@ cd frontend && npm run build
 
 | Branch | Purpose |
 | --- | --- |
-| `main` | Reviewed, demo-ready. What Ganesh sees. |
+| `main` | Baseline branch; this MVP completion is on `codex/complete-creditwiz` pending review. |
 | `dev` | Integration branch. Feature work merges here first. |
 | `test` | QA and validation before promotion to `main`. |
 | `end` | End-state / target-architecture spikes, including work explicitly out of MVP scope. |
@@ -194,7 +206,11 @@ Flow: `feature → dev → test → main`, with `end` as a parking place for fut
 backend/
   app/
     personas.py        hub-level personas (both pillars rank against these)
-    identity.py        directory profile → derived persona
+    identity.py        signed-in SQL profile → derived persona
+    auth.py            local sessions and production password login
+    database.py        transactional SQLite and legacy migration
+    account.py         preferences and local access requests
+    manage.py          account provisioning and catalog validation
     context/           shared footprints + user context (all nine pillars)
     marketplace/       agents, search, curation, docs        ← Swim Lane 1
     learning/          content, curation, progress           ← Learning pillar

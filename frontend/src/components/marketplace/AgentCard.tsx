@@ -2,7 +2,7 @@ import { ArrowRight, Lock, Sparkles, Unlock, UserCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { track } from '../../lib/context'
 import { STATUS_LABEL, type Agent } from '../../lib/marketplace'
-import { usePersona } from '../../lib/persona'
+import { usePersona } from '../../lib/personaContext'
 
 interface Props {
   agent: Agent
