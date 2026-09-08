@@ -1,0 +1,38 @@
+[
+  {
+    "id": "recommended",
+    "title": "Recommended for you",
+    "subtitle": "Curated from your role and agent metadata, most relevant first.",
+    "rule": { "type": "persona" }
+  },
+  {
+    "id": "compliance-risk",
+    "title": "Compliance & Risk",
+    "subtitle": "KYC, screening, fraud and policy agents.",
+    "rule": { "type": "category", "value": "Compliance & Risk" }
+  },
+  {
+    "id": "document-intelligence",
+    "title": "Document Intelligence",
+    "subtitle": "Agents that read, extract and review documents.",
+    "rule": { "type": "category", "value": "Document Intelligence" }
+  },
+  {
+    "id": "customer-operations",
+    "title": "Customer Operations",
+    "subtitle": "Onboarding, disputes, collections and servicing.",
+    "rule": { "type": "category", "value": "Customer Operations" }
+  },
+  {
+    "id": "featured",
+    "title": "Popular & featured",
+    "subtitle": "Most used across CreditWiz this quarter.",
+    "rule": { "type": "featured" }
+  },
+  {
+    "id": "developer-tools",
+    "title": "Developer Tools",
+    "subtitle": "Agents for engineers building on the platform.",
+    "rule": { "type": "category", "value": "Developer Tools" }
+  }
+]

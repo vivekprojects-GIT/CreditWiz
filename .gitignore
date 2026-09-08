@@ -1,0 +1,29 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Env — secrets never, but ship the example
+.env
+.env.*
+!.env.example
+
+# Runtime footprints
+backend/var/
+
+# SQLite runtime state
+backend/var/*.db
+backend/var/*.db-wal
+backend/var/*.db-shm

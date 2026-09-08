@@ -1,0 +1,14 @@
+{
+  "$comment": "Mocked directory profile for the prototype. Stands in for Active Directory / the HR profile. Note there is NO persona field here: the hub derives it from role and department using persona-mapping.json.",
+  "id": "u-1001",
+  "name": "Sai Vivek",
+  "first_name": "Sai",
+  "initials": "SV",
+  "email": "sai.vivek@creditwiz.example",
+  "job_title": "Compliance Analyst",
+  "department": "Compliance",
+  "business_unit": "Americas Financial Crime Compliance",
+  "location": "New York",
+  "manager": "Priya Raman",
+  "groups": ["AI-Hub-Users", "KYC-Agent-User", "AI-Hub-Admins"]
+}

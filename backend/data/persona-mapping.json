@@ -1,0 +1,41 @@
+{
+  "$comment": "Persona mapping logic. Directory attributes in, persona out. Matched in order: exact job title, job title containing a key, department, business unit, then default. Values are persona labels from personas.json (ids also accepted).",
+  "by_role": {
+    "Compliance Analyst": "Compliance User",
+    "KYC Analyst": "Compliance User",
+    "AML Investigator": "Compliance User",
+    "Compliance Officer": "Compliance User",
+    "Fraud Investigator": "Risk Analyst",
+    "Fraud Analyst": "Risk Analyst",
+    "Risk Analyst": "Risk Analyst",
+    "Credit Risk Manager": "Risk Analyst",
+    "Collections Agent": "Operations User",
+    "Collections Team Lead": "Operations User",
+    "Operations Analyst": "Operations User",
+    "Customer Service Representative": "Operations User",
+    "Software Engineer": "Developer",
+    "Senior Software Engineer": "Developer",
+    "Data Engineer": "Developer",
+    "Solutions Architect": "Developer",
+    "Platform Engineer": "Developer",
+    "Business Analyst": "Business User",
+    "Product Manager": "Business User",
+    "Relationship Manager": "Business User",
+    "Onboarding Specialist": "Business User"
+  },
+  "by_department": {
+    "Compliance": "Compliance User",
+    "Financial Crime": "Compliance User",
+    "Legal": "Compliance User",
+    "Fraud": "Risk Analyst",
+    "Risk": "Risk Analyst",
+    "Collections": "Operations User",
+    "Operations": "Operations User",
+    "Customer Service": "Operations User",
+    "Engineering": "Developer",
+    "Technology": "Developer",
+    "IT": "Developer"
+  },
+  "admin_groups": ["AI-Hub-Admins"],
+  "default": "Business User"
+}

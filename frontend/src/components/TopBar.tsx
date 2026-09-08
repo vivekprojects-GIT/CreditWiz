@@ -1,0 +1,238 @@
+import { Bell, LogOut, Search, Settings, User } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { fetchNotifications, isAbort, searchHub } from '../lib/api'
+import type { CurrentUser, Notification, SearchResult } from '../lib/types'
+import { useClickOutside } from '../lib/useClickOutside'
+
+interface Props {
+  user: CurrentUser
+}
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const h = Math.floor(diff / 3_600_000)
+  if (h < 1) return 'just now'
+  if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24)
+  return d === 1 ? 'yesterday' : `${d}d ago`
+}
+
+export function TopBar({ user }: Props) {
+  const navigate = useNavigate()
+
+  // ---- search
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[] | null>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [highlight, setHighlight] = useState(0)
+  const searchRef = useRef<HTMLDivElement>(null)
+  useClickOutside(searchRef, useCallback(() => setSearchOpen(false), []))
+
+  useEffect(() => {
+    const q = query.trim()
+    if (!q) {
+      setResults(null)
+      return
+    }
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => {
+      searchHub(q, ctrl.signal)
+        .then((r) => {
+          setResults(r)
+          setHighlight(0)
+        })
+        .catch((err: unknown) => {
+          if (!isAbort(err)) setResults([])
+        })
+    }, 160)
+    return () => {
+      clearTimeout(timer)
+      ctrl.abort()
+    }
+  }, [query])
+
+  function go(href: string) {
+    setSearchOpen(false)
+    setQuery('')
+    navigate(href)
+  }
+
+  function onSearchKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!results || results.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlight((h) => (h + 1) % results.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlight((h) => (h - 1 + results.length) % results.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      go(results[highlight].href)
+    }
+  }
+
+  // ---- notifications
+  const [notes, setNotes] = useState<Notification[] | null>(null)
+  const [notesOpen, setNotesOpen] = useState(false)
+  const notesRef = useRef<HTMLDivElement>(null)
+  useClickOutside(notesRef, useCallback(() => setNotesOpen(false), []))
+
+  useEffect(() => {
+    if (!notesOpen || notes !== null) return
+    const ctrl = new AbortController()
+    fetchNotifications(ctrl.signal)
+      .then(setNotes)
+      .catch((err: unknown) => {
+        if (!isAbort(err)) setNotes([])
+      })
+    return () => ctrl.abort()
+  }, [notesOpen, notes])
+
+  const unread = notes ? notes.filter((n) => !n.read).length : user.unread_notifications
+
+  function markAllRead() {
+    setNotes((prev) => prev?.map((n) => ({ ...n, read: true })) ?? prev)
+  }
+
+  // ---- account
+  const [acctOpen, setAcctOpen] = useState(false)
+  const acctRef = useRef<HTMLDivElement>(null)
+  useClickOutside(acctRef, useCallback(() => setAcctOpen(false), []))
+
+  const showResults = searchOpen && results !== null
+
+  return (
+    <header className="topbar">
+      <div className="search" ref={searchRef}>
+        <Search className="search__icon" strokeWidth={2.2} />
+        <input
+          className="search__input"
+          type="search"
+          placeholder="Search AI solutions, prompts and learning"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setSearchOpen(true)
+          }}
+          onFocus={() => setSearchOpen(true)}
+          onKeyDown={onSearchKey}
+          aria-label="Search the AI Hub"
+          aria-expanded={showResults}
+          aria-controls="hub-search-results"
+          autoComplete="off"
+        />
+        {showResults && (
+          <div className="menu search__results" id="hub-search-results" role="listbox">
+            {results.length === 0 ? (
+              <div className="menu__empty">No matches for “{query.trim()}”.</div>
+            ) : (
+              results.map((r, i) => (
+                <button
+                  key={r.href}
+                  type="button"
+                  className={`search__result${i === highlight ? ' is-highlight' : ''}`}
+                  role="option"
+                  aria-selected={i === highlight}
+                  onMouseEnter={() => setHighlight(i)}
+                  onClick={() => go(r.href)}
+                >
+                  <span className={`search__kind search__kind--${r.kind}`}>{r.kind}</span>
+                  <span>{r.title}</span>
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="topbar__actions">
+        <div className="menu-anchor" ref={notesRef}>
+          <button
+            type="button"
+            className={`iconbtn${notesOpen ? ' is-open' : ''}`}
+            aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
+            aria-haspopup="menu"
+            aria-expanded={notesOpen}
+            onClick={() => setNotesOpen((o) => !o)}
+          >
+            <Bell strokeWidth={2} size={26} />
+            {unread > 0 && <span className="iconbtn__badge">{unread}</span>}
+          </button>
+          {notesOpen && (
+            <div className="menu menu--notes" role="menu">
+              <div className="menu__head">
+                <span>Notifications</span>
+                {unread > 0 && (
+                  <button type="button" className="menu__action" onClick={markAllRead}>
+                    Mark all read
+                  </button>
+                )}
+              </div>
+              {notes === null && <div className="menu__empty">Loading…</div>}
+              {notes && notes.length === 0 && <div className="menu__empty">You're all caught up.</div>}
+              {notes?.map((n) => (
+                <Link
+                  key={n.id}
+                  to={n.href}
+                  className={`note${n.read ? '' : ' is-unread'}`}
+                  role="menuitem"
+                  onClick={() => setNotesOpen(false)}
+                >
+                  <span className="note__dot" aria-hidden="true" />
+                  <span className="note__body">
+                    <span className="note__title">{n.title}</span>
+                    <span className="note__text">{n.body}</span>
+                    <span className="note__time">{timeAgo(n.created_at)}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="menu-anchor" ref={acctRef}>
+          <button
+            type="button"
+            className="avatar"
+            aria-label={`Account: ${user.display_name}`}
+            aria-haspopup="menu"
+            aria-expanded={acctOpen}
+            onClick={() => setAcctOpen((o) => !o)}
+          >
+            {user.initials}
+          </button>
+          {acctOpen && (
+            <div className="menu menu--account" role="menu">
+              <div className="account">
+                <span className="avatar avatar--sm" aria-hidden="true">
+                  {user.initials}
+                </span>
+                <span>
+                  <span className="account__name">{user.display_name}</span>
+                  <span className="account__role">
+                    {user.job_title}
+                    {user.department ? ` · ${user.department}` : ''}
+                  </span>
+                  <span className="account__role">
+                    Persona: {user.persona.label}
+                    {user.is_admin ? ' · Hub admin' : ''}
+                  </span>
+                </span>
+              </div>
+              <Link to="/settings" className="menu__item" role="menuitem" onClick={() => setAcctOpen(false)}>
+                <User size={18} strokeWidth={2} /> View profile
+              </Link>
+              <Link to="/settings" className="menu__item" role="menuitem" onClick={() => setAcctOpen(false)}>
+                <Settings size={18} strokeWidth={2} /> Settings
+              </Link>
+              <button type="button" className="menu__item" role="menuitem" onClick={() => setAcctOpen(false)}>
+                <LogOut size={18} strokeWidth={2} /> Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}

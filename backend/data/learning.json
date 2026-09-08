@@ -1,0 +1,871 @@
+{
+  "paths": [
+    {
+      "id": "getting-started",
+      "title": "Getting started",
+      "blurb": "Your first hour with AI at CreditWiz."
+    },
+    {
+      "id": "business",
+      "title": "Business users",
+      "blurb": "Get work done with agents, no code required."
+    },
+    {
+      "id": "compliance",
+      "title": "Compliance and risk",
+      "blurb": "KYC, screening and policy agents in practice."
+    },
+    {
+      "id": "operations",
+      "title": "Operations",
+      "blurb": "Collections, disputes and servicing workflows."
+    },
+    {
+      "id": "governance",
+      "title": "Governance",
+      "blurb": "Responsible AI, policy and model risk."
+    },
+    {
+      "id": "builders",
+      "title": "Builders",
+      "blurb": "Design, build and evaluate agents on approved patterns."
+    }
+  ],
+  "persona_paths": {
+    "_comment": "Learning-owned: which paths matter to which persona, most relevant first. Drives learning curation.",
+    "business_user": [
+      "business",
+      "getting-started",
+      "operations"
+    ],
+    "compliance_user": [
+      "compliance",
+      "governance",
+      "business"
+    ],
+    "risk_analyst": [
+      "compliance",
+      "operations",
+      "governance"
+    ],
+    "operations_user": [
+      "operations",
+      "business",
+      "getting-started"
+    ],
+    "developer": [
+      "builders",
+      "governance",
+      "getting-started"
+    ]
+  },
+  "types": {
+    "_comment": "Content types the Learning pillar can hold. Drives the landing-page sections.",
+    "video": "Video",
+    "course": "Course",
+    "confluence": "Confluence page",
+    "guide": "Guide",
+    "documentation": "Documentation",
+    "quick-reference": "Quick reference",
+    "best-practice": "Best practice"
+  },
+  "items": [
+    {
+      "id": "ai-hub-getting-started",
+      "title": "What are AI Agents?",
+      "type": "video",
+      "description": "A clear twelve-minute introduction to what an AI agent is, how it differs from a chatbot, and the building blocks (models, tools, memory, planning) you will see across every agent in this hub.",
+      "topics": [
+        "AI Foundations"
+      ],
+      "capabilities": [],
+      "personas": [
+        "business_user",
+        "operations_user",
+        "compliance_user",
+        "risk_analyst",
+        "developer"
+      ],
+      "required_for": [
+        "business_user",
+        "operations_user"
+      ],
+      "path": "getting-started",
+      "level": "Beginner",
+      "duration_seconds": 748,
+      "tags": [
+        "getting started",
+        "agents",
+        "discovery",
+        "marketplace"
+      ],
+      "related_agents": [],
+      "url": "https://www.youtube.com/watch?v=F8NKVhkZZWI",
+      "youtube_id": "F8NKVhkZZWI",
+      "poster_url": "https://i.ytimg.com/vi/F8NKVhkZZWI/hqdefault.jpg",
+      "source": "IBM Technology"
+    },
+    {
+      "id": "kyc-verifier-walkthrough",
+      "title": "How Banks Know Who You Are: Identification & Verification for KYC and AML",
+      "type": "video",
+      "description": "What identification and verification actually involve, which documents count, and why completeness matters. The foundation for using the KYC Document Verifier and the Onboarding Assistant well.",
+      "topics": [
+        "KYC",
+        "Document AI"
+      ],
+      "capabilities": [
+        "Document extraction",
+        "Identity verification"
+      ],
+      "personas": [
+        "compliance_user",
+        "operations_user"
+      ],
+      "required_for": [
+        "compliance_user"
+      ],
+      "path": "compliance",
+      "level": "Beginner",
+      "duration_seconds": 351,
+      "tags": [
+        "kyc",
+        "onboarding",
+        "identity",
+        "documents",
+        "aml"
+      ],
+      "related_agents": [
+        "kyc-document-verifier",
+        "onboarding-pack-assistant"
+      ],
+      "url": "https://www.youtube.com/watch?v=-pgckssdA14",
+      "youtube_id": "-pgckssdA14",
+      "poster_url": "https://i.ytimg.com/vi/-pgckssdA14/hqdefault.jpg",
+      "source": "CAMS Online Training"
+    },
+    {
+      "id": "how-to-build-a-kyc-agent",
+      "title": "Amazon Bedrock for Beginners: From First Prompt to AI Agent",
+      "type": "video",
+      "description": "For engineers: the full path from a first prompt to a working agent on Amazon Bedrock, the platform several CreditWiz agents run on. Pair it with the Document agent architecture pattern to build a KYC-style agent.",
+      "topics": [
+        "KYC",
+        "Agent Development"
+      ],
+      "capabilities": [
+        "Document extraction"
+      ],
+      "personas": [
+        "developer"
+      ],
+      "required_for": [],
+      "path": "builders",
+      "level": "Advanced",
+      "duration_seconds": 2681,
+      "tags": [
+        "kyc",
+        "document agent",
+        "build",
+        "developer",
+        "bedrock",
+        "aws"
+      ],
+      "related_agents": [
+        "kyc-document-verifier",
+        "kyc-risk-screening",
+        "fraud-case-summariser"
+      ],
+      "url": "https://www.youtube.com/watch?v=FAgmR9VV0GQ",
+      "youtube_id": "FAgmR9VV0GQ",
+      "poster_url": "https://i.ytimg.com/vi/FAgmR9VV0GQ/hqdefault.jpg",
+      "source": "AWS Developers"
+    },
+    {
+      "id": "sanctions-screening-basics",
+      "title": "Conduct Sanctions Screening with These Simple Steps",
+      "type": "video",
+      "description": "The screening process step by step: lists, matching, handling hits and recording a disposition. Watch before using the KYC Risk Screening Agent so its explanations make sense.",
+      "topics": [
+        "AML",
+        "Screening"
+      ],
+      "capabilities": [
+        "Sanctions screening"
+      ],
+      "personas": [
+        "compliance_user",
+        "risk_analyst"
+      ],
+      "required_for": [
+        "compliance_user"
+      ],
+      "path": "compliance",
+      "level": "Intermediate",
+      "duration_seconds": 295,
+      "tags": [
+        "sanctions",
+        "aml",
+        "pep",
+        "screening"
+      ],
+      "related_agents": [
+        "kyc-risk-screening"
+      ],
+      "url": "https://www.youtube.com/watch?v=-N17VmifpOQ",
+      "youtube_id": "-N17VmifpOQ",
+      "poster_url": "https://i.ytimg.com/vi/-N17VmifpOQ/hqdefault.jpg",
+      "source": "RapidAML"
+    },
+    {
+      "id": "responsible-ai-fundamentals",
+      "title": "Introduction to Responsible AI",
+      "type": "video",
+      "description": "Why responsible AI matters and the principles behind it: fairness, accountability, transparency and safety. Recommended for anyone building or approving agents at CreditWiz.",
+      "topics": [
+        "Responsible AI",
+        "Governance"
+      ],
+      "capabilities": [
+        "Policy lookup"
+      ],
+      "personas": [
+        "compliance_user",
+        "risk_analyst",
+        "developer",
+        "business_user",
+        "operations_user"
+      ],
+      "required_for": [
+        "compliance_user",
+        "risk_analyst",
+        "developer",
+        "business_user",
+        "operations_user"
+      ],
+      "path": "governance",
+      "level": "Beginner",
+      "duration_seconds": 476,
+      "tags": [
+        "responsible ai",
+        "policy",
+        "governance",
+        "risk"
+      ],
+      "related_agents": [
+        "policy-qa-agent",
+        "kyc-risk-screening",
+        "fraud-case-summariser"
+      ],
+      "url": "https://www.youtube.com/watch?v=w_3L1Bf2P_g",
+      "youtube_id": "w_3L1Bf2P_g",
+      "poster_url": "https://i.ytimg.com/vi/w_3L1Bf2P_g/hqdefault.jpg",
+      "source": "Google Cloud"
+    },
+    {
+      "id": "contract-analyzer-in-5",
+      "title": "Litera AI Demo: Legal AI for Faster Document Review and Analysis",
+      "type": "video",
+      "description": "A six-minute demo of AI-assisted contract review: extracting clauses, comparing terms and surfacing exceptions. The same workflow the Contract Analyzer follows against the CreditWiz playbook.",
+      "topics": [
+        "Document AI",
+        "Legal"
+      ],
+      "capabilities": [
+        "Clause classification",
+        "Summarisation"
+      ],
+      "personas": [
+        "business_user",
+        "compliance_user"
+      ],
+      "required_for": [],
+      "path": "business",
+      "level": "Beginner",
+      "duration_seconds": 373,
+      "tags": [
+        "contract",
+        "legal",
+        "clauses",
+        "summarisation"
+      ],
+      "related_agents": [
+        "contract-analyzer"
+      ],
+      "url": "https://www.youtube.com/watch?v=b4k1YYH1nOY",
+      "youtube_id": "b4k1YYH1nOY",
+      "poster_url": "https://i.ytimg.com/vi/b4k1YYH1nOY/hqdefault.jpg",
+      "source": "Litera"
+    },
+    {
+      "id": "prompting-for-analysts",
+      "title": "4 Methods of Prompt Engineering",
+      "type": "video",
+      "description": "Four practical prompting techniques with examples. Use them with the Policy Q&A Agent, the Fraud Case Summariser and the Dispute Resolution Agent to get precise, well-scoped answers.",
+      "topics": [
+        "Prompting"
+      ],
+      "capabilities": [
+        "Grounded Q&A"
+      ],
+      "personas": [
+        "business_user",
+        "compliance_user",
+        "operations_user"
+      ],
+      "required_for": [],
+      "path": "business",
+      "level": "Intermediate",
+      "duration_seconds": 761,
+      "tags": [
+        "prompting",
+        "policy",
+        "fraud",
+        "summary"
+      ],
+      "related_agents": [
+        "policy-qa-agent",
+        "fraud-case-summariser",
+        "dispute-resolution-agent"
+      ],
+      "url": "https://www.youtube.com/watch?v=1c9iyoVIwDs",
+      "youtube_id": "1c9iyoVIwDs",
+      "poster_url": "https://i.ytimg.com/vi/1c9iyoVIwDs/hqdefault.jpg",
+      "source": "IBM Technology"
+    },
+    {
+      "id": "collections-outreach-demo",
+      "title": "The Effectiveness and Efficiency of AI in Debt Collection",
+      "type": "video",
+      "description": "How conversational AI changes collections outreach: tone, timing, compliance and customer outcomes. Context for the Collections Outreach Agent and its human-approval step, plus the Asset Locator hand-off.",
+      "topics": [
+        "Collections"
+      ],
+      "capabilities": [
+        "Customer communication"
+      ],
+      "personas": [
+        "operations_user"
+      ],
+      "required_for": [],
+      "path": "operations",
+      "level": "Intermediate",
+      "duration_seconds": 331,
+      "tags": [
+        "collections",
+        "arrears",
+        "outreach",
+        "recovery"
+      ],
+      "related_agents": [
+        "collections-outreach-agent",
+        "asset-locator"
+      ],
+      "url": "https://www.youtube.com/watch?v=JRTnj6OXiMo",
+      "youtube_id": "JRTnj6OXiMo",
+      "poster_url": "https://i.ytimg.com/vi/JRTnj6OXiMo/hqdefault.jpg",
+      "source": "Webio"
+    },
+    {
+      "id": "code-review-assistant-for-engineers",
+      "title": "How to close pull requests faster with Copilot code review",
+      "type": "video",
+      "description": "AI code review inside the pull request: what it catches, how to read findings and how it fits alongside human review. The Code Review Assistant works the same way on CreditWiz repositories.",
+      "topics": [
+        "Agent Development",
+        "Engineering"
+      ],
+      "capabilities": [
+        "Code review"
+      ],
+      "personas": [
+        "developer"
+      ],
+      "required_for": [],
+      "path": "builders",
+      "level": "Intermediate",
+      "duration_seconds": 640,
+      "tags": [
+        "code",
+        "review",
+        "github",
+        "developer",
+        "pull request"
+      ],
+      "related_agents": [
+        "code-review-assistant"
+      ],
+      "url": "https://www.youtube.com/watch?v=8hyvYP5PCks",
+      "youtube_id": "8hyvYP5PCks",
+      "poster_url": "https://i.ytimg.com/vi/8hyvYP5PCks/hqdefault.jpg",
+      "source": "GitHub"
+    },
+    {
+      "id": "disputes-triage-walkthrough",
+      "title": "AI in Financial Crime: How Banks Detect Fraud in 2026",
+      "type": "video",
+      "description": "How banks use AI across fraud, disputes and financial crime today, from synthetic identities to real-time detection. Background for the Fraud Case Summariser, the Dispute Resolution Agent and screening.",
+      "topics": [
+        "Fraud",
+        "Disputes"
+      ],
+      "capabilities": [
+        "Case triage",
+        "Case summarisation"
+      ],
+      "personas": [
+        "risk_analyst",
+        "operations_user"
+      ],
+      "required_for": [],
+      "path": "operations",
+      "level": "Beginner",
+      "duration_seconds": 713,
+      "tags": [
+        "fraud",
+        "dispute",
+        "chargeback",
+        "cards",
+        "financial crime"
+      ],
+      "related_agents": [
+        "fraud-case-summariser",
+        "dispute-resolution-agent",
+        "kyc-risk-screening"
+      ],
+      "url": "https://www.youtube.com/watch?v=m6XUHucbS4g",
+      "youtube_id": "m6XUHucbS4g",
+      "poster_url": "https://i.ytimg.com/vi/m6XUHucbS4g/hqdefault.jpg",
+      "source": "FinCrime Agent"
+    },
+    {
+      "topics": [
+        "AI Foundations"
+      ],
+      "capabilities": [],
+      "personas": [
+        "business_user",
+        "operations_user",
+        "compliance_user",
+        "risk_analyst",
+        "developer"
+      ],
+      "required_for": [
+        "business_user",
+        "operations_user",
+        "compliance_user",
+        "risk_analyst",
+        "developer"
+      ],
+      "tags": [
+        "getting started",
+        "access",
+        "checklist"
+      ],
+      "related_agents": [],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 300,
+      "body": "# AI Hub onboarding checklist\n\nWork through this once. It takes about five minutes.\n\n## 1. Confirm your access\n- Sign in to the hub with your CreditWiz account.\n- Check your profile shows the right job title and department. Your persona is derived from these, and it drives what the hub recommends.\n\n## 2. Find an agent\n- Describe what you need in the marketplace search, in plain language.\n- Read the **why this matched** line before opening an agent.\n\n## 3. Read the status before you rely on anything\n| Status | What it means |\n| --- | --- |\n| Production | Approved for day-to-day use |\n| Pilot / Beta | Limited group, expect changes |\n| In development | Not for business use |\n\n## 4. Know the access model\nOpen agents need no request. Request and Restricted agents route through the access portal or the owning team.\n\n## 5. Know who to ask\nEvery agent page lists its owning team and a **Collaborate with the owner** action. Use it before raising a ticket.\n",
+      "id": "ai-hub-onboarding-checklist",
+      "title": "AI Hub onboarding checklist",
+      "type": "quick-reference",
+      "description": "One page: get access, find an agent, understand its status, and know who to ask.",
+      "path": "getting-started",
+      "level": "Beginner"
+    },
+    {
+      "topics": [
+        "KYC",
+        "Document AI"
+      ],
+      "capabilities": [
+        "Completeness checking"
+      ],
+      "personas": [
+        "compliance_user",
+        "operations_user"
+      ],
+      "required_for": [],
+      "tags": [
+        "kyc",
+        "documents",
+        "identity",
+        "checklist"
+      ],
+      "related_agents": [
+        "kyc-document-verifier",
+        "onboarding-pack-assistant"
+      ],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 240,
+      "body": "# KYC document checklist\n\nUse alongside the KYC Document Verifier. The agent produces the completeness report; this is what it is checking against.\n\n## Identity — one required\n- Passport, in date\n- National ID card, in date\n- Driving licence, in date, photocard only\n\n## Address — one required, issued in the last 3 months\n- Utility bill, not mobile phone\n- Bank or credit card statement\n- Council tax or government correspondence\n\n## Entities — additional\n- Certificate of incorporation\n- Register of beneficial owners\n- Board resolution or equivalent authority\n\n## Common failures\n1. Address document older than three months.\n2. Name on the address document does not match the application exactly.\n3. Photocard licence supplied without the paper counterpart where required.\n4. Scans that crop the machine-readable zone.\n\nAnything the agent marks low confidence needs a human read before sign-off.\n",
+      "id": "kyc-document-checklist",
+      "title": "KYC document checklist",
+      "type": "quick-reference",
+      "description": "Which documents satisfy identification and verification, and the expiry rules that catch people out.",
+      "path": "compliance",
+      "level": "Beginner"
+    },
+    {
+      "topics": [
+        "AML",
+        "Screening"
+      ],
+      "capabilities": [
+        "Sanctions screening",
+        "Audit trail"
+      ],
+      "personas": [
+        "compliance_user",
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "tags": [
+        "sanctions",
+        "aml",
+        "pep",
+        "disposition",
+        "audit"
+      ],
+      "related_agents": [
+        "kyc-risk-screening"
+      ],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 240,
+      "body": "# Screening dispositions cheat sheet\n\n## The four dispositions\n| Disposition | Use when | Evidence you must record |\n| --- | --- | --- |\n| True match | Identifiers align | The matching fields and the list entry |\n| False positive | Name similarity only | Which identifiers differ |\n| Insufficient information | Cannot resolve either way | What you looked for and could not find |\n| Escalate | Possible true match, high risk | Everything above plus your reasoning |\n\n## Rules\n- The agent never clears a true hit. It explains and ranks; a person dispositions.\n- Every disposition writes to the case audit trail before the case can close.\n- Record the list refresh date shown on the result. Auditors ask for it.\n\n## What good evidence looks like\nNot \"name differs\". Instead: \"Date of birth differs by 11 years; nationality differs; no address overlap. Screened against OFAC SDN refreshed 2026-09-07.\"\n",
+      "id": "sanctions-screening-cheatsheet",
+      "title": "Screening dispositions cheat sheet",
+      "type": "quick-reference",
+      "description": "How to record a disposition on a screening hit so it survives audit.",
+      "path": "compliance",
+      "level": "Intermediate"
+    },
+    {
+      "topics": [
+        "Prompting"
+      ],
+      "capabilities": [
+        "Grounded Q&A"
+      ],
+      "personas": [
+        "business_user",
+        "compliance_user",
+        "operations_user",
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "tags": [
+        "prompting",
+        "patterns",
+        "analysts"
+      ],
+      "related_agents": [
+        "policy-qa-agent",
+        "fraud-case-summariser"
+      ],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 300,
+      "body": "# Prompt patterns for analysts\n\n## 1. Give the context, not just the question\nWeak: *Is this allowed?*\nBetter: *Customer in arrears asked to pause payments for 3 months. Is a payment holiday allowed under the collections policy, and what approval does it need?*\n\n## 2. State the output you want\nWeak: *Summarise this case.*\nBetter: *Summarise this case in five bullets: what happened, what is unusual, what has been checked, what is missing, recommended next step.*\n\n## 3. Set the boundary\n*Answer only from the approved policy library. If it is not covered, say so rather than inferring.*\n\n## 4. Give one example\nShow the shape you want once. Agents match the pattern far more reliably than they follow an abstract description.\n\n## Anti-patterns\n- Asking two unrelated questions in one prompt.\n- Pasting a whole case file with no question.\n- Asking for a decision the agent is not permitted to make.\n",
+      "id": "prompt-patterns-one-pager",
+      "title": "Prompt patterns for analysts",
+      "type": "quick-reference",
+      "description": "Four patterns that reliably improve answers from hub agents, with before and after examples.",
+      "path": "business",
+      "level": "Beginner"
+    },
+    {
+      "topics": [
+        "Responsible AI",
+        "Collections",
+        "Governance"
+      ],
+      "capabilities": [
+        "Customer communication",
+        "Rules checking"
+      ],
+      "personas": [
+        "operations_user",
+        "business_user",
+        "compliance_user"
+      ],
+      "required_for": [],
+      "tags": [
+        "human in the loop",
+        "outreach",
+        "conduct",
+        "approval"
+      ],
+      "related_agents": [
+        "collections-outreach-agent",
+        "dispute-resolution-agent",
+        "onboarding-pack-assistant"
+      ],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 600,
+      "body": "# Human in the loop for customer communications\n\n## The rule\nNo agent at CreditWiz sends a message to a customer. Agents draft; a person approves and sends. This is a conduct requirement, not a technical limitation.\n\n## Where the line sits\n| Agent may | A person must |\n| --- | --- |\n| Draft the message | Approve before sending |\n| Choose a channel and tone | Confirm the choice fits the customer |\n| Check against conduct rules | Judge vulnerability indicators |\n| Schedule for approval | Release the send |\n\n## Evidencing the approval\nThe approval record must capture who approved, when, and what they saw. If the draft changed after approval, it needs re-approval.\n\n## Vulnerability\nAny vulnerability indicator on the account blocks automated drafting and routes to a specialist. Do not work around this by drafting on another account.\n\n## Why this matters\nConduct findings turn on whether a person exercised judgement. \"The system generated it\" is not a defence.\n",
+      "id": "human-in-the-loop-best-practice",
+      "title": "Human in the loop for customer communications",
+      "type": "best-practice",
+      "description": "When an agent may draft, when a person must approve, and how to evidence the approval.",
+      "path": "governance",
+      "level": "Intermediate"
+    },
+    {
+      "topics": [
+        "Responsible AI",
+        "Governance",
+        "Agent Development"
+      ],
+      "capabilities": [
+        "Policy lookup",
+        "Grounded Q&A"
+      ],
+      "personas": [
+        "developer",
+        "compliance_user"
+      ],
+      "required_for": [],
+      "tags": [
+        "rag",
+        "grounding",
+        "citations",
+        "policy"
+      ],
+      "related_agents": [
+        "policy-qa-agent"
+      ],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 720,
+      "body": "# Grounding agents on policy documents\n\n## Three rules that keep a grounded agent trustworthy\n\n### 1. Index only approved, versioned documents\nIf a document is not approved, it is not in the index. Draft policy is the most common cause of a confidently wrong answer.\n\n### 2. No citation, no answer\nAn answer that cannot point at the section it came from is not returned. This is enforced in the response path, not left to the prompt.\n\n### 3. Declining is a correct outcome\nWhen retrieval confidence is low the agent says the question is outside the library. Measure this rate; a sudden drop usually means the index broke, not that the agent improved.\n\n## Refresh\nPolicy updates appear in answers within one hour of publication. Re-index on publish, not on a nightly schedule, or you will answer from withdrawn policy.\n\n## What to test before release\n- A question the library covers. Expect a cited answer.\n- A question it does not cover. Expect a refusal.\n- A question about withdrawn policy. Expect the current version, not the old one.\n",
+      "id": "grounding-agents-best-practice",
+      "title": "Grounding agents on policy documents",
+      "type": "best-practice",
+      "description": "How the Policy Q&A agent stays accurate: retrieval scope, citations, and refusing to answer.",
+      "path": "governance",
+      "level": "Advanced"
+    },
+    {
+      "topics": [
+        "Agent Development",
+        "Document AI"
+      ],
+      "capabilities": [
+        "Document extraction"
+      ],
+      "personas": [
+        "developer"
+      ],
+      "required_for": [],
+      "tags": [
+        "architecture",
+        "pattern",
+        "document agent",
+        "developer"
+      ],
+      "related_agents": [
+        "kyc-document-verifier",
+        "contract-analyzer"
+      ],
+      "url": "/marketplace/agents/kyc-document-verifier/architecture",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 900,
+      "body": "# Document agent pattern reference\n\nThe pattern behind the KYC Document Verifier and the Contract Analyzer.\n\n## Flow\n\n```text\nDocuments submitted\n    ↓\nIngestion: virus scan, format normalisation, OCR when needed\n    ↓\nExtraction: model reads each page into a typed schema\n    ↓\nValidation: fields checked against the record and business rules\n    ↓\nReport: completeness and consistency findings with evidence\n    ↓\nHuman review and sign-off\n```\n\n## Design principles\n- Keep documents in the vault; pass references, not copies.\n- Every extracted field carries a confidence score. Low confidence is surfaced, never hidden.\n- The report, not raw model output, is the contract with downstream systems.\n\n## What to build first\nThe typed schema. Everything else follows from it, and it is what makes the output testable.\n\nThe full architecture page for a live agent is linked from the marketplace.\n",
+      "id": "document-agent-pattern-doc",
+      "title": "Document agent pattern reference",
+      "type": "documentation",
+      "description": "The reference architecture behind the KYC Document Verifier and Contract Analyzer.",
+      "path": "builders",
+      "level": "Advanced"
+    },
+    {
+      "topics": [
+        "Agent Development",
+        "Governance"
+      ],
+      "capabilities": [],
+      "personas": [
+        "developer",
+        "compliance_user"
+      ],
+      "required_for": [],
+      "tags": [
+        "metadata",
+        "standard",
+        "registration",
+        "developer"
+      ],
+      "related_agents": [],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 600,
+      "body": "# Agent metadata standard\n\nEvery agent registered in the hub publishes the same metadata. This is what makes search, curation and the agent page work.\n\n## Groups\n| Group | Fields |\n| --- | --- |\n| Identity | id, name, tagline, version |\n| Business | description, problem solved, domains, use cases, personas |\n| Capabilities | capabilities, services, example tasks, tags, category |\n| Technical | platform, tools and services, models, architecture pattern |\n| Governance | owner, status, access |\n| Resources | documentation, architecture |\n| Lifecycle | created, updated |\n\n## The three that matter most\n1. **Use cases** in plain language. Search matches on these more than anything else.\n2. **Personas.** Curation cannot rank your agent without them.\n3. **Access.** If a user cannot tell how to get in, the listing has failed.\n\n## Submitting\nSend the template filled in, or the simple flat format. The hub normalises both.\n",
+      "id": "agent-metadata-standard-doc",
+      "title": "Agent metadata standard",
+      "type": "documentation",
+      "description": "The fields every agent must publish so the hub can display, search and curate it consistently.",
+      "path": "builders",
+      "level": "Intermediate"
+    },
+    {
+      "topics": [
+        "KYC",
+        "Operations"
+      ],
+      "capabilities": [
+        "Completeness checking"
+      ],
+      "personas": [
+        "compliance_user",
+        "operations_user"
+      ],
+      "required_for": [],
+      "tags": [
+        "runbook",
+        "kyc",
+        "operations",
+        "escalation"
+      ],
+      "related_agents": [
+        "kyc-document-verifier",
+        "kyc-risk-screening"
+      ],
+      "url": "https://confluence.creditwiz.example/display/FCT/KYC+Agent+Runbook",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "Confluence · Financial Crime Technology",
+      "duration_seconds": 900,
+      "body": "",
+      "id": "kyc-agent-runbook-confluence",
+      "title": "KYC agent runbook",
+      "type": "confluence",
+      "description": "Operational runbook: escalation paths, known failure modes and the weekly reconciliation.",
+      "path": "compliance",
+      "level": "Intermediate"
+    },
+    {
+      "topics": [
+        "Responsible AI",
+        "Governance"
+      ],
+      "capabilities": [],
+      "personas": [
+        "developer",
+        "compliance_user",
+        "risk_analyst"
+      ],
+      "required_for": [
+        "developer"
+      ],
+      "tags": [
+        "responsible ai",
+        "certification",
+        "governance",
+        "assessment"
+      ],
+      "related_agents": [],
+      "url": "https://learning.creditwiz.example/courses/responsible-ai",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz Learning",
+      "duration_seconds": 5400,
+      "body": "# Responsible AI certification\n\nFour modules and a short assessment. Required before you can be named the owner or approver of an agent.\n\n## Modules\n1. **Principles** — fairness, transparency, accountability, safety.\n2. **Model risk at CreditWiz** — risk tiers, what each tier requires, who signs off.\n3. **Human in the loop** — where judgement must sit with a person.\n4. **Monitoring** — what to watch after release and when to pull an agent.\n\n## Assessment\nTwenty questions. You need 80% to pass. You may retake it.\n\n## Time\nAbout ninety minutes end to end. It does not have to be one sitting.\n",
+      "id": "responsible-ai-certification",
+      "title": "Responsible AI certification",
+      "type": "course",
+      "description": "Four modules and an assessment. Required before you can own or approve an agent.",
+      "path": "governance",
+      "level": "Intermediate"
+    },
+    {
+      "topics": [
+        "AI Foundations",
+        "Governance"
+      ],
+      "capabilities": [],
+      "personas": [
+        "business_user",
+        "operations_user",
+        "compliance_user"
+      ],
+      "required_for": [],
+      "tags": [
+        "intake",
+        "use case",
+        "request",
+        "guide"
+      ],
+      "related_agents": [],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 480,
+      "body": "# Writing a good AI use case request\n\nIntake assesses on value, feasibility and risk. Give reviewers those three things and your request moves quickly.\n\n## Structure\n1. **The task today.** Who does it, how often, how long it takes.\n2. **The problem.** What goes wrong or what it costs.\n3. **What good looks like.** How you would know it worked.\n4. **The data.** What the agent would need to read, and where it lives.\n5. **The decision.** What stays with a person.\n\n## Worked example — weak\n*We want AI for onboarding.*\n\n## Worked example — strong\n*Onboarding analysts spend roughly the first 20 minutes of every case checking whether the document pack is complete, about 60 cases a week. An agent that reads the pack and lists what is missing would let them start at judgement. It would read documents from the vault and the application record. The KYC decision stays with the analyst.*\n\nThe second one can be assessed. The first cannot.\n",
+      "id": "writing-agent-requests-guide",
+      "title": "Writing a good AI use case request",
+      "type": "guide",
+      "description": "How to describe a use case so intake can assess it quickly, with two worked examples.",
+      "path": "business",
+      "level": "Beginner"
+    },
+    {
+      "topics": [
+        "Collections",
+        "Governance"
+      ],
+      "capabilities": [
+        "Rules checking",
+        "Customer communication"
+      ],
+      "personas": [
+        "operations_user"
+      ],
+      "required_for": [
+        "operations_user"
+      ],
+      "tags": [
+        "collections",
+        "conduct",
+        "arrears",
+        "vulnerability"
+      ],
+      "related_agents": [
+        "collections-outreach-agent"
+      ],
+      "url": "",
+      "youtube_id": "",
+      "poster_url": "",
+      "source": "CreditWiz",
+      "duration_seconds": 600,
+      "body": "# Conduct rules for collections outreach\n\n## Before any message goes out\n- Contact frequency is within limits for the arrears stage.\n- The channel matches the customer's stated preference where one exists.\n- No vulnerability indicator is open on the account.\n- Any payment arrangement referenced is one the customer actually has.\n\n## Tone\nPlain language. State the amount, the date and the options. Do not imply consequences that are not authorised at this stage.\n\n## What the agent checks and what it cannot\n| Agent checks | Person judges |\n| --- | --- |\n| Frequency limits | Whether contact is appropriate now |\n| Template approval | Whether the tone fits this customer |\n| Referenced amounts | Vulnerability signals not yet recorded |\n\n## If in doubt\nRoute to a specialist. An unnecessary escalation costs minutes; a conduct breach costs far more.\n",
+      "id": "collections-conduct-guide",
+      "title": "Conduct rules for collections outreach",
+      "type": "guide",
+      "description": "The conduct constraints every collections message must satisfy, and how the agent checks them.",
+      "path": "operations",
+      "level": "Intermediate"
+    }
+  ]
+}

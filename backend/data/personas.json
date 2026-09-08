@@ -1,0 +1,52 @@
+[
+  {
+    "id": "business_user",
+    "label": "Business user",
+    "description": "Works in a line of business and wants agents that finish everyday tasks faster.",
+    "interests": {
+      "domains": ["Onboarding", "Cards", "Lending", "Operations", "Customer Service"],
+      "capabilities": ["Summarisation", "Document extraction", "Customer communication", "Case triage"],
+      "tags": ["onboarding", "customer", "email", "summary"]
+    }
+  },
+  {
+    "id": "compliance_user",
+    "label": "Compliance user",
+    "description": "Owns KYC, AML, policy and regulatory obligations.",
+    "interests": {
+      "domains": ["Compliance", "Onboarding", "Fraud & Risk", "Legal"],
+      "capabilities": ["Identity verification", "Sanctions screening", "Policy lookup", "Risk scoring", "Audit trail"],
+      "tags": ["kyc", "aml", "sanctions", "policy", "regulation"]
+    }
+  },
+  {
+    "id": "risk_analyst",
+    "label": "Risk analyst",
+    "description": "Investigates fraud, credit risk and disputes.",
+    "interests": {
+      "domains": ["Fraud & Risk", "Cards", "Lending", "Collections"],
+      "capabilities": ["Risk scoring", "Case summarisation", "Anomaly detection", "Investigation support"],
+      "tags": ["fraud", "dispute", "chargeback", "risk"]
+    }
+  },
+  {
+    "id": "operations_user",
+    "label": "Operations user",
+    "description": "Runs collections, recovery, servicing and back-office processes.",
+    "interests": {
+      "domains": ["Collections", "Operations", "Customer Service"],
+      "capabilities": ["Customer communication", "Asset discovery", "Workflow automation", "Case triage"],
+      "tags": ["collections", "recovery", "outreach", "servicing"]
+    }
+  },
+  {
+    "id": "developer",
+    "label": "Developer",
+    "description": "Builds and maintains software and agents on the platform.",
+    "interests": {
+      "domains": ["Engineering", "Operations"],
+      "capabilities": ["Code review", "Code generation", "Documentation generation", "Test generation"],
+      "tags": ["code", "github", "pull request", "api", "sdk"]
+    }
+  }
+]

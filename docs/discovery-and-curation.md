@@ -1,0 +1,187 @@
+# Discovery and Curation — how the MVP ranks things
+
+**Read this distinction first.**
+
+| | |
+| --- | --- |
+| **Client requirement** | Persona-based discovery now; behavioural, cross-pillar personalisation later. |
+| **Our implementation design** | The four scoring mechanisms below, the weights, and the `/api/context/*` seam. These are our choices, not things that were asked for. Change them freely. |
+
+Everything in this document except the top row is implementation design.
+
+## Current MVP
+
+```text
+User Role
+   ↓
+Derived Persona
+   ↓
+Persona Curation Rules
+   ↓
+Agent Metadata
+   ↓
+Recommended for You
+
+
+User Natural-Language Search
+   ↓
+Intent Understanding
+   ↓
+Metadata Search
+   ↓
+Persona Boost
+   ↓
+Search Results
+
+
+Agent Selected
+   ↓
+Metadata Similarity
+   ↓
+Related Agents
+
+
+User Activity
+Search / Click / View / Launch / Learning
+   ↓
+Footprints Collected
+   ↓
+Stored for Future Use
+   ✗
+Does NOT influence current ranking
+```
+
+## 1. Recommended for you — persona curation
+
+A **curation score**, not a recommendation model. Rule-based on purpose so any position can be justified in review.
+
+```text
+persona match      +10
+domain match        +3 each
+capability match    +2 each
+tag match           +1 each
+popularity          tie-breaker
+```
+
+Inputs are the derived persona and static agent metadata. Nothing behavioural.
+
+`GET /api/marketplace/curation` returns the full breakdown, so "why is KYC Risk Screening first?" has a direct answer:
+
+| Agent | Persona | Domain | Capability | Tag | Total |
+| --- | --- | --- | --- | --- | --- |
+| KYC Risk Screening | 10 | 9 | 6 | 3 | 28.81 |
+| KYC Document Verifier | 10 | 6 | 4 | 1 | 21.92 |
+| Policy Q&A | 10 | 3 | 2 | 2 | 17.95 |
+
+Code: `curation_breakdown()` and `recommend_for_persona()` in `backend/app/marketplace/search.py`.
+
+## 2. Search — a different question
+
+Recommendation asks *given who this user is, what should we proactively surface?*
+Search asks *given what the user just asked for, what satisfies this need?*
+
+```text
+Natural-language query
+        ↓
+Intent understanding      Claude when a key is set, local lexicon otherwise
+        ↓
+Agent metadata matching   name, use cases, capabilities, domains, tags, category, description
+        ↓
+Semantic / lexical relevance
+        ↓
+Small persona boost       ×1.2 built-for, ×1.05 domain, ×1.05 capability
+        ↓
+Ranked results + "why this matched"
+```
+
+The persona multipliers are deliberately modest so **intent dominates**. A compliance user searching "agent that helps generate Python code" gets the Code Review Assistant, not a KYC agent.
+
+## 3. Related agents — metadata similarity
+
+```text
+Current Agent → category, domains, capabilities, tags → similar agents
+```
+
+Three points for the same category, two per shared domain, one per shared capability. Fine for ten agents.
+
+## 4. Learning curation — owned by the Learning pillar
+
+Full write-up: [learning-pillar.md](learning-pillar.md). Learning also tracks progress, which the Marketplace does not.
+
+The Marketplace does **not** own a learning recommender. It consumes one.
+
+```text
+Agent Detail Page  (Marketplace)
+        ↓  consumes
+GET /api/learning/for-agent/{agent_id}?persona=
+        ↓
+Learning pillar owns the content AND the recommendation logic
+```
+
+Learning applies the same explainable curation idea the Marketplace uses for agents, over its own metadata. A `persona_paths` map in `backend/data/learning.json` says which paths matter to which persona.
+
+**Learning's own "Recommended for you" row** (`GET /api/learning/recommended`):
+
+```text
+path affinity      +10 / +6 / +3   by position in the persona's path list
+persona tag match  +2 each
+```
+
+**On an agent page**, agent relevance must dominate so the right content always appears; persona only re-orders among videos that already teach that agent:
+
+```text
+explicit agent link  +10
+agent tag overlap    +2 each
+persona affinity     +5 / +3 / +1   (re-ordering nudge only)
+```
+
+Same agent, different persona:
+
+| Persona | 1st | 2nd |
+| --- | --- | --- |
+| Compliance user | How Banks Know Who You Are (compliance) | Amazon Bedrock for Beginners (builders) |
+| Developer | Amazon Bedrock for Beginners (builders) | How Banks Know Who You Are (compliance) |
+
+`GET /api/learning/curation` returns the per-component breakdown, as the marketplace one does.
+
+**Naming.** The agent page section is "Learning for this agent", because that is what it is: content linkage, persona-ordered. "Recommended for you" is reserved for the persona-curated row in Learning.
+
+## What footprints do today
+
+```text
+Searches · Clicks · Agent views · Launches · Learning views · Feedback
+        ↓
+POST /api/context/events        (shared hub layer, every pillar)
+        ↓
+backend/var/interactions.jsonl
+        ↓
+Stored. Read by nothing that ranks.
+```
+
+Recommendations currently depend on the **derived persona and static agent metadata**. They also change when an agent's capabilities, domains, tags or popularity change, when an agent is added or removed, or when the persona mapping changes. Behavioural footprints do not affect ranking.
+
+## Future
+
+```text
+Role / Persona
+      +
+Cross-Pillar Footprints
+      +
+Derived User Interests
+        ↓
+Adaptive Curation
+        ↓
+Personalized Marketplace
+        ↓
+Personalized Learning
+        ↓
+Eventually broader AI Hub / Super Agent
+```
+
+The transition would become:
+
+```text
+Future score = Persona Score + Metadata Relevance + User Interest Overlap
+```
+
+`GET /api/context/interests` already aggregates topics across pillars and is **our implementation seam**, added to make that transition cheap. It was not a client request, and nothing reads it for ranking. Wiring it in means adding one interest-overlap term to `curation_breakdown()` and to the search multipliers.
