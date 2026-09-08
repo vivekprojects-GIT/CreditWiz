@@ -21,11 +21,12 @@ services:
       - key: CREDITWIZ_ENV
         value: development
 
-      # No model calls by default, so the deployment costs nothing to run and
-      # search falls back to the local concept lexicon, labelled "Interpreted
-      # locally" in the UI. Set to 0 and add the key below to enable Claude.
+      # The key alone decides whether Claude is used. This kill switch stays off
+      # so that pasting a key is enough; with no key set, search falls back to
+      # the local concept lexicon and the UI labels it "Interpreted locally".
+      # Set to 1 to force the fallback even when a key is present.
       - key: CREDITWIZ_DISABLE_LLM
-        value: "1"
+        value: "0"
 
       # sync:false means Render prompts for the value and never stores it in git.
       - key: ANTHROPIC_API_KEY
