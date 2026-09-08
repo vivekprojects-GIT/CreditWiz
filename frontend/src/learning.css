@@ -615,11 +615,10 @@
   color: var(--red);
 }
 
+/* Red marks the type, but a tinted ground repeated across a section turned the
+   page pink, so only the glyph carries the accent. */
 .icard--best-practice .icard__cover {
   color: var(--red);
-  background:
-    repeating-linear-gradient(135deg, transparent 0 9px, rgba(230, 0, 0, 0.05) 9px 10px),
-    var(--red-tint);
 }
 
 .icard__body {
