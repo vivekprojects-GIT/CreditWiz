@@ -196,17 +196,24 @@ function MarketplaceContent() {
             <div className="results__grid">
               {result.results.map((m, i) => (
                 <div key={m.agent.id} className={`results__item${i === 0 ? ' is-top' : ''}`}>
+                  {/* Rank 1 is the best match; ranks 2 and 3 show their
+                      percentage only, quieter; rank 4 onward shows nothing.
+                      The percentage is coverage of the extracted domains and
+                      capabilities, omitted when nothing was extracted rather
+                      than invented. */}
                   {i === 0 && (
                     <span className="results__best">
                       Best match
-                      {/* Share of the extracted domains and capabilities this
-                          agent covers. Absent when nothing structured was
-                          extracted, rather than showing an invented number. */}
-                      {m.coverage !== null && m.coverage !== undefined && (
+                      {m.coverage != null && (
                         <span className="results__pct" title="Covers this share of what we understood you needed">
                           {m.coverage}% match
                         </span>
                       )}
+                    </span>
+                  )}
+                  {i > 0 && i < 3 && m.coverage != null && (
+                    <span className="results__rank" title="Covers this share of what we understood you needed">
+                      {m.coverage}% match
                     </span>
                   )}
                   <AgentCard agent={m.agent} why={m.why} source="search" />

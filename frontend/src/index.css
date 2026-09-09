@@ -3128,3 +3128,21 @@ button:disabled {
   font-variant-numeric: tabular-nums;
   opacity: 0.92;
 }
+
+/* Ranks 2 and 3: the percentage without the best-match badge. Ink, not red,
+   so the best match stays the only red element on the row. */
+.results__rank {
+  position: absolute;
+  top: -9px;
+  left: var(--s-4);
+  z-index: 1;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--ink-900);
+  color: #fff;
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
