@@ -21,8 +21,8 @@ flowchart TB
 
   subgraph H ["Hybrid search"]
     direction LR
-    K["BM25<br/>keyword · top 12"]
-    S["Semantic<br/>ChromaDB · cosine · top 12"]
+    K["BM25<br/>keyword · top 6"]
+    S["Semantic<br/>ChromaDB · cosine · top 6"]
   end
 
   Q --> A
@@ -62,4 +62,4 @@ flowchart TB
 - **The model understands; the registry decides.** Claude produces a `SearchIntent` and nothing else. Owner, status, access and URLs come from `agents.json` alone.
 - **Every step degrades.** No key → lexicon. Timeout → lexicon. Broken index → keyword only. Nonsense → no match. The demo has no single point of failure.
 
-Constants: candidates 12 · k 60 · floors 0.45 / 65% / 50% · limit 6 · intent cache 256 · retrieval cache 256 · model `claude-sonnet-5` · index ONNX MiniLM-L6-v2.
+Constants: candidates 6 · k 60 · floors 0.45 / 65% / 50% · limit 6 · intent cache 256 · retrieval cache 256 · model `claude-sonnet-5` · index ONNX MiniLM-L6-v2.

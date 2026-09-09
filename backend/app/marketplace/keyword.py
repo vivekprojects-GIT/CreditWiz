@@ -23,7 +23,9 @@ from .models import Agent
 # Standard BM25 parameters: k1 = term-frequency saturation, b = length normalisation.
 K1 = 1.5
 B = 0.75
-DEFAULT_CANDIDATES = 12
+# Matched to the semantic side, so neither retriever gets a deeper say than
+# the other in fusion. See semantic.DEFAULT_CANDIDATES.
+DEFAULT_CANDIDATES = 6
 
 
 class KeywordIndex:

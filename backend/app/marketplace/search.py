@@ -200,13 +200,16 @@ def understand(query: str, agents: list[Agent]) -> tuple[SearchIntent, str]:
 
 # -------------------------------------------------------------- matching
 #
-# Typed search is semantic retrieval over the agent metadata. The request --
+# Typed search is hybrid retrieval over the agent metadata. The request --
 # enriched with what we understood from it -- is embedded once and compared
-# with every agent's embedded description; results are ordered by similarity.
+# with every agent's embedded description, and scored separately by BM25 over
+# the same text. The two rankings are fused by rank, not by score.
 #
-# Deliberately absent: per-field lexical weights, popularity, persona
-# multipliers and a blend between two rankers. Each grew for a reason, and
-# together they were four tuning knobs explaining one ordering. The
+# Deliberately absent: per-field lexical weights, popularity and persona
+# multipliers. Each grew for a reason, and together they were three tuning
+# knobs explaining one ordering. Fusion is the one exception, and it earns its
+# place by needing no weight at all: RRF reads ranks, so there is nothing to
+# tune between the two retrievers. The
 # Recommended-for-you carousel keeps its arithmetic (curation, below) because
 # that per-component table is a review asset; a typed query does not need it.
 

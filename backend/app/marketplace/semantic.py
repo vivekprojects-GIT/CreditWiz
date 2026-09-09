@@ -36,9 +36,12 @@ from .models import Agent
 log = logging.getLogger("mufg.semantic")
 
 COLLECTION = "agents"
-# Retrieval is the ranking. Ask for more than we show so the similarity floors
-# and the per-user visibility drop still leave a full page.
-DEFAULT_CANDIDATES = 12
+# What each retriever proposes to the fusion step. Matched to RESULT_LIMIT: on
+# this catalogue, deepening either retriever to 12 changed no result and no
+# ordering on a 14-query check, because the relevance gate cut the extra
+# candidates anyway. Revisit alongside the gate if the catalogue grows enough
+# that a real match can sit below rank 6 in both retrievers at once.
+DEFAULT_CANDIDATES = 6
 CACHE_SIZE = 256
 
 
