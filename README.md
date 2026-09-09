@@ -4,7 +4,10 @@ Implemented MVP: **AI Marketplace & Discovery**, **Learning**, and shared accoun
 
 Start with the [MVP completion and operations guide](docs/mvp-completion.md) for the requirement matrix, account setup, migration, validation, and explicit enterprise dependencies.
 
-React frontend, all-Python backend. Ten sample agents, twenty-two learning items, no external integrations.
+React frontend, all-Python backend. Ten sample agents, twenty-two learning
+items, no external integrations. Search is hybrid — a local ChromaDB semantic
+index and a BM25 keyword index, fused by rank — and the whole thing deploys as
+a single container.
 
 ---
 
@@ -246,7 +249,27 @@ npm run dev
 
 Open [MUFG](http://localhost:5173) and choose a demo account. Demo mode is for local use.
 
-Optional: copy `backend/.env.example` to `backend/.env` and add `ANTHROPIC_API_KEY`, set `CREDITWIZ_DISABLE_LLM=0`, and choose an available model for Claude-interpreted search. Without it the local lexicon is used and everything still works.
+On first start the backend downloads the embedding model (ONNX MiniLM, about
+80 MB) and builds the semantic index. Later starts re-embed nothing. If the
+download fails, search falls back to the keyword ranker and still works.
+
+Optional: copy `backend/.env.example` to `backend/.env` and add
+`ANTHROPIC_API_KEY`, set `CREDITWIZ_DISABLE_LLM=0`, and choose an available
+model for Claude-interpreted search. Without it the local lexicon interprets
+the request and everything still works.
+
+| Variable | Local default | Purpose |
+| --- | --- | --- |
+| `CREDITWIZ_ENV` | `development` | `production` disables demo sign-in and requires provisioned accounts |
+| `CREDITWIZ_DISABLE_LLM` | `1` | `0` lets a configured `ANTHROPIC_API_KEY` interpret searches |
+| `CREDITWIZ_DISABLE_SEMANTIC` | unset | `1` forces the keyword-only ranker |
+| `CREDITWIZ_ORIGINS` | localhost:5173 | CSRF allowlist; any loopback port is accepted outside production |
+| `CREDITWIZ_SEARCH_MODEL` | `claude-sonnet-5` | Model used to interpret a search request |
+| `CREDITWIZ_DATA_DIR` | `backend/data` | Where the authored JSON catalogues are read from |
+| `CREDITWIZ_VAR_DIR` | `backend/var` | Runtime state: SQLite and the semantic index |
+| `CREDITWIZ_INDEX_DIR` | under `VAR_DIR` | Overrides only the semantic index location |
+| `CREDITWIZ_STATIC_DIR` | `frontend/dist` | Built SPA served by FastAPI in the container |
+| `CREDITWIZ_BOOTSTRAP_EMAIL` / `_PASSWORD` | unset | Production only: provisions the first admin. Password must be 12+ characters |
 
 ```bash
 cd backend
@@ -260,16 +283,49 @@ npm run build
 
 ---
 
+## Deployment
+
+Live: **https://mufg-ai-hub.onrender.com**
+
+One Render web service, not two. Every API call in the app is a relative
+`/api/...` with `credentials: 'same-origin'`, so a separate frontend origin
+would never send the session cookie. The Dockerfile builds the frontend and
+FastAPI serves it, which also removes CORS from the deployment.
+
+```text
+Dockerfile   node build → frontend/dist
+             uv export → pip install (hash-verified)
+             embedding model baked in, so a cold start does not download it
+render.yaml  Blueprint: New > Blueprint, point it at this repo
+```
+
+Render prompts for the `sync: false` values; all are optional on a first
+deploy. Paste `ANTHROPIC_API_KEY` to enable Claude-interpreted search — the key
+alone controls it.
+
+**Free-tier limits worth knowing before a demo.** There is no persistent disk,
+so accounts, progress, ratings, footprints and both search indexes are rebuilt
+on every deploy and every wake; the catalogue itself is baked into the image
+and always survives. The instance sleeps after inactivity, so the first request
+takes 30–60 s — open the URL a minute before a review. To keep data, switch
+`plan` to `starter` and uncomment the disk block in `render.yaml`.
+
+---
+
 ## Branches
 
 | Branch | Purpose |
 | --- | --- |
-| `main` | Baseline branch; this MVP completion is on `codex/complete-mufg` pending review. |
+| `main` | Current state. Render deploys from here. |
 | `dev` | Integration branch. Feature work merges here first. |
 | `test` | QA and validation before promotion to `main`. |
 | `end` | End-state / target-architecture spikes, including work explicitly out of MVP scope. |
+| `codex/complete-creditwiz` | The working branch this MVP was built on. |
 
-Flow: `feature → dev → test → main`, with `end` as a parking place for future-state exploration.
+Flow: `feature → dev → test → main`, with `end` as a parking place for
+future-state exploration. All five branches currently point at the same commit:
+the prototype has been developed on one line of work, and the flow above is the
+intended process rather than a history that has already happened.
 
 ---
 
@@ -285,8 +341,17 @@ backend/
     account.py         preferences and local access requests
     manage.py          account provisioning and catalog validation
     context/           shared footprints + user context (all nine pillars)
-    marketplace/       agents, search, curation, docs        ← Swim Lane 1
-    learning/          content, curation, progress           ← Learning pillar
+    marketplace/       ← Swim Lane 1
+      store.py         agent catalogue, normalisation, TTL cache
+      search.py        intent, hybrid ranking (RRF), curation score
+      semantic.py      ChromaDB index; embeds each agent once
+      keyword.py       BM25 index over the same agent text
+      router.py        endpoints, search trace
+    learning/          ← Learning pillar
+      store.py         catalogue cache
+      router.py        sections, curation, recommendations
+      progress.py      per-user progress, exactly-once completion events
+      ratings.py       star ratings, withheld averages
   data/                authored JSON: agents, learning, personas, mappings
   var/                 runtime state (git-ignored)
 frontend/src/
