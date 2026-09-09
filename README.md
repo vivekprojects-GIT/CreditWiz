@@ -365,6 +365,7 @@ docs/                  the write-ups below
 | [agent-metadata-template.md](docs/agent-metadata-template.md) | The template to hand to agent owners |
 | [swim-lane-1-marketplace.md](docs/swim-lane-1-marketplace.md) | Scope, what is and is not built |
 | [discovery-and-curation.md](docs/discovery-and-curation.md) | How everything is ranked |
+| [search-flow.md](docs/search-flow.md) | The search query flow as a diagram, stage by stage, with fallbacks and constants |
 | [learning-pillar.md](docs/learning-pillar.md) | Content model, sections, progress, proficiency line |
 | [shared-user-context.md](docs/shared-user-context.md) | The horizontal hub layer |
 | [api-reference.md](docs/api-reference.md) | Every endpoint |
