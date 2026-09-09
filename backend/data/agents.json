@@ -711,5 +711,498 @@
     ],
     "active": true,
     "review_status": "approved"
+  },
+  {
+    "id": "kyc-supervisor-agent",
+    "name": "KYC Supervisor Agent",
+    "tagline": "Runs the eight-stage KYC workflow, delegating to the specialist agents and aggregating what they return.",
+    "description": "Orchestrates the eight-stage KYC review end to end. Delegates each stage to the specialist agent that owns it, tracks which stages are outstanding, and aggregates the specialists' results into a single case view for the reviewer.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding"
+    ],
+    "use_cases": [
+      "Run a KYC case through the eight-stage workflow",
+      "Delegate a review stage to the specialist agent that owns it",
+      "Aggregate specialist results into one case view",
+      "See which stages of a case are still outstanding"
+    ],
+    "capabilities": [
+      "Workflow orchestration",
+      "Case summarisation",
+      "Audit trail",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "workflow",
+      "orchestration",
+      "supervisor",
+      "case management",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "operations_user"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-email-drafting-agent",
+    "name": "Email Drafting Agent",
+    "tagline": "Drafts client outreach: RFI letters, follow-up notifications and chase emails.",
+    "description": "Drafts the outbound correspondence a KYC case needs: initial outreach, requests for information, follow-up notifications and chasers. Produces a draft for a reviewer to check and send rather than sending on its own.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding",
+      "Customer Service"
+    ],
+    "use_cases": [
+      "Draft a request-for-information letter to a client",
+      "Draft a follow-up chase for outstanding KYC documents",
+      "Draft an outreach email to open a KYC review"
+    ],
+    "capabilities": [
+      "Customer communication",
+      "Summarisation",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "email",
+      "rfi",
+      "outreach",
+      "correspondence",
+      "follow-up",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "operations_user"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-client-response-analyzer",
+    "name": "Client Response Analyzer Agent",
+    "tagline": "Monitors the AMT mailbox, picks up client responses, classifies the documents and routes them to the right specialist.",
+    "description": "Watches the AMT mailbox for client replies, picks them up automatically, classifies the documents attached to them, and routes each one to the specialist agent that needs it. Removes the manual triage step between a client responding and the review continuing.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding",
+      "Customer Service"
+    ],
+    "use_cases": [
+      "Pick up a client response from the AMT mailbox automatically",
+      "Classify documents attached to a client reply",
+      "Route an incoming document to the right specialist agent"
+    ],
+    "capabilities": [
+      "Document classification",
+      "Document extraction",
+      "Workflow orchestration",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "mailbox",
+      "amt",
+      "document classification",
+      "routing",
+      "intake",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "operations_user"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-ownership-org-chart-agent",
+    "name": "Ownership / Org Chart Agent",
+    "tagline": "Works out the ultimate beneficial ownership chain and the entity hierarchy.",
+    "description": "Analyses corporate structure to establish the ultimate beneficial ownership chain and the entity hierarchy behind a client, so a reviewer can see who ultimately owns and controls the entity.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding"
+    ],
+    "use_cases": [
+      "Establish the ultimate beneficial ownership chain for an entity",
+      "Map the entity hierarchy behind a corporate client",
+      "Identify who ultimately controls a client entity"
+    ],
+    "capabilities": [
+      "Beneficial ownership analysis",
+      "Entity resolution",
+      "Audit trail",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "ubo",
+      "beneficial ownership",
+      "org chart",
+      "entity hierarchy",
+      "corporate structure",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "risk_analyst"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-cip-agent",
+    "name": "CIP Agent",
+    "tagline": "Handles the Customer Identification Program checks: identity documents, formation documents and authorised persons.",
+    "description": "Covers the Customer Identification Program stage of a KYC review. Checks identity documents, entity formation documents and the list of authorised persons for the client.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding"
+    ],
+    "use_cases": [
+      "Verify a client's identity documents",
+      "Check entity formation documents",
+      "Confirm the authorised persons for an entity"
+    ],
+    "capabilities": [
+      "Identity verification",
+      "Document extraction",
+      "Completeness checking",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "cip",
+      "identity",
+      "formation documents",
+      "authorised persons",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "operations_user"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-tax-agent",
+    "name": "Tax Agent",
+    "tagline": "Reviews tax documentation: W-8 and W-9 forms, FATCA and CRS classification, and treaty eligibility.",
+    "description": "Reviews the tax side of a KYC file. Checks W-8 and W-9 forms, establishes FATCA and CRS classification, and assesses treaty eligibility for the client.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding",
+      "Legal"
+    ],
+    "use_cases": [
+      "Review a W-8 or W-9 form for completeness",
+      "Establish FATCA and CRS classification for a client",
+      "Assess treaty eligibility"
+    ],
+    "capabilities": [
+      "Tax classification",
+      "Document extraction",
+      "Completeness checking",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "tax",
+      "w-8",
+      "w-9",
+      "fatca",
+      "crs",
+      "treaty",
+      "withholding",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-fincen-bo-form-agent",
+    "name": "FinCEN BO Form Agent",
+    "tagline": "Completes the FinCEN beneficial ownership form: the four ownership prongs and the control prong.",
+    "description": "Handles the FinCEN beneficial ownership certification. Works through the four ownership prongs and the single control prong, and produces the completed form for review.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding"
+    ],
+    "use_cases": [
+      "Complete a FinCEN beneficial ownership form",
+      "Work through the four ownership prongs for an entity",
+      "Establish the control prong for a client"
+    ],
+    "capabilities": [
+      "Beneficial ownership analysis",
+      "Completeness checking",
+      "Audit trail",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "fincen",
+      "beneficial ownership",
+      "bo form",
+      "ownership prong",
+      "control prong",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "risk_analyst"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-sanctions-review-agent",
+    "name": "Sanctions Review Agent",
+    "tagline": "Screens against the OFAC, EU, UN and OFSI sanctions lists.",
+    "description": "Runs sanctions screening for a KYC review against the OFAC, EU, UN and OFSI lists, and presents what it found for a reviewer to disposition.",
+    "business_domains": [
+      "Compliance",
+      "Fraud & Risk"
+    ],
+    "use_cases": [
+      "Screen a client against OFAC, EU, UN and OFSI lists",
+      "Review sanctions hits raised during a KYC case",
+      "Evidence sanctions screening for an audit trail"
+    ],
+    "capabilities": [
+      "Sanctions screening",
+      "Entity resolution",
+      "Audit trail",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "sanctions",
+      "ofac",
+      "eu",
+      "un",
+      "ofsi",
+      "screening",
+      "watchlist",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "risk_analyst"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-adverse-media-agent",
+    "name": "AHR / Adverse Media Agent",
+    "tagline": "Searches adverse media for financial crime and regulatory actions against a client.",
+    "description": "Covers the adverse media and heightened-risk review. Searches for financial crime coverage and regulatory actions associated with a client, and summarises what it found for the reviewer.",
+    "business_domains": [
+      "Compliance",
+      "Fraud & Risk"
+    ],
+    "use_cases": [
+      "Search adverse media for a client",
+      "Find regulatory actions against an entity",
+      "Summarise financial crime coverage for a KYC review"
+    ],
+    "capabilities": [
+      "Adverse media screening",
+      "Investigation support",
+      "Summarisation",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "ahr",
+      "adverse media",
+      "financial crime",
+      "regulatory action",
+      "heightened risk",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "risk_analyst"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
+  },
+  {
+    "id": "kyc-completeness-agent",
+    "name": "KYC Completeness Agent",
+    "tagline": "Confirms every specialist agent has reported OK, then populates Konect.",
+    "description": "The final gate in the workflow. Validates that every specialist agent has reported OK for its stage, and populates Konect once the case is complete.",
+    "business_domains": [
+      "Compliance",
+      "Onboarding"
+    ],
+    "use_cases": [
+      "Confirm every KYC stage has reported OK",
+      "Populate Konect once a case is complete",
+      "Identify which stage is blocking a KYC case"
+    ],
+    "capabilities": [
+      "Completeness checking",
+      "Workflow orchestration",
+      "Audit trail",
+      "Cited source annotation"
+    ],
+    "tags": [
+      "kyc",
+      "completeness",
+      "konect",
+      "validation",
+      "sign-off",
+      "cited sources"
+    ],
+    "personas": [
+      "compliance_user",
+      "operations_user"
+    ],
+    "category": "KYC Workflow",
+    "owner": {
+      "team": "KYC Programme",
+      "name": "",
+      "email": ""
+    },
+    "status": "in_development",
+    "platform": "",
+    "access": {
+      "type": "request",
+      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+    },
+    "created_at": "2026-09-09",
+    "updated_at": "2026-09-09",
+    "source_kind": "sample"
   }
 ]

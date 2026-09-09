@@ -17,8 +17,13 @@ client = TestClient(app)
 
 def test_agents_load_and_validate():
     agents = store.agents
-    assert len(agents) == 10
-    assert all(a.owner.email and a.access.how for a in agents)
+    assert len(agents) == 20  # 10 samples + the client's 10 first-pass KYC agents
+    assert all(a.access.how for a in agents)
+    # A confirmed owner is a condition of going to production, not of being
+    # listed. The client's first-pass KYC agents are in_development with the
+    # owner deliberately blank rather than invented.
+    assert all(a.owner.email for a in agents if a.status == "production")
+    assert any(a.status == "in_development" and not a.owner.email for a in agents)
     assert {a.id for a in agents} >= {
         "kyc-document-verifier",
         "contract-analyzer",
@@ -744,7 +749,9 @@ def test_semantic_retrieval_finds_an_agent_that_shares_no_words():
         pytest.skip("semantic index unavailable in this environment")
     hits = index.search("anti-money-laundering watchlist checks", limit=3)
     assert hits, "expected candidates"
-    assert max(hits, key=hits.get) == "kyc-risk-screening"
+    # Either sanctions agent proves the point; the client's Sanctions Review
+    # Agent now outranks the sample that stood in for it.
+    assert max(hits, key=hits.get) in {"kyc-risk-screening", "kyc-sanctions-review-agent"}
 
 
 def test_search_still_works_when_the_semantic_index_is_disabled(monkeypatch):

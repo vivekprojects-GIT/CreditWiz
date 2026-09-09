@@ -35,6 +35,15 @@
     }
   },
   {
+    "id": "kyc-workflow",
+    "title": "KYC Workflow",
+    "subtitle": "The supervisor and the specialist agents behind the eight-stage KYC review.",
+    "rule": {
+      "type": "category",
+      "value": "KYC Workflow"
+    }
+  },
+  {
     "id": "featured",
     "title": "Popular & featured",
     "subtitle": "Illustrative editorial popularity and featured selections.",
