@@ -20,7 +20,7 @@ import logging
 import os
 import re
 
-from . import semantic
+from . import keyword, semantic
 from .models import Agent, AgentMatch, Persona, SearchIntent
 
 log = logging.getLogger(__name__)
@@ -218,6 +218,14 @@ def understand(query: str, agents: list[Agent]) -> tuple[SearchIntent, str]:
 # 0.35-0.47. Model-dependent: retune if the embedding model changes.
 SIMILARITY_FLOOR = 0.45
 RELATIVE_FLOOR = 0.65
+# Rank fusion constant. 60 is the value from the original RRF paper and the one
+# nearly every hybrid-search implementation uses; it damps the gap between rank
+# 1 and rank 2 so one ranker's top hit cannot dominate on its own.
+RRF_K = 60
+# A keyword hit counts as strong at half the best keyword score. Exact names and
+# acronyms score far above incidental term overlap, so this keeps the former and
+# drops the latter.
+KEYWORD_RELATIVE_FLOOR = 0.5
 
 
 def retrieval_text(query: str, intent: SearchIntent) -> str:
@@ -237,22 +245,28 @@ def retrieval_text(query: str, intent: SearchIntent) -> str:
     return ". ".join(part for part in parts if part)
 
 
-def _fallback(query: str, intent: SearchIntent, agents: list[Agent]) -> dict[str, float]:
-    """Used ONLY when the index is unavailable.
+def keyword_text(query: str, intent: SearchIntent) -> str:
+    """What the keyword ranker sees: the typed words plus the extracted domains
+    and capabilities. Not the summary sentence -- prose dilutes exact tokens,
+    which are the whole reason a keyword ranker is here."""
+    parts = (query.strip(), ", ".join(intent.domains), ", ".join(intent.capabilities))
+    return ". ".join(p for p in parts if p)
 
-    Shared-token overlap between the enriched request and each agent's
-    embedding text, so a broken or switched-off index still finds agents.
-    This is resilience, not ranking design, and it is not tuned.
+
+def rrf(*rankings: dict[str, float], k: int = RRF_K) -> dict[str, float]:
+    """Reciprocal Rank Fusion: score = sum over rankers of 1 / (k + rank).
+
+    Rank-based, so a cosine similarity in 0..1 and a BM25 score in 0..10 fuse
+    without either scale dominating. An earlier hybrid blended the raw scores
+    and let lexical noise outvote a correct semantic top hit; this cannot.
     """
-    wanted = set(tokens(retrieval_text(query, intent)))
-    if not wanted:
-        return {}
-    found: dict[str, float] = {}
-    for agent in agents:
-        shared = len(wanted & set(tokens(semantic.embedding_text(agent))))
-        if shared:
-            found[agent.id] = shared / len(wanted)
-    return found
+    fused: dict[str, float] = {}
+    for ranking in rankings:
+        for rank_index, agent_id in enumerate(
+            sorted(ranking, key=lambda i: -ranking[i])
+        ):
+            fused[agent_id] = fused.get(agent_id, 0.0) + 1.0 / (k + rank_index + 1)
+    return fused
 
 
 def rank(
@@ -263,38 +277,58 @@ def rank(
     domain: str | None = None,
     limit: int = 6,
     similar: dict[str, float] | None = None,
+    keywords: dict[str, float] | None = None,
 ) -> list[AgentMatch]:
-    """`similar` lets the caller pass a retrieval it already ran. Embedding the
-    query is the expensive step, and the router does it once for both the
-    ranking and the trace rather than twice."""
+    """Hybrid search: semantic and keyword candidates fused by rank.
+
+    `similar` / `keywords` let the router pass retrievals it already ran, so the
+    query is embedded once for both the ranking and the trace.
+
+    RRF orders the union, but it has no notion of "nothing is relevant" -- it
+    always returns whatever either ranker returned. A relevance gate keeps a
+    candidate only if it is close semantically (both floors) OR is a strong
+    keyword hit. "zebra origami" clears neither and returns no match.
+    """
     if similar is None and semantic.index.available:
         similar = semantic.index.search(retrieval_text(query, intent))
-    if similar is not None:
-        floor = SIMILARITY_FLOOR
-    else:
-        similar = _fallback(query, intent, agents)
-        floor = 0.0  # overlap fractions sit on a different scale; keep any hit
-    if not similar:
+    similar = similar or {}
+    if keywords is None:
+        if keyword.index.size == 0:
+            from .store import store as agent_store
+
+            keyword.index.sync(agent_store.all_agents)
+        keywords = keyword.index.search(keyword_text(query, intent))
+    if not similar and not keywords:
         return []
 
-    # `agents` is already the caller's visible subset. The index is built from
-    # the whole catalogue, so an agent this user may not see can be retrieved;
-    # it is dropped here by construction and can never surface.
+    top_similarity = max(similar.values(), default=0.0)
+    top_keyword = max(keywords.values(), default=0.0)
+
+    def relevant(agent_id: str) -> bool:
+        sim = similar.get(agent_id, 0.0)
+        kw = keywords.get(agent_id, 0.0)
+        close = sim >= SIMILARITY_FLOOR and sim >= top_similarity * RELATIVE_FLOOR
+        strong_keyword = kw > 0 and kw >= top_keyword * KEYWORD_RELATIVE_FLOOR
+        return close or strong_keyword
+
+    # `agents` is already the caller's visible subset. Both indexes cover the
+    # whole catalogue, so an agent this user may not see can be retrieved; it is
+    # dropped here by construction and can never surface.
     by_id = {agent.id: agent for agent in agents}
-    ordered = sorted(similar.items(), key=lambda kv: -kv[1])
-    best = ordered[0][1]
-    cutoff = max(floor, best * RELATIVE_FLOOR) if floor else 0.0
+    fused = rrf(similar, keywords)
     matches: list[AgentMatch] = []
-    for agent_id, similarity in ordered:
+    for agent_id, score in sorted(fused.items(), key=lambda kv: -kv[1]):
         agent = by_id.get(agent_id)
-        if agent is None or similarity < cutoff:
+        if agent is None or not relevant(agent_id):
             continue
         if domain and domain not in agent.business_domains:
             continue
         matches.append(
             AgentMatch(
                 agent=agent,
-                score=round(similarity, 3),
+                score=round(score, 4),
+                similarity=round(similar[agent_id], 3) if agent_id in similar else None,
+                keyword=keywords.get(agent_id),
                 why=_why(agent, intent, persona),
                 reasons=_reasons(agent, intent, persona),
                 coverage=_coverage(agent, intent),

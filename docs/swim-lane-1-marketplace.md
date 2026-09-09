@@ -72,15 +72,19 @@ Understand intent   → summary, domains, capabilities   (Claude, or the local l
 Enrich the request  → query + summary + domains + capabilities, as one text
         ↓
 Semantic retrieval  → embed that text once; ChromaDB similarity against every agent
+Keyword retrieval   → BM25 over the same agent text: exact names, acronyms, IDs
         ↓
-Floors              → drop anything under 0.45, or under 65% of the best hit
+Fuse by rank        → Reciprocal Rank Fusion (k=60): the two scales never meet
+        ↓
+Relevance gate      → keep if semantically close (>= 0.45 and >= 65% of best)
+                      OR a strong keyword hit (>= 50% of the best keyword score)
         ↓
 Explain             → "Why this matched: covers document extraction and identity verification, works in Onboarding."
                        plus a coverage %: of the extracted domains and capabilities, how many this agent has
 ```
 
-Ranking is similarity, nothing else. There is no per-field weighting, no
-popularity, and no persona multiplier in typed search: the query is the
+Ranking is rank fusion of two retrievers, nothing else. There is no per-field
+weighting, no popularity, and no persona multiplier in typed search: the query is the
 question, so the query decides. Understanding the request informs the
 retrieval; it does not rank it, and Claude never picks an agent.
 

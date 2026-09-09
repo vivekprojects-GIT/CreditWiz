@@ -142,6 +142,10 @@ class AgentMatch(BaseModel):
     # that is a relative ranking value, so a percentage from it would either
     # always read 100 for the winner or imply a confidence we cannot justify.
     coverage: int | None = None
+    # The two signals behind the fused `score`, for the trace and for anyone
+    # asking why an agent ranked where it did. Either may be absent.
+    similarity: float | None = None
+    keyword: float | None = None
 
 
 class SearchIntent(BaseModel):

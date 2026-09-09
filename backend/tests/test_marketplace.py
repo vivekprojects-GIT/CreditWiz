@@ -817,3 +817,41 @@ def test_a_search_embeds_the_query_exactly_once(monkeypatch):
     ).json()
     assert body["results"], "expected a match"
     assert calls["n"] == 1, f"query embedded {calls['n']} times"
+
+
+def test_keyword_index_pins_an_exact_name():
+    """BM25's job in the hybrid: exact tokens -- names, acronyms, IDs."""
+    from app.marketplace import keyword
+    from app.marketplace.store import store
+
+    keyword.index.sync(store.all_agents)
+    hits = keyword.index.search("KYC Document Verifier")
+    assert max(hits, key=hits.get) == "kyc-document-verifier"
+    assert keyword.index.search("zebra origami") == {}
+
+
+def test_rrf_fuses_by_rank_and_ignores_score_scale():
+    """A cosine in 0..1 and a BM25 in 0..10 must fuse as ranks, not magnitudes."""
+    from app.marketplace.search import rrf
+
+    semantic_ranks = {"a": 0.9, "b": 0.8, "c": 0.1}
+    keyword_ranks = {"b": 900.0, "a": 850.0}  # wildly different scale
+    fused = rrf(semantic_ranks, keyword_ranks)
+    # a and b are each first in one ranker and second in the other: a tie.
+    assert abs(fused["a"] - fused["b"]) < 1e-9
+    # c appears in one ranker only, last: it must trail both.
+    assert fused["c"] < fused["a"]
+
+
+def test_hybrid_search_still_returns_no_match_for_nonsense():
+    """RRF always returns something; the relevance gate must not."""
+    body = client.post("/api/marketplace/search", json={"query": "zebra origami"}).json()
+    assert body["no_match"] is True and body["results"] == []
+
+
+def test_search_trace_records_both_rankers():
+    client.post("/api/marketplace/search", json={"query": "kyc verifier"})
+    meta = client.get("/api/context/events?type=search&limit=1").json()[0]["meta"]
+    assert meta["fusion"] == "rrf"
+    assert "candidates" in meta["keyword"] and "candidates" in meta["retrieval"]
+    assert meta["results"][0] == "kyc-document-verifier"

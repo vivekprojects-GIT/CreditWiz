@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from ..context import store as context_store
 from ..permissions import resolve_persona
-from . import search, semantic
+from . import keyword, search, semantic
 from .models import (
     Ack,
     Agent,
@@ -195,6 +195,9 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
         else None
     )
     embed_ms = round((time.perf_counter() - embed_started) * 1000)
+    if keyword.index.size == 0:
+        keyword.index.sync(store.all_agents)
+    matched = keyword.index.search(search.keyword_text(req.query, intent))
     results = search.rank(
         req.query,
         intent,
@@ -203,6 +206,7 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
         domain=req.domain,
         limit=req.limit,
         similar=retrieved,
+        keywords=matched,
     )
     # Trace enough to reconstruct why this ranking happened: how the request was
     # interpreted, what retrieval proposed, and what came out. Without the
@@ -235,6 +239,12 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
                     # inference versus everything around it.
                     "embed_ms": embed_ms,
                 },
+                "keyword": {
+                    "candidates": dict(
+                        sorted(matched.items(), key=lambda kv: -kv[1])[:5]
+                    ),
+                },
+                "fusion": "rrf",
                 "domain_filter": req.domain or None,
                 "no_match": not results,
                 "took_ms": round((time.perf_counter() - started) * 1000),

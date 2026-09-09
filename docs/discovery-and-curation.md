@@ -109,8 +109,11 @@ agents.json  ──authoritative──>  factual metadata (owner, access, URLs)
                                                   floors + visibility
 ```
 
-Typed search is **pure retrieval**: results are ordered by cosine similarity
-and nothing else. The request is enriched first -- the typed words plus the
+Typed search is **hybrid retrieval**: a semantic index (meaning) and a BM25
+keyword index (exact names, acronyms, IDs) over the same agent text, fused by
+rank with Reciprocal Rank Fusion. Rank fusion is the point: an earlier hybrid
+blended raw scores and let lexical noise outvote a correct semantic top hit;
+cosine in 0..1 and BM25 in 0..10 never meet as magnitudes here. The request is enriched first -- the typed words plus the
 extracted summary, domains and capabilities, as one text -- because bare words
 embed weakly ("code" alone lands at 0.26 against the Code Review Assistant).
 That is query expansion done once before a single retrieval; understanding
@@ -125,12 +128,12 @@ searchable text, so a restart re-embeds nothing and an edit re-embeds only the
 agent that changed. `sync()` covers the whole lifecycle in one idempotent pass:
 add, re-embed, delete.
 
-Cosine has no notion of "nothing else is relevant" -- it always fills top-K --
-so two floors decide what is shown:
+Neither cosine nor RRF has a notion of "nothing is relevant" -- both always
+return something -- so a relevance gate decides what is shown:
 
 ```text
-keep a result if  similarity >= 0.45
-             and  similarity >= 0.65 x best similarity
+keep a result if  ( similarity >= 0.45  and  similarity >= 0.65 x best similarity )
+             or   ( keyword score >= 0.5 x best keyword score )
 ```
 
 Measured on this catalogue with the enriched query: real matches sit at

@@ -42,7 +42,7 @@ Two discovery paths, as discussed: generative search at the top, Netflix-style c
 
 > *"I need something for validating customer documents during onboarding"*
 
-Claude restates the request in one line — *"Looking for an agent that validates customer documents during onboarding"* — so the user sees what was understood. That restatement, plus the words they typed, is embedded once and compared with every agent's embedded description; results are ordered by similarity, and anything not close enough is cut rather than padded in. The best match carries a **coverage %**: of the domains and capabilities extracted from the request, how many this agent has. Every result explains itself from the metadata that overlaps the request — not generated prose:
+Claude restates the request in one line — *"Looking for an agent that validates customer documents during onboarding"* — so the user sees what was understood. That restatement, plus the words they typed, goes to two rankers over the same agent descriptions - a semantic index for meaning, and BM25 for exact names, acronyms and IDs - whose results are fused by rank (Reciprocal Rank Fusion). Anything neither ranker finds convincing is cut rather than padded in. The best match carries a **coverage %**: of the domains and capabilities extracted from the request, how many this agent has. Every result explains itself from the metadata that overlaps the request — not generated prose:
 
 > **Why this matched:** This agent covers document extraction, identity verification and completeness checking, works in Onboarding and Compliance. It is built for compliance users.
 
