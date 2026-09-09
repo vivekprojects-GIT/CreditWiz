@@ -730,16 +730,14 @@
     "capabilities": [
       "Workflow orchestration",
       "Case summarisation",
-      "Audit trail",
-      "Cited source annotation"
+      "Audit trail"
     ],
     "tags": [
       "kyc",
       "workflow",
       "orchestration",
       "supervisor",
-      "case management",
-      "cited sources"
+      "case management"
     ],
     "personas": [
       "compliance_user",
@@ -754,12 +752,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-email-drafting-agent",
@@ -778,8 +780,7 @@
     ],
     "capabilities": [
       "Customer communication",
-      "Summarisation",
-      "Cited source annotation"
+      "Summarisation"
     ],
     "tags": [
       "kyc",
@@ -787,8 +788,7 @@
       "rfi",
       "outreach",
       "correspondence",
-      "follow-up",
-      "cited sources"
+      "follow-up"
     ],
     "personas": [
       "compliance_user",
@@ -803,12 +803,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-client-response-analyzer",
@@ -828,8 +832,7 @@
     "capabilities": [
       "Document classification",
       "Document extraction",
-      "Workflow orchestration",
-      "Cited source annotation"
+      "Workflow orchestration"
     ],
     "tags": [
       "kyc",
@@ -837,8 +840,7 @@
       "amt",
       "document classification",
       "routing",
-      "intake",
-      "cited sources"
+      "intake"
     ],
     "personas": [
       "compliance_user",
@@ -853,12 +855,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-ownership-org-chart-agent",
@@ -877,8 +883,7 @@
     "capabilities": [
       "Beneficial ownership analysis",
       "Entity resolution",
-      "Audit trail",
-      "Cited source annotation"
+      "Audit trail"
     ],
     "tags": [
       "kyc",
@@ -886,8 +891,7 @@
       "beneficial ownership",
       "org chart",
       "entity hierarchy",
-      "corporate structure",
-      "cited sources"
+      "corporate structure"
     ],
     "personas": [
       "compliance_user",
@@ -902,12 +906,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-cip-agent",
@@ -926,16 +934,14 @@
     "capabilities": [
       "Identity verification",
       "Document extraction",
-      "Completeness checking",
-      "Cited source annotation"
+      "Completeness checking"
     ],
     "tags": [
       "kyc",
       "cip",
       "identity",
       "formation documents",
-      "authorised persons",
-      "cited sources"
+      "authorised persons"
     ],
     "personas": [
       "compliance_user",
@@ -950,12 +956,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-tax-agent",
@@ -975,8 +985,7 @@
     "capabilities": [
       "Tax classification",
       "Document extraction",
-      "Completeness checking",
-      "Cited source annotation"
+      "Completeness checking"
     ],
     "tags": [
       "kyc",
@@ -986,8 +995,7 @@
       "fatca",
       "crs",
       "treaty",
-      "withholding",
-      "cited sources"
+      "withholding"
     ],
     "personas": [
       "compliance_user"
@@ -1001,12 +1009,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-fincen-bo-form-agent",
@@ -1025,8 +1037,7 @@
     "capabilities": [
       "Beneficial ownership analysis",
       "Completeness checking",
-      "Audit trail",
-      "Cited source annotation"
+      "Audit trail"
     ],
     "tags": [
       "kyc",
@@ -1034,8 +1045,7 @@
       "beneficial ownership",
       "bo form",
       "ownership prong",
-      "control prong",
-      "cited sources"
+      "control prong"
     ],
     "personas": [
       "compliance_user",
@@ -1050,12 +1060,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-sanctions-review-agent",
@@ -1074,19 +1088,15 @@
     "capabilities": [
       "Sanctions screening",
       "Entity resolution",
-      "Audit trail",
-      "Cited source annotation"
+      "Audit trail"
     ],
     "tags": [
       "kyc",
       "sanctions",
       "ofac",
-      "eu",
-      "un",
       "ofsi",
       "screening",
-      "watchlist",
-      "cited sources"
+      "watchlist"
     ],
     "personas": [
       "compliance_user",
@@ -1101,12 +1111,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-adverse-media-agent",
@@ -1125,8 +1139,7 @@
     "capabilities": [
       "Adverse media screening",
       "Investigation support",
-      "Summarisation",
-      "Cited source annotation"
+      "Summarisation"
     ],
     "tags": [
       "kyc",
@@ -1134,8 +1147,7 @@
       "adverse media",
       "financial crime",
       "regulatory action",
-      "heightened risk",
-      "cited sources"
+      "heightened risk"
     ],
     "personas": [
       "compliance_user",
@@ -1150,12 +1162,16 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   },
   {
     "id": "kyc-completeness-agent",
@@ -1174,16 +1190,14 @@
     "capabilities": [
       "Completeness checking",
       "Workflow orchestration",
-      "Audit trail",
-      "Cited source annotation"
+      "Audit trail"
     ],
     "tags": [
       "kyc",
       "completeness",
       "konect",
       "validation",
-      "sign-off",
-      "cited sources"
+      "sign-off"
     ],
     "personas": [
       "compliance_user",
@@ -1198,11 +1212,15 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request",
-      "how": "First-pass listing from the KYC programme. The access route, owner and platform are still to be confirmed by the agent's owning team."
+      "type": "request"
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
-    "source_kind": "sample"
+    "source_kind": "enterprise",
+    "audience_groups": [
+      "AI-Hub-Users"
+    ],
+    "review_status": "approved",
+    "active": true
   }
 ]

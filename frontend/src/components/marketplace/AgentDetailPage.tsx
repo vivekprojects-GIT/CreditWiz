@@ -151,7 +151,7 @@ export function AgentDetailPage() {
           <p className="agent__tagline">{agent.tagline}</p>
           <p className="agent__meta">
             <span>{agent.owner.team}</span>
-            <span>{agent.platform}</span>
+            {agent.platform && <span>{agent.platform}</span>}
             <span>{ACCESS_LABEL[agent.access.type]}</span>
             <span>Updated {agent.updated_at}</span>
           </p>
@@ -322,10 +322,18 @@ export function AgentDetailPage() {
 
           <section className="panel">
             <h2 className="panel__title">Owner</h2>
-            <p className="owner__name">{agent.owner.name}</p>
+            {/* A first-pass listing may not have a confirmed owner yet. Say so
+                here rather than carrying placeholder text in the data. */}
+            {agent.owner.name ? (
+              <p className="owner__name">{agent.owner.name}</p>
+            ) : (
+              <p className="owner__name">Owner to be confirmed</p>
+            )}
             <p className="owner__team">{agent.owner.team}</p>
             <div className="agent__links">
-              {agent.source_kind === 'enterprise' ? (
+              {agent.source_kind === 'enterprise' && !agent.owner.email ? (
+                <p className="muted">Contact details will appear once the owning team confirms the listing.</p>
+              ) : agent.source_kind === 'enterprise' ? (
                 <a
                   className="linkbtn"
                   href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`}

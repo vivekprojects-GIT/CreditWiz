@@ -46,7 +46,8 @@ class Agent(BaseModel):
     tags: list[str] = []
     category: str
     # technical
-    platform: str
+    # Empty until the owning team confirms it; the UI says so rather than the data.
+    platform: str = ""
     tools_services: list[str] = []
     models: list[str] = []
     architecture_pattern: str = ""
