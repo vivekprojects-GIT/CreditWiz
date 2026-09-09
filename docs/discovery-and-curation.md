@@ -87,13 +87,13 @@ Phrase matching tolerates wording differences between two catalogues:
 significant words are a subset of the other's. It stays tight enough that
 "Customer communication" does not match "Customer onboarding".
 
-`GET /api/marketplace/curation` returns the full breakdown, so "why is KYC Risk Screening first?" has a direct answer:
+`GET /api/marketplace/curation` returns the full breakdown, so "why is the Sanctions Review Agent first?" has a direct answer:
 
 | Agent | Domain | Capability | Use case | Tag | Persona boost | Total |
 | --- | --- | --- | --- | --- | --- | --- |
-| KYC Risk Screening | 9 | 6 | 4 | 3 | 5.5 | 28.31 |
-| KYC Document Verifier | 6 | 4 | 2 | 1 | 3.25 | 17.17 |
-| Policy Q&A | 3 | 2 | 4 | 2 | 2.75 | 14.70 |
+| Sanctions Review Agent | 6 | 4 | 6 | 2 | 4.5 | 22.50 |
+| Policy Q&A Agent | 3 | 2 | 4 | 2 | 2.75 | 14.70 |
+| KYC Supervisor Agent | 6 | 2 | 2 | 1 | 2.75 | 13.75 |
 
 ## Semantic retrieval
 

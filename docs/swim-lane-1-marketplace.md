@@ -6,7 +6,7 @@ First deliverable for review with Ganesh. Scope follows the brief: make the ~10 
 
 | # | Ask | Where it lives | Status |
 | --- | --- | --- | --- |
-| 1 | Real agent list | `backend/data/agents.json` | 10 **sample** agents in the agreed shape (KYC Document Verifier, KYC Risk Screening, Contract Analyzer, Asset Locator, and six more). Replace with the list from Ganesh / Vinay. |
+| 1 | Real agent list | `backend/data/agents.json` | The client's 10 first-pass KYC agents (a supervisor and nine specialists) plus 8 **sample** agents in the agreed shape (Contract Analyzer, Asset Locator, and six more). Governance fields on the KYC agents await the owning team. |
 | 2 | Agent metadata template | `docs/agent-metadata-template.md`, `backend/data/agent-metadata-template.json`, also served at `GET /api/marketplace/metadata-template` | Done. Seven groups: Identity, Business, Capabilities, Technical, Governance, Resources, Lifecycle. Owners can also send the simple flat format. |
 | 3 | Agent Discovery landing page | `/marketplace` | Done. Generative search on top, Netflix-style carousels below. |
 | 4 | Generative / NLP search | `POST /api/marketplace/search`, `backend/app/marketplace/search.py` | Done. Understands intent, matches metadata, ranks, explains why. |

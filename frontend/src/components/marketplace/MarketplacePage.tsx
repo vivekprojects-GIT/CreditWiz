@@ -107,6 +107,7 @@ function MarketplaceContent() {
       </nav>
 
       <PageBand
+        compact
         kicker="AI Marketplace"
         title="Find the right agent for the job"
         // Product copy, not prototype status. The catalogue size and the

@@ -97,7 +97,7 @@ Two discovery paths, as discussed: generative search at the top, Netflix-style c
 
 Claude restates the request in one line — *"Looking for an agent that validates customer documents during onboarding"* — so the user sees what was understood. That restatement, plus the words they typed, goes to two rankers over the same agent descriptions - a semantic index for meaning, and BM25 for exact names, acronyms and IDs - whose results are fused by rank (Reciprocal Rank Fusion). Anything neither ranker finds convincing is cut rather than padded in. The best match carries a **coverage %**: of the domains and capabilities extracted from the request, how many this agent has. Every result explains itself from the metadata that overlaps the request — not generated prose:
 
-> **Why this matched:** This agent covers document extraction, identity verification and completeness checking, works in Onboarding and Compliance. It is built for compliance users.
+> **Why this matched:** This agent covers identity verification, document extraction and completeness checking, works in Compliance and Onboarding. It is built for compliance users.
 
 No key configured? A local concept lexicon does the same job, and a semantic index over the agent metadata still retrieves agents that share no words with the query. Which engine interpreted the request is recorded in the search footprint rather than shown on the page: users care about the answer, not the plumbing.
 
@@ -184,7 +184,7 @@ Counted as distinct persona interests covered, so a wordy listing cannot
 outscore a precise one. Naming a persona is an optional curator hint that
 amplifies real metadata: 25% of nothing is nothing, so it cannot promote an
 unrelated agent. `GET /api/marketplace/curation` returns the per-component
-breakdown, so "why is KYC Risk Screening first?" is a sum you can check by hand.
+breakdown, so "why is the Sanctions Review Agent first?" is a sum you can check by hand.
 
 **Related agents** is metadata similarity. **Related learning** is owned by the Learning pillar and consumed here.
 

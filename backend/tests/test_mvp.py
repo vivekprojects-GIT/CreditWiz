@@ -121,7 +121,7 @@ def test_learning_acl_applies_to_catalog_detail_progress_search_paths_and_previe
     )
     assert hidden not in c.get("/api/search?q=document").text
     assert hidden not in c.get("/api/learning").text
-    assert hidden not in c.get("/api/learning/for-agent/kyc-document-verifier").text
+    assert hidden not in c.get("/api/learning/for-agent/contract-analyzer").text
     assert c.get("/api/learning?persona=developer").status_code == 403
     assert c.get("/api/marketplace/home?persona=developer").status_code == 403
     assert (
@@ -139,7 +139,7 @@ def test_agent_acl_covers_all_discovery_and_resources(monkeypatch):
     store._refresh()
     records = [
         a.model_copy(update={"audience_groups": ["AI-Hub-Admins"]})
-        if a.id == "kyc-document-verifier"
+        if a.id == "contract-analyzer"
         else a
         for a in store._agents
     ]
@@ -153,15 +153,17 @@ def test_agent_acl_covers_all_discovery_and_resources(monkeypatch):
         "/api/learning/items",
         "/api/marketplace/curation",
     ):
-        assert "kyc-document-verifier" not in c.get(route).text
+        # Exact quoted id: the learning item "contract-analyzer-in-5" would
+        # otherwise match as a substring and fail this for the wrong reason.
+        assert '"contract-analyzer"' not in c.get(route).text
     for suffix in ("", "/docs", "/architecture", "/related"):
         assert (
-            c.get("/api/marketplace/agents/kyc-document-verifier" + suffix).status_code
+            c.get("/api/marketplace/agents/contract-analyzer" + suffix).status_code
             == 404
         )
     assert (
-        "kyc-document-verifier"
-        not in c.post("/api/marketplace/search", json={"query": "kyc"}).text
+        "contract-analyzer"
+        not in c.post("/api/marketplace/search", json={"query": "contract"}).text
     )
 
 
@@ -403,7 +405,7 @@ def test_account_provisioning_revokes_old_sessions():
         "new-local-password-123",
     )
     assert c.get("/api/me").status_code == 401
-    assert validate() == {"agents": 20, "learning_items": 22, "paths": 6}
+    assert validate() == {"agents": 18, "learning_items": 22, "paths": 6}
 
 
 def test_single_origin_deployment_serves_the_spa_and_keeps_api_404s_json(

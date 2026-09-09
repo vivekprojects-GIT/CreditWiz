@@ -17,7 +17,7 @@ client = TestClient(app)
 
 def test_agents_load_and_validate():
     agents = store.agents
-    assert len(agents) == 20  # 10 samples + the client's 10 first-pass KYC agents
+    assert len(agents) == 18  # 8 samples + the client's 10 first-pass KYC agents
     assert all(a.access.how for a in agents)
     # A confirmed owner is a condition of going to production, not of being
     # listed. The client's first-pass KYC agents are in_development with the
@@ -25,7 +25,7 @@ def test_agents_load_and_validate():
     assert all(a.owner.email for a in agents if a.status == "production")
     assert any(a.status == "in_development" and not a.owner.email for a in agents)
     assert {a.id for a in agents} >= {
-        "kyc-document-verifier",
+        "kyc-cip-agent",
         "contract-analyzer",
         "asset-locator",
     }
@@ -39,7 +39,14 @@ def test_home_builds_carousels_for_persona():
     ids = [c["id"] for c in body["carousels"]]
     assert ids[0] == "recommended"
     recommended = [a["id"] for a in body["carousels"][0]["agents"]]
-    assert recommended[0] in {"kyc-document-verifier", "kyc-risk-screening"}
+    assert recommended[0] in {
+        "kyc-sanctions-review-agent",
+        "kyc-cip-agent",
+        "kyc-supervisor-agent",
+        "kyc-adverse-media-agent",
+        "fraud-case-summariser",
+        "policy-qa-agent",
+    }
     assert "code-review-assistant" not in recommended[:3]
 
 
@@ -60,7 +67,7 @@ def test_nlp_search_understands_onboarding_documents():
     assert body["engine"] == "local"
     assert body["no_match"] is False
     top = [m["agent"]["id"] for m in body["results"]]
-    assert top[0] in {"kyc-document-verifier", "onboarding-pack-assistant"}
+    assert top[0] in {"kyc-cip-agent", "onboarding-pack-assistant"}
     assert "Customer onboarding / KYC" in body["intent"]["concepts"]
     assert body["results"][0]["reasons"]
 
@@ -84,10 +91,10 @@ def test_search_no_match_returns_next_steps():
 
 
 def test_agent_detail_and_related():
-    body = client.get("/api/marketplace/agents/kyc-document-verifier").json()
-    assert body["owner"]["team"] == "Financial Crime Technology"
-    related = client.get("/api/marketplace/agents/kyc-document-verifier/related").json()
-    assert related and related[0]["id"] != "kyc-document-verifier"
+    body = client.get("/api/marketplace/agents/contract-analyzer").json()
+    assert body["owner"]["team"] == "Legal Technology"
+    related = client.get("/api/marketplace/agents/contract-analyzer/related").json()
+    assert related and related[0]["id"] != "contract-analyzer"
     assert client.get("/api/marketplace/agents/nope").status_code == 404
 
 
@@ -266,7 +273,7 @@ def test_search_results_explain_why():
         },
     ).json()
     top = body["results"][0]
-    assert top["agent"]["id"] in {"kyc-document-verifier", "onboarding-pack-assistant"}
+    assert top["agent"]["id"] in {"kyc-cip-agent", "onboarding-pack-assistant"}
     assert top["why"].startswith("This agent")
     assert "onboarding" in top["why"].lower() or "document" in top["why"].lower()
 
@@ -292,11 +299,11 @@ def test_event_types_follow_agreed_names():
 
 
 def test_agent_docs_and_architecture_pages():
-    docs = client.get("/api/marketplace/agents/kyc-document-verifier/docs").json()
-    assert docs["title"].startswith("KYC Document Verifier")
+    docs = client.get("/api/marketplace/agents/contract-analyzer/docs").json()
+    assert docs["title"].startswith("Contract Analyzer")
     assert "## Getting started" in docs["markdown"]
     arch = client.get(
-        "/api/marketplace/agents/kyc-document-verifier/architecture"
+        "/api/marketplace/agents/contract-analyzer/architecture"
     ).json()
     assert arch["title"] == "Document agent pattern"
     assert "How it works" in arch["markdown"]
@@ -305,18 +312,18 @@ def test_agent_docs_and_architecture_pages():
 
 def test_learning_for_agent_is_persona_ordered():
     recs = client.get(
-        "/api/learning/for-agent/kyc-document-verifier",
+        "/api/learning/for-agent/kyc-cip-agent",
         params={"persona": "compliance_user"},
     ).json()
     ids = [i["id"] for i in recs]
     assert "kyc-verifier-walkthrough" in ids and len(ids) <= 3
-    assert (
-        recs[0]["id"] == "kyc-verifier-walkthrough"
-    )  # domain primer first for compliance
+    # Both items explicitly link to the CIP Agent; either is the right lead
+    # for a compliance user, and both sit ahead of anything only tag-related.
+    assert recs[0]["id"] in {"kyc-verifier-walkthrough", "kyc-document-checklist"}
     dev = [
         i["id"]
         for i in client.get(
-            "/api/learning/for-agent/kyc-document-verifier",
+            "/api/learning/for-agent/kyc-cip-agent",
             params={"persona": "developer"},
         ).json()
     ]
@@ -341,7 +348,7 @@ def test_learning_items_span_many_content_types():
     detail = client.get("/api/learning/items/kyc-verifier-walkthrough").json()
     assert (
         detail["path_title"]
-        and "kyc-document-verifier" in detail["related_agent_names"]
+        and "kyc-cip-agent" in detail["related_agent_names"]
     )
 
 
@@ -698,11 +705,11 @@ def test_embedding_text_carries_the_searchable_metadata():
     from app.marketplace import semantic
     from app.marketplace.store import store
 
-    agent = next(a for a in store.all_agents if a.id == "kyc-risk-screening")
+    agent = next(a for a in store.all_agents if a.id == "kyc-sanctions-review-agent")
     text = semantic.embedding_text(agent)
     assert agent.name in text
     assert "Sanctions screening" in text and "Compliance" in text
-    assert agent.owner.name not in text and agent.owner.email not in text
+    assert agent.owner.team not in text and "mufg.example" not in text
     assert "http" not in text
 
 
@@ -751,7 +758,7 @@ def test_semantic_retrieval_finds_an_agent_that_shares_no_words():
     assert hits, "expected candidates"
     # Either sanctions agent proves the point; the client's Sanctions Review
     # Agent now outranks the sample that stood in for it.
-    assert max(hits, key=hits.get) in {"kyc-risk-screening", "kyc-sanctions-review-agent"}
+    assert max(hits, key=hits.get) == "kyc-sanctions-review-agent"
 
 
 def test_search_still_works_when_the_semantic_index_is_disabled(monkeypatch):
@@ -764,7 +771,7 @@ def test_search_still_works_when_the_semantic_index_is_disabled(monkeypatch):
         "/api/marketplace/search", json={"query": "validating customer documents"}
     ).json()["results"]
     assert results and results[0]["agent"]["id"] in {
-        "kyc-document-verifier",
+        "kyc-cip-agent",
         "onboarding-pack-assistant",
     }
 
@@ -832,8 +839,8 @@ def test_keyword_index_pins_an_exact_name():
     from app.marketplace.store import store
 
     keyword.index.sync(store.all_agents)
-    hits = keyword.index.search("KYC Document Verifier")
-    assert max(hits, key=hits.get) == "kyc-document-verifier"
+    hits = keyword.index.search("Sanctions Review Agent")
+    assert max(hits, key=hits.get) == "kyc-sanctions-review-agent"
     assert keyword.index.search("zebra origami") == {}
 
 
@@ -857,8 +864,8 @@ def test_hybrid_search_still_returns_no_match_for_nonsense():
 
 
 def test_search_trace_records_both_rankers():
-    client.post("/api/marketplace/search", json={"query": "kyc verifier"})
+    client.post("/api/marketplace/search", json={"query": "sanctions review"})
     meta = client.get("/api/context/events?type=search&limit=1").json()[0]["meta"]
     assert meta["fusion"] == "rrf"
     assert "candidates" in meta["keyword"] and "candidates" in meta["retrieval"]
-    assert meta["results"][0] == "kyc-document-verifier"
+    assert meta["results"][0] == "kyc-sanctions-review-agent"

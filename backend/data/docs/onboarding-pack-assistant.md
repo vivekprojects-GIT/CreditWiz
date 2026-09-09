@@ -4,7 +4,7 @@ _Version 1.0 · Owned by Onboarding Experience · Status: Beta_
 
 ## Overview
 
-Reviews the full onboarding pack for a new customer, checks that every required document and data point is present, drafts the follow-up email for anything missing, and hands a decision-ready summary to the onboarding analyst. Works with the KYC Document Verifier for identity checks.
+Reviews the full onboarding pack for a new customer, checks that every required document and data point is present, drafts the follow-up email for anything missing, and hands a decision-ready summary to the onboarding analyst. Works with the CIP Agent for identity checks.
 
 **Why it exists.** Applications bounced back and forth with customers over missing items. This catches gaps up front and drafts the request, cutting time-to-decision.
 
@@ -51,7 +51,7 @@ Reviews the full onboarding pack for a new customer, checks that every required 
 
 It drafts the email; the analyst sends it.
 
-**How does it relate to the KYC Document Verifier?**
+**How does it relate to the CIP Agent?**
 
 It calls the verifier for identity checks and includes the result in the summary.
 

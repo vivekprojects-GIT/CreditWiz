@@ -171,7 +171,7 @@
       "id": "kyc-verifier-walkthrough",
       "title": "How Banks Know Who You Are: Identification & Verification for KYC and AML",
       "type": "video",
-      "description": "What identification and verification actually involve, which documents count, and why completeness matters. The foundation for using the KYC Document Verifier and the Onboarding Assistant well.",
+      "description": "What identification and verification actually involve, which documents count, and why completeness matters. The foundation for using the CIP Agent and the Onboarding Assistant well.",
       "topics": [
         "KYC",
         "Document AI"
@@ -198,7 +198,7 @@
         "aml"
       ],
       "related_agents": [
-        "kyc-document-verifier",
+        "kyc-cip-agent",
         "onboarding-pack-assistant"
       ],
       "url": "https://www.youtube.com/watch?v=-pgckssdA14",
@@ -243,8 +243,8 @@
         "aws"
       ],
       "related_agents": [
-        "kyc-document-verifier",
-        "kyc-risk-screening",
+        "kyc-cip-agent",
+        "kyc-sanctions-review-agent",
         "fraud-case-summariser"
       ],
       "url": "https://www.youtube.com/watch?v=FAgmR9VV0GQ",
@@ -265,7 +265,7 @@
       "id": "sanctions-screening-basics",
       "title": "Conduct Sanctions Screening with These Simple Steps",
       "type": "video",
-      "description": "The screening process step by step: lists, matching, handling hits and recording a disposition. Watch before using the KYC Risk Screening Agent so its explanations make sense.",
+      "description": "The screening process step by step: lists, matching, handling hits and recording a disposition. Watch before using the Sanctions Review Agent so its explanations make sense.",
       "topics": [
         "AML",
         "Screening"
@@ -290,7 +290,7 @@
         "screening"
       ],
       "related_agents": [
-        "kyc-risk-screening"
+        "kyc-sanctions-review-agent"
       ],
       "url": "https://www.youtube.com/watch?v=-N17VmifpOQ",
       "youtube_id": "-N17VmifpOQ",
@@ -343,7 +343,7 @@
       ],
       "related_agents": [
         "policy-qa-agent",
-        "kyc-risk-screening",
+        "kyc-sanctions-review-agent",
         "fraud-case-summariser"
       ],
       "url": "https://www.youtube.com/watch?v=w_3L1Bf2P_g",
@@ -567,7 +567,7 @@
       "related_agents": [
         "fraud-case-summariser",
         "dispute-resolution-agent",
-        "kyc-risk-screening"
+        "kyc-sanctions-review-agent"
       ],
       "url": "https://www.youtube.com/watch?v=m6XUHucbS4g",
       "youtube_id": "m6XUHucbS4g",
@@ -650,7 +650,7 @@
         "checklist"
       ],
       "related_agents": [
-        "kyc-document-verifier",
+        "kyc-cip-agent",
         "onboarding-pack-assistant"
       ],
       "url": "",
@@ -658,7 +658,7 @@
       "poster_url": "",
       "source": "MUFG",
       "duration_seconds": 240,
-      "body": "# KYC document checklist\n\nUse alongside the KYC Document Verifier. The agent produces the completeness report; this is what it is checking against.\n\n## Identity — one required\n- Passport, in date\n- National ID card, in date\n- Driving licence, in date, photocard only\n\n## Address — one required, issued in the last 3 months\n- Utility bill, not mobile phone\n- Bank or credit card statement\n- Council tax or government correspondence\n\n## Entities — additional\n- Certificate of incorporation\n- Register of beneficial owners\n- Board resolution or equivalent authority\n\n## Common failures\n1. Address document older than three months.\n2. Name on the address document does not match the application exactly.\n3. Photocard licence supplied without the paper counterpart where required.\n4. Scans that crop the machine-readable zone.\n\nAnything the agent marks low confidence needs a human read before sign-off.\n",
+      "body": "# KYC document checklist\n\nUse alongside the CIP Agent. The agent produces the completeness report; this is what it is checking against.\n\n## Identity — one required\n- Passport, in date\n- National ID card, in date\n- Driving licence, in date, photocard only\n\n## Address — one required, issued in the last 3 months\n- Utility bill, not mobile phone\n- Bank or credit card statement\n- Council tax or government correspondence\n\n## Entities — additional\n- Certificate of incorporation\n- Register of beneficial owners\n- Board resolution or equivalent authority\n\n## Common failures\n1. Address document older than three months.\n2. Name on the address document does not match the application exactly.\n3. Photocard licence supplied without the paper counterpart where required.\n4. Scans that crop the machine-readable zone.\n\nAnything the agent marks low confidence needs a human read before sign-off.\n",
       "id": "kyc-document-checklist",
       "title": "KYC document checklist",
       "type": "quick-reference",
@@ -697,7 +697,7 @@
         "audit"
       ],
       "related_agents": [
-        "kyc-risk-screening"
+        "kyc-sanctions-review-agent"
       ],
       "url": "",
       "youtube_id": "",
@@ -882,19 +882,19 @@
         "developer"
       ],
       "related_agents": [
-        "kyc-document-verifier",
+        "kyc-cip-agent",
         "contract-analyzer"
       ],
-      "url": "/marketplace/agents/kyc-document-verifier/architecture",
+      "url": "/marketplace/agents/contract-analyzer/architecture",
       "youtube_id": "",
       "poster_url": "",
       "source": "MUFG",
       "duration_seconds": 900,
-      "body": "# Document agent pattern reference\n\nThe pattern behind the KYC Document Verifier and the Contract Analyzer.\n\n## Flow\n\n```text\nDocuments submitted\n    ↓\nIngestion: virus scan, format normalisation, OCR when needed\n    ↓\nExtraction: model reads each page into a typed schema\n    ↓\nValidation: fields checked against the record and business rules\n    ↓\nReport: completeness and consistency findings with evidence\n    ↓\nHuman review and sign-off\n```\n\n## Design principles\n- Keep documents in the vault; pass references, not copies.\n- Every extracted field carries a confidence score. Low confidence is surfaced, never hidden.\n- The report, not raw model output, is the contract with downstream systems.\n\n## What to build first\nThe typed schema. Everything else follows from it, and it is what makes the output testable.\n\nThe full architecture page for a live agent is linked from the marketplace.\n",
+      "body": "# Document agent pattern reference\n\nThe pattern behind the CIP Agent and the Contract Analyzer.\n\n## Flow\n\n```text\nDocuments submitted\n    ↓\nIngestion: virus scan, format normalisation, OCR when needed\n    ↓\nExtraction: model reads each page into a typed schema\n    ↓\nValidation: fields checked against the record and business rules\n    ↓\nReport: completeness and consistency findings with evidence\n    ↓\nHuman review and sign-off\n```\n\n## Design principles\n- Keep documents in the vault; pass references, not copies.\n- Every extracted field carries a confidence score. Low confidence is surfaced, never hidden.\n- The report, not raw model output, is the contract with downstream systems.\n\n## What to build first\nThe typed schema. Everything else follows from it, and it is what makes the output testable.\n\nThe full architecture page for a live agent is linked from the marketplace.\n",
       "id": "document-agent-pattern-doc",
       "title": "Document agent pattern reference",
       "type": "documentation",
-      "description": "The reference architecture behind the KYC Document Verifier and Contract Analyzer.",
+      "description": "The reference architecture behind the CIP Agent and Contract Analyzer.",
       "path": "builders",
       "level": "Advanced",
       "audience_groups": [
@@ -970,8 +970,8 @@
         "escalation"
       ],
       "related_agents": [
-        "kyc-document-verifier",
-        "kyc-risk-screening"
+        "kyc-cip-agent",
+        "kyc-sanctions-review-agent"
       ],
       "url": "",
       "youtube_id": "",

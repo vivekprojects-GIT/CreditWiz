@@ -26,7 +26,7 @@ Human review and sign-off
 
 ## Used by
 
-- KYC Document Verifier
+- CIP Agent
 - Contract Analyzer
 
 ## Reference implementation

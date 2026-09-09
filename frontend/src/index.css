@@ -3146,3 +3146,26 @@ button:disabled {
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
 }
+
+/* The marketplace hero is a search box with a heading, not a landing page.
+   Compact band, and the bar itself sized to match. */
+.mkt .band--compact .mkt__panel,
+.mkt .band--compact {
+  padding-bottom: var(--s-5);
+}
+
+.mkt .band--compact .band__lead {
+  margin-top: var(--s-2);
+  font-size: var(--t-base);
+}
+
+.mkt .gsearch {
+  margin-top: var(--s-4);
+  padding: 6px 6px 6px var(--s-4);
+}
+
+.mkt .gsearch__go {
+  height: 40px;
+  padding: 0 var(--s-4);
+  font-size: var(--t-base);
+}

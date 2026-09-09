@@ -1,7 +1,7 @@
 """Keyword (BM25) index over the same searchable text the semantic index embeds.
 
 Semantic retrieval is strong on meaning and weak on exact tokens: near-duplicate
-names ("KYC Document Verifier v2" vs "... EMEA"), acronyms and IDs. BM25 is the
+names ("Sanctions Review Agent v2" vs "... EMEA"), acronyms and IDs. BM25 is the
 opposite. Hybrid search fuses the two by RANK (see search.rank), so their
 incomparable score scales never meet.
 

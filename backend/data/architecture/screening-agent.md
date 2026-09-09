@@ -26,7 +26,7 @@ Analyst disposition recorded to the audit trail
 
 ## Used by
 
-- KYC Risk Screening Agent
+- Sanctions Review Agent
 
 ## Reference implementation
 
