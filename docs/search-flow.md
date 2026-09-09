@@ -1,50 +1,42 @@
 # Agent search: query flow
 
 One request through `POST /api/marketplace/search`, exactly as the code runs it.
-Permission is applied before anything is scored; the language model only
-restates the question; two retrievers are fused by rank; everything after
-fusion removes results and never reorders them. The numbers are the live
+Permission is applied before anything is scored and enforced again after it;
+the language model only restates the question; two retrievers are fused by
+rank; everything after fusion removes results and never reorders them. The numbers are the live
 constants. A published page version of this diagram is kept alongside the
 review materials.
 
 ```mermaid
 flowchart TB
-  Q(["Typed request<br/>“check customers against sanctions lists”"])
-  G["Session boundary<br/>X-CreditWiz-Request header · Origin allowlist · session cookie"]
-  V["Visible catalogue<br/>active · approved · your groups ∩ audience_groups"]
-  U{"Understand<br/>ANTHROPIC_API_KEY set?"}
-  C["Claude claude-sonnet-5<br/>structured SearchIntent · 20 s timeout · cached 256<br/>domains and capabilities filtered to the catalogue"]
-  L["Local lexicon<br/>same SearchIntent shape"]
-  E["Enriched text<br/>query + summary + domains + capabilities"]
-  S["Semantic · ChromaDB<br/>embed once, ONNX MiniLM, 1 thread<br/>top 12 by cosine · result cache 256"]
-  K["Keyword · BM25<br/>same agent text · exact names, acronyms, IDs<br/>top 12"]
-  R["Reciprocal Rank Fusion<br/>score = Σ 1 / (60 + rank)"]
-  T{"Relevance gate<br/>sim ≥ 0.45 and ≥ 65% of best<br/>or keyword ≥ 50% of best keyword"}
-  N(["No match<br/>“zebra origami” scores 0.00 everywhere"])
-  D["Cut, never reorder<br/>drop anything not in the visible set · ?domain= filter · limit 6"]
-  X["Explain from metadata<br/>why: capabilities and domains the request asked for<br/>coverage % on the best match only"]
-  F["Footprint<br/>engine · intent · both candidate lists · scores · embed_ms<br/>recorded, never ranked on"]
-  A(["Response<br/>Best match · 2nd match · 3rd match"])
+  Q["User request"]
+  A["Identity + access<br/>session · request header · origin allowlist"]
+  V["Authorized agents<br/>active · approved · your groups"]
+  I["Intent extraction<br/>Claude claude-sonnet-5, local lexicon on failure"]
+  R["Reciprocal Rank Fusion<br/>score = Sigma 1 / (60 + rank)"]
+  G{"Relevance gate"}
+  T["Top matches<br/>limit 6 · best 3 labelled"]
+  N["No match"]
+  X["Explain + audit"]
 
-  Q --> G
-  G -- "403 / 401 on failure" --> G
-  G --> V
-  V --> U
-  U -- "yes" --> C
-  U -- "no, or timeout" --> L
-  C --> E
-  L --> E
-  E -- "one embedding" --> S
-  E -- "query + domains + capabilities" --> K
-  S -- "ids → similarity" --> R
-  K -- "ids → BM25 score" --> R
-  R --> T
-  T -- "nothing clears it" --> N
-  T -- "survivors, in fused order" --> D
-  D --> X
-  X --> F
-  F --> A
-  V -. "an agent you may not see can be retrieved,<br/>and is dropped here by construction" .-> D
+  subgraph H ["Hybrid search"]
+    direction LR
+    S["Semantic<br/>ChromaDB · cosine · top 12"]
+    K["BM25<br/>keyword · top 12"]
+  end
+
+  Q --> A
+  A --> V
+  V --> I
+  I --> S
+  I --> K
+  S --> R
+  K --> R
+  R --> G
+  G -- "survivors, in fused order" --> T
+  G -- "nothing clears the floors" --> N
+  T --> X
+  V -. "dropped again here, after fusion" .-> T
 
   classDef fuse fill:#fdecec,stroke:#e60000,stroke-width:1.5px,color:#141516
   class R fuse
