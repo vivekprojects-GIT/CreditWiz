@@ -15,7 +15,7 @@ flowchart TB
   I["Intent extraction<br/>Claude claude-sonnet-5, local lexicon on failure"]
   R["Reciprocal Rank Fusion<br/>score = Sigma 1 / (60 + rank)"]
   G{"Relevance gate"}
-  T["Top matches<br/>limit 6 · best 3 labelled"]
+  T["Top matches<br/>limit 6"]
   N["No match"]
   X["Explain + audit"]
 
@@ -23,6 +23,7 @@ flowchart TB
     direction LR
     S["Semantic<br/>ChromaDB · cosine · top 12"]
     K["BM25<br/>keyword · top 12"]
+    S ~~~ K
   end
 
   Q --> A

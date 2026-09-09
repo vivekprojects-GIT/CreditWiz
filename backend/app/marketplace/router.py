@@ -204,7 +204,6 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
         agents,
         persona=persona,
         domain=req.domain,
-        limit=req.limit,
         similar=retrieved,
         keywords=matched,
     )

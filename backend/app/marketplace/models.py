@@ -129,7 +129,6 @@ class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=500)
     persona: str | None = None
     domain: str | None = None
-    limit: int = Field(default=6, ge=1, le=20)
 
 
 class AgentMatch(BaseModel):

@@ -227,6 +227,11 @@ RRF_K = 60
 # drops the latter.
 KEYWORD_RELATIVE_FLOOR = 0.5
 
+# How many matches a search returns. Fixed, not a caller-supplied knob: the
+# gate above decides what is relevant, and a caller asking for twenty results
+# would only be served the ones the gate already let through.
+RESULT_LIMIT = 6
+
 
 def retrieval_text(query: str, intent: SearchIntent) -> str:
     """The text that gets embedded for retrieval.
@@ -275,7 +280,7 @@ def rank(
     agents: list[Agent],
     persona: Persona | None = None,
     domain: str | None = None,
-    limit: int = 6,
+    limit: int = RESULT_LIMIT,
     similar: dict[str, float] | None = None,
     keywords: dict[str, float] | None = None,
 ) -> list[AgentMatch]:
