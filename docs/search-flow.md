@@ -9,42 +9,42 @@ review materials.
 
 ```mermaid
 flowchart TB
-  Q([Typed request<br/>“check customers against sanctions lists”])
-  G[Session boundary<br/>X-CreditWiz-Request header · Origin allowlist · session cookie]
-  V[Visible catalogue<br/>active · approved · your groups ∩ audience_groups]
-  U{Understand<br/>ANTHROPIC_API_KEY set?}
-  C[Claude claude-sonnet-5<br/>structured SearchIntent · 20 s timeout · cached 256<br/>domains and capabilities filtered to the catalogue]
-  L[Local lexicon<br/>same SearchIntent shape]
-  E[Enriched text<br/>query + summary + domains + capabilities]
-  S[Semantic · ChromaDB<br/>embed once, ONNX MiniLM, 1 thread<br/>top 12 by cosine · result cache 256]
-  K[Keyword · BM25<br/>same agent text · exact names, acronyms, IDs<br/>top 12]
-  R[Reciprocal Rank Fusion<br/>score = Σ 1 / (60 + rank)]
-  T{Relevance gate<br/>sim ≥ 0.45 and ≥ 65% of best<br/>or keyword ≥ 50% of best keyword}
-  N([No match<br/>“zebra origami” scores 0.00 everywhere])
-  D[Cut, never reorder<br/>drop anything not in the visible set · ?domain= filter · limit 6]
-  X[Explain from metadata<br/>why: capabilities and domains the request asked for<br/>coverage % on the best match only]
-  F[Footprint<br/>engine · intent · both candidate lists · scores · embed_ms<br/>recorded, never ranked on]
-  A([Response<br/>Best match · 2nd match · 3rd match])
+  Q(["Typed request<br/>“check customers against sanctions lists”"])
+  G["Session boundary<br/>X-CreditWiz-Request header · Origin allowlist · session cookie"]
+  V["Visible catalogue<br/>active · approved · your groups ∩ audience_groups"]
+  U{"Understand<br/>ANTHROPIC_API_KEY set?"}
+  C["Claude claude-sonnet-5<br/>structured SearchIntent · 20 s timeout · cached 256<br/>domains and capabilities filtered to the catalogue"]
+  L["Local lexicon<br/>same SearchIntent shape"]
+  E["Enriched text<br/>query + summary + domains + capabilities"]
+  S["Semantic · ChromaDB<br/>embed once, ONNX MiniLM, 1 thread<br/>top 12 by cosine · result cache 256"]
+  K["Keyword · BM25<br/>same agent text · exact names, acronyms, IDs<br/>top 12"]
+  R["Reciprocal Rank Fusion<br/>score = Σ 1 / (60 + rank)"]
+  T{"Relevance gate<br/>sim ≥ 0.45 and ≥ 65% of best<br/>or keyword ≥ 50% of best keyword"}
+  N(["No match<br/>“zebra origami” scores 0.00 everywhere"])
+  D["Cut, never reorder<br/>drop anything not in the visible set · ?domain= filter · limit 6"]
+  X["Explain from metadata<br/>why: capabilities and domains the request asked for<br/>coverage % on the best match only"]
+  F["Footprint<br/>engine · intent · both candidate lists · scores · embed_ms<br/>recorded, never ranked on"]
+  A(["Response<br/>Best match · 2nd match · 3rd match"])
 
   Q --> G
-  G -- 403 / 401 on failure --> G
+  G -- "403 / 401 on failure" --> G
   G --> V
   V --> U
-  U -- yes --> C
-  U -- no, or timeout --> L
+  U -- "yes" --> C
+  U -- "no, or timeout" --> L
   C --> E
   L --> E
-  E -- one embedding --> S
-  E -- query + domains + capabilities --> K
-  S -- ids → similarity --> R
-  K -- ids → BM25 score --> R
+  E -- "one embedding" --> S
+  E -- "query + domains + capabilities" --> K
+  S -- "ids → similarity" --> R
+  K -- "ids → BM25 score" --> R
   R --> T
-  T -- nothing clears it --> N
-  T -- survivors, in fused order --> D
+  T -- "nothing clears it" --> N
+  T -- "survivors, in fused order" --> D
   D --> X
   X --> F
   F --> A
-  V -. an agent you may not see can be retrieved,<br/>and is dropped here by construction .-> D
+  V -. "an agent you may not see can be retrieved,<br/>and is dropped here by construction" .-> D
 
   classDef fuse fill:#fdecec,stroke:#e60000,stroke-width:1.5px,color:#141516
   class R fuse
