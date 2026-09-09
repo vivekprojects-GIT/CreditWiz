@@ -546,3 +546,90 @@ def test_progress_is_sqlite_and_survives_reads(tmp_path):
         .fetchall()
     )
     assert len(rows) == 1 and rows[0] == ("completed", 100)
+
+
+def _agent(**overrides):
+    from app.marketplace.models import Agent
+    from app.marketplace.store import normalize_agent, store
+
+    base = store.agents[0].model_dump()
+    base.update(overrides)
+    return Agent.model_validate(normalize_agent(base))
+
+
+def _compliance():
+    from app.marketplace.store import store
+
+    return store.persona("compliance_user")
+
+
+def test_an_agent_that_names_no_persona_still_ranks_on_its_metadata():
+    """Owners describe what an agent does; they should not have to enumerate
+    every role that might want it. Curation is derived from that description."""
+    from app.marketplace import search
+
+    untagged = _agent(
+        id="untagged-screening",
+        personas=[],
+        business_domains=["Compliance", "Onboarding"],
+        capabilities=["Sanctions screening", "Risk scoring"],
+        tags=["kyc", "aml"],
+    )
+    score = search.curation_score(untagged, _compliance())
+    assert score > 10, f"metadata-only agent scored {score}"
+    assert search.curation_breakdown(untagged, _compliance())["persona_boost"] == 0.0
+
+
+def test_naming_a_persona_cannot_manufacture_relevance():
+    """The boost is a percentage of matched metadata, so 25% of nothing is
+    nothing. A mistaken persona tag cannot promote an unrelated agent."""
+    from app.marketplace import search
+
+    unrelated = _agent(
+        id="unrelated-but-tagged",
+        personas=["compliance_user"],
+        business_domains=["Engineering"],
+        capabilities=["Code review"],
+        tags=["python"],
+        popularity=0,
+    )
+    parts = search.curation_breakdown(unrelated, _compliance())
+    assert parts["persona_boost"] == 0.0
+    assert search.curation_score(unrelated, _compliance()) == 0.0
+
+
+def test_evidence_outranks_a_curator_hint():
+    """Real overlap must beat a persona tag sitting on a thin agent -- the
+    failure the previous flat +10 produced."""
+    from app.marketplace import search
+
+    persona = _compliance()
+    thin_but_tagged = _agent(
+        id="thin-tagged", personas=["compliance_user"],
+        business_domains=["Compliance"], capabilities=[], tags=[], popularity=99,
+    )
+    rich_untagged = _agent(
+        id="rich-untagged", personas=[],
+        business_domains=["Compliance", "Onboarding"],
+        capabilities=["Sanctions screening"], tags=["kyc"], popularity=0,
+    )
+    assert search.curation_score(rich_untagged, persona) > search.curation_score(
+        thin_but_tagged, persona
+    )
+
+
+def test_capability_matching_tolerates_wording_differences():
+    """Two catalogues will not phrase things identically."""
+    from app.marketplace import search
+
+    reworded = _agent(
+        id="reworded", personas=[], business_domains=[],
+        capabilities=["Sanctions list screening"], tags=[], popularity=0,
+    )
+    assert search.curation_breakdown(reworded, _compliance())["capability"] == 2.0
+
+    unrelated = _agent(
+        id="different-customer-thing", personas=[], business_domains=[],
+        capabilities=["Customer communication"], tags=[], popularity=0,
+    )
+    assert search.curation_breakdown(unrelated, _compliance())["capability"] == 0.0

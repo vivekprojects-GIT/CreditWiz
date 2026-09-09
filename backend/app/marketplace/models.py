@@ -35,7 +35,9 @@ class Agent(BaseModel):
     problem_solved: str = ""
     business_domains: list[str]
     use_cases: list[str]
-    personas: list[str]
+    # Optional curator hint. Relevance is derived from the business metadata
+    # below; naming a persona only amplifies what that metadata already shows.
+    personas: list[str] = []
     # capabilities
     capabilities: list[str]
     services: list[str] = []

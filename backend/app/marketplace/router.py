@@ -116,6 +116,7 @@ def curation(persona: str | None = Query(default=None)) -> dict:
         "persona": p.id if p else None,
         "persona_label": p.label if p else None,
         "weights": search.CURATION_WEIGHTS,
+        "persona_boost": f"+{search.PERSONA_BOOST:.0%} of matched metadata when the owner names this persona",
         "inputs": ["derived persona", "agent metadata"],
         "excluded": [
             "behavioural footprints (collected, not used for ranking in the MVP)"

@@ -353,26 +353,57 @@ def _reasons(agent: Agent, hits: dict[str, set[str]], intent: SearchIntent, pers
 # explainable curation score. Deliberately rule-based, not a learned model, so
 # every position in "Recommended for you" can be justified in review.
 #
-#   persona match  +10 | domain match  +3 each
-#   capability     +2 each | tag match +1 each | popularity = tie-breaker
+#   domain match +3 each | capability +2 each | tag match +1 each
+#   persona named by the owner: +25% of the above | popularity = tie-breaker
+#
+# Relevance is derived from business metadata. An agent that never names a
+# persona still ranks on its domains, capabilities and tags, which is what lets
+# this scale past a catalogue somebody hand-curated.
 #
 # Inputs are the derived persona and static agent metadata ONLY. Behavioural
 # footprints (app/context) are collected but deliberately not read here.
 
-CURATION_WEIGHTS = {"persona": 10.0, "domain": 3.0, "capability": 2.0, "tag": 1.0}
+CURATION_WEIGHTS = {"domain": 3.0, "capability": 2.0, "tag": 1.0}
+# An owner writing "designed for compliance users" is a curator hint, not
+# evidence in itself. It scales what the business metadata already shows rather
+# than adding a flat score, so a stray persona tag on an unrelated agent lifts
+# nothing: 25% of zero is zero. The previous flat +10 outvoted every real
+# signal -- an agent with one domain match and a persona tag beat an agent with
+# three domain, three capability and three tag matches without one.
+PERSONA_BOOST = 0.25
+
+
+def _overlap(agent_values: list[str], wanted: list[str]) -> int:
+    """Count matches, tolerating wording differences between two catalogues.
+
+    Exact equality missed "Sanctions screening" against "Sanctions list
+    screening". A phrase counts when one side's significant words are a subset
+    of the other's, which stays tight enough that "Customer communication" does
+    not match "Customer onboarding".
+    """
+    targets = [t for t in (set(tokens(w)) for w in wanted) if t]
+    hits = 0
+    for value in agent_values:
+        have = set(tokens(value))
+        if have and any(have <= t or t <= have for t in targets):
+            hits += 1
+    return hits
 
 
 def curation_breakdown(agent: Agent, persona: Persona | None) -> dict[str, float]:
     """Per-component curation score, so any ranking can be explained."""
+    popularity = agent.popularity / 100
     if persona is None:
-        return {"persona": 0.0, "domain": 0.0, "capability": 0.0, "tag": 0.0, "popularity": agent.popularity / 100}
-    return {
-        "persona": CURATION_WEIGHTS["persona"] if persona.id in agent.personas else 0.0,
-        "domain": CURATION_WEIGHTS["domain"] * len(set(agent.business_domains) & set(persona.interests.domains)),
-        "capability": CURATION_WEIGHTS["capability"] * len(set(agent.capabilities) & set(persona.interests.capabilities)),
-        "tag": CURATION_WEIGHTS["tag"] * len(set(agent.tags) & set(persona.interests.tags)),
-        "popularity": agent.popularity / 100,
+        return {"domain": 0.0, "capability": 0.0, "tag": 0.0, "persona_boost": 0.0, "popularity": popularity}
+    interests = persona.interests
+    evidence = {
+        "domain": CURATION_WEIGHTS["domain"] * _overlap(agent.business_domains, interests.domains),
+        "capability": CURATION_WEIGHTS["capability"] * _overlap(agent.capabilities, interests.capabilities),
+        "tag": CURATION_WEIGHTS["tag"] * _overlap(agent.tags, interests.tags),
     }
+    targeted = persona.id in agent.personas
+    boost = sum(evidence.values()) * PERSONA_BOOST if targeted else 0.0
+    return {**evidence, "persona_boost": round(boost, 2), "popularity": popularity}
 
 
 def curation_score(agent: Agent, persona: Persona | None) -> float:

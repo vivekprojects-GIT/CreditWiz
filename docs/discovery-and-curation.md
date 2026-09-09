@@ -56,22 +56,38 @@ Does NOT influence current ranking
 A **curation score**, not a recommendation model. Rule-based on purpose so any position can be justified in review.
 
 ```text
-persona match      +10
 domain match        +3 each
 capability match    +2 each
 tag match           +1 each
+                    ─────────
+persona named       +25% of the above, when the owner names this persona
 popularity          tie-breaker
 ```
 
-Inputs are the derived persona and static agent metadata. Nothing behavioural.
+Relevance is **derived from business metadata**. An owner describes what the
+agent does; they do not enumerate every role that might want it. An agent that
+names no persona at all still ranks on its domains, capabilities and tags.
+
+`personas` is therefore an optional curator hint, and it is deliberately a
+percentage rather than a flat score: 25% of no matched metadata is nothing, so
+a mistaken persona tag cannot promote an unrelated agent. An earlier version
+awarded a flat +10, which outvoted the evidence — Contract Analyzer, with one
+domain match and no capability or tag overlap, scored 13.88 against the Dispute
+Resolution Agent's 3.77 on identical evidence, purely because someone had typed
+a persona onto it. It now scores 4.63 against 3.77.
+
+Phrase matching tolerates wording differences between two catalogues:
+"Sanctions screening" matches "Sanctions list screening", because one side's
+significant words are a subset of the other's. It stays tight enough that
+"Customer communication" does not match "Customer onboarding".
 
 `GET /api/marketplace/curation` returns the full breakdown, so "why is KYC Risk Screening first?" has a direct answer:
 
-| Agent | Persona | Domain | Capability | Tag | Total |
+| Agent | Domain | Capability | Tag | Persona boost | Total |
 | --- | --- | --- | --- | --- | --- |
-| KYC Risk Screening | 10 | 9 | 6 | 3 | 28.81 |
-| KYC Document Verifier | 10 | 6 | 4 | 1 | 21.92 |
-| Policy Q&A | 10 | 3 | 2 | 2 | 17.95 |
+| KYC Risk Screening | 9 | 6 | 3 | 4.5 | 23.31 |
+| KYC Document Verifier | 6 | 4 | 1 | 2.75 | 14.67 |
+| Policy Q&A | 3 | 2 | 2 | 1.75 | 9.70 |
 
 Code: `curation_breakdown()` and `recommend_for_persona()` in `backend/app/marketplace/search.py`.
 
