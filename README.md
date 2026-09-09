@@ -20,9 +20,59 @@ For the MVP the metadata source is a **static JSON file**. That keeps the protot
 
 ---
 
+## Swim Lane 1 — the problem we set out to solve
+
+> Build a centralised AI Agent Marketplace where employees can easily discover the
+> existing enterprise agents through natural-language search and persona-based
+> curated discovery, understand each agent's capabilities and supporting
+> information with minimal friction, and take an appropriate next action — while
+> keeping dynamic behavioural personalisation and live source integrations as
+> future phases.
+
+```text
+NOW                                   NOT NOW
+Marketplace                           Behaviour-learning recommender
+Agent catalog                         Cross-pillar personalisation
+Natural-language search               Super Agent
+Persona-based discovery               Full interaction analytics
+Agent details and actions             Live enterprise integrations
+Basic feedback
+```
+
+### Where each step landed
+
+| # | Confirmed step | Status |
+| --- | --- | --- |
+| 1 | Get the real list of existing agents | **Open — needs Vinay.** Ten samples in the agreed shape; replacing `agents.json` is the whole integration |
+| 2 | Name, description, available metadata | Done, sample set |
+| 3 | Common metadata template | Done — two intake formats accepted and normalised |
+| 4 | Simple static data for the MVP | Done — JSON is the source of truth |
+| 5 | Discovery landing page | Done |
+| 6 | Two discovery experiences | Done — search and carousels |
+| 7 | Start with universal visibility | Done — ACL present, restricting nothing |
+| 8 | Persona-based recommendations | Done — persona derived, never stored |
+| 9 | Rich agent detail | Done |
+| 10 | Access · Docs · Architecture · Collaborate | Done, all four |
+| 11 | Ask whether the user found what they needed | Done |
+| 12 | Capture basic footprints | Done — hub-wide, readable trail |
+| 13 | Do **not** personalise on them yet | Done — enforced by a test |
+| 14 | Later: connect real sources | Not started, by design |
+| 15 | Later: cross-pillar adaptive personalisation | Not started, by design |
+
+Twelve of the thirteen "now" steps are built. The outstanding one is an input
+from the client, not a build task.
+
+**On attribution:** Ganesh asked for natural-language search and persona-based
+curation. The specific mechanisms — a local semantic index, BM25, the fusion
+constant, the point weights, the relevance floors — are our implementation
+choices. They are tunable decisions, not things that were specified.
+
+---
+
 ## Walkthrough
 
-The screenshots below show the original visual walkthrough. Account selection, catalog filters and ordered paths have since been added; the operations guide describes the current behavior.
+The screenshots below are current. Account selection, catalog filters and
+ordered paths are additions the operations guide describes in full.
 
 ### 1. Home — one hub, nine pillars
 
@@ -85,30 +135,53 @@ Completed, in progress, not started, and required progress. Topic coverage is sh
 | 1 | Real agent list | 10 **sample** agents in the agreed shape. Replace `backend/data/agents.json` with the real list. |
 | 2 | Agent metadata template | [docs/agent-metadata-template.md](docs/agent-metadata-template.md). Seven groups. The simple flat format is accepted too. |
 | 3 | Discovery landing page | `/marketplace` |
-| 4 | Generative / NLP search | Claude or local lexicon, with explanations |
+| 4 | Generative / NLP search | Claude or local lexicon for understanding; hybrid semantic + BM25 retrieval, with explanations |
 | 5 | Netflix-style carousels | Six, from `backend/data/carousels.json` |
 | 6 | Persona-based curation | Five personas, derived from job title |
 | 7 | Agent detail page | Low friction, one page |
 | 8 | Actions | Launch · Access · Docs · Architecture · Collaborate |
 | 9 | "Did you find what you needed?" | Under search and on every detail page |
 
-**Deliberately not built:** Agent 365, AWS Agent Registry, GitHub, Confluence ingestion, prompt and skill store integrations, a vector database, dynamic personalisation, Super Agent, cross-pillar recommendations.
+**Deliberately not built:** Agent 365, AWS Agent Registry, GitHub, Confluence ingestion, prompt and skill store integrations, dynamic personalisation, Super Agent, cross-pillar recommendations.
+
+A local ChromaDB index *was* added after this list was written — it runs
+in-process from a model baked into the image, with no external service. See
+[docs/discovery-and-curation.md](docs/discovery-and-curation.md).
 
 ---
 
 ## How ranking works
 
-Four separate mechanisms, all rule-based and explainable. Full detail in [docs/discovery-and-curation.md](docs/discovery-and-curation.md).
+Two questions, two mechanisms. Full detail in [docs/discovery-and-curation.md](docs/discovery-and-curation.md).
 
-**Recommended agents** — a curation score, not a learned model:
+**Search — "what do you need right now?"** Hybrid retrieval. The typed words plus
+Claude's restatement go to two rankers over the same agent text, fused by rank:
 
 ```text
-persona match  +10 | domain +3 each | capability +2 each | tag +1 each | popularity = tie-break
+semantic (ChromaDB)   meaning: "AML" finds "sanctions and PEP lists"
+keyword  (BM25)       exact tokens: names, acronyms, IDs
+fusion   (RRF, k=60)  score = sum of 1 / (60 + rank)
 ```
 
-`GET /api/marketplace/curation` returns the per-component breakdown, so "why is KYC Risk Screening first?" has a direct answer.
+Rank fusion, not a score blend: a cosine sits in 0–1 and a BM25 score in 0–10,
+and blending magnitudes let lexical noise outvote a correct semantic hit. A
+relevance gate then decides what is shown, so nonsense returns nothing rather
+than the least-bad match. No persona multiplier here — the query is the
+question, so the query decides.
 
-**Search** asks a different question, so intent dominates and persona is only a ×1.2 nudge. A compliance user searching for code help gets the code agent.
+**Recommended for you — "who are you?"** A curation score on the agent's own
+metadata, not a learned model:
+
+```text
+domain +3 each | capability +2 each | use case +2 each (capped) | tag +1 each
+persona named by the owner: +25% of the above | popularity = tie-break
+```
+
+Counted as distinct persona interests covered, so a wordy listing cannot
+outscore a precise one. Naming a persona is an optional curator hint that
+amplifies real metadata: 25% of nothing is nothing, so it cannot promote an
+unrelated agent. `GET /api/marketplace/curation` returns the per-component
+breakdown, so "why is KYC Risk Screening first?" is a sum you can check by hand.
 
 **Related agents** is metadata similarity. **Related learning** is owned by the Learning pillar and consumed here.
 
