@@ -3176,3 +3176,283 @@ button:disabled {
   padding: 0 var(--s-4);
   font-size: var(--t-base);
 }
+
+/* ============================================================================
+   Home — one question, asked plainly
+   The sidebar already lists every pillar, so the home page does not repeat
+   them as tiles. It asks what you need, offers starters that are known to
+   return a result, and keeps three short cards for what you were doing.
+   ========================================================================== */
+
+.home {
+  max-width: 980px;
+}
+
+.ask {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: var(--s-4);
+  padding: clamp(var(--s-6), 6vw, 72px) 0 var(--s-8);
+}
+
+.ask__kicker {
+  margin: 0;
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.ask__title {
+  margin: 0;
+  font-size: clamp(var(--t-2xl), 4vw, var(--t-4xl));
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: var(--ink-950);
+  text-wrap: balance;
+}
+
+.ask__form {
+  width: min(100%, 660px);
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg, 12px);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+  box-shadow: 0 1px 2px rgba(13, 14, 17, 0.05);
+  transition:
+    border-color var(--fast),
+    box-shadow var(--fast);
+}
+
+.ask__form:focus-within {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-tint);
+}
+
+.ask__spark {
+  color: var(--red);
+  flex: none;
+}
+
+.ask__input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: var(--t-md);
+  color: var(--ink-900);
+  padding: var(--s-2) 0;
+}
+
+.ask__input::placeholder {
+  color: var(--ink-500);
+}
+
+.ask__lead {
+  margin: calc(var(--s-2) * -1) 0 0;
+  max-width: 56ch;
+  font-size: var(--t-md);
+  color: var(--ink-600);
+}
+
+/* A round send button, so the box reads as "ask" rather than as a filter. */
+.ask__go {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-full);
+  background: var(--red);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background var(--fast),
+    opacity var(--fast);
+}
+
+.ask__go:hover:not(:disabled) {
+  background: var(--red-700);
+}
+
+.ask__go:disabled {
+  background: var(--ink-300);
+  cursor: not-allowed;
+}
+
+.ask__note {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+}
+
+.starters {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-2);
+  max-width: 760px;
+}
+
+.starter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-700);
+  font: inherit;
+  font-size: var(--t-sm);
+  padding: 6px 14px 6px 6px;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    border-color var(--fast),
+    color var(--fast),
+    background var(--fast);
+}
+
+.starter:hover {
+  border-color: var(--ink-400);
+  color: var(--ink-900);
+  background: var(--ink-50);
+}
+
+/* Which pillar will answer this. Stated up front so the box does not read as
+   an agent-only search. */
+.starter__pillar {
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-600);
+  background: var(--ink-100);
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+}
+
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--s-4);
+  align-items: start;
+}
+
+.home-card {
+  display: grid;
+  gap: var(--s-3);
+  align-content: start;
+}
+
+.home-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.home-card__title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--t-base);
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.home-card__title svg {
+  color: var(--red);
+}
+
+.home-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.home-list > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.home-row {
+  display: grid;
+  gap: 2px;
+  padding: var(--s-3) 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-row:hover .home-row__title {
+  color: var(--red-700);
+}
+
+.home-row__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--t-base);
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.home-row__sub {
+  font-size: var(--t-sm);
+  color: var(--ink-600);
+  /* Taglines vary in length; two lines keeps every card the same rhythm. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-row__time {
+  font-size: var(--t-2xs);
+  color: var(--ink-500);
+}
+
+.home__note {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .ask {
+    padding-top: var(--s-5);
+    text-align: left;
+    justify-items: stretch;
+  }
+
+  .ask__form {
+    flex-wrap: wrap;
+  }
+
+  .ask__go {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .starters {
+    justify-content: flex-start;
+  }
+
+  /* Stacked one per line, six starters push the cards off the screen. Three
+     is enough to show what the box is for. */
+  .starters > li:nth-child(n + 4) {
+    display: none;
+  }
+}
