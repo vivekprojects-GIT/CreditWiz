@@ -187,9 +187,22 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     agents = store.agents
     persona = store.persona(resolve_persona(req.persona).id)
     intent, engine = search.understand(req.query, agents)
-    retrieved = semantic.index.search(search.retrieval_text(req.query, intent))
+    # Embed once. The same retrieval feeds the ranking and the trace.
+    embed_started = time.perf_counter()
+    retrieved = (
+        semantic.index.search(search.retrieval_text(req.query, intent))
+        if semantic.index.available
+        else None
+    )
+    embed_ms = round((time.perf_counter() - embed_started) * 1000)
     results = search.rank(
-        req.query, intent, agents, persona=persona, domain=req.domain, limit=req.limit
+        req.query,
+        intent,
+        agents,
+        persona=persona,
+        domain=req.domain,
+        limit=req.limit,
+        similar=retrieved,
     )
     # Trace enough to reconstruct why this ranking happened: how the request was
     # interpreted, what retrieval proposed, and what came out. Without the
@@ -214,10 +227,13 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
                     "capabilities": intent.capabilities,
                 },
                 "retrieval": {
-                    "available": semantic.index.available,
+                    "available": retrieved is not None,
                     "candidates": dict(
-                        sorted(retrieved.items(), key=lambda kv: -kv[1])[:5]
+                        sorted((retrieved or {}).items(), key=lambda kv: -kv[1])[:5]
                     ),
+                    # Separated out so a slow search can be attributed: model
+                    # inference versus everything around it.
+                    "embed_ms": embed_ms,
                 },
                 "domain_filter": req.domain or None,
                 "no_match": not results,

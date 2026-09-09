@@ -38,6 +38,9 @@ async def lifespan(app):
         import logging
 
         logging.getLogger("mufg.semantic").info("Semantic index synced: %s", counts)
+    # Build the ONNX session now, not on the first user's search. Costs
+    # nothing if the index is unavailable.
+    semantic_index.search("warm up the embedding session", limit=1)
     yield
 
 

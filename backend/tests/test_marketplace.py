@@ -795,3 +795,23 @@ def test_the_footprint_trail_is_scoped_to_the_signed_in_user():
         e.get("query") for e in client.get("/api/context/events?type=search").json()
     ]
     assert "sanctions screening" not in theirs
+
+
+def test_a_search_embeds_the_query_exactly_once(monkeypatch):
+    """Embedding is the slow step. The router used to embed once for the trace
+    and rank() embedded again -- two model calls per search."""
+    from app.marketplace import semantic
+
+    calls = {"n": 0}
+    real = semantic.index.search
+
+    def counted(query, limit=semantic.DEFAULT_CANDIDATES):
+        calls["n"] += 1
+        return real(query, limit)
+
+    monkeypatch.setattr(semantic.index, "search", counted)
+    body = client.post(
+        "/api/marketplace/search", json={"query": "check customers against sanctions lists"}
+    ).json()
+    assert body["results"], "expected a match"
+    assert calls["n"] == 1, f"query embedded {calls['n']} times"

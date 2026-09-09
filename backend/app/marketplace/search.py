@@ -262,9 +262,14 @@ def rank(
     persona: Persona | None = None,
     domain: str | None = None,
     limit: int = 6,
+    similar: dict[str, float] | None = None,
 ) -> list[AgentMatch]:
-    if semantic.index.available:
+    """`similar` lets the caller pass a retrieval it already ran. Embedding the
+    query is the expensive step, and the router does it once for both the
+    ranking and the trace rather than twice."""
+    if similar is None and semantic.index.available:
         similar = semantic.index.search(retrieval_text(query, intent))
+    if similar is not None:
         floor = SIMILARITY_FLOOR
     else:
         similar = _fallback(query, intent, agents)

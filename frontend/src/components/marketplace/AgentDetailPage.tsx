@@ -115,7 +115,15 @@ export function AgentDetailPage() {
   }
 
   const forYou = agent.personas.includes(persona)
-  const canLaunch = agent.source_kind === 'enterprise' && !!agent.access.launch_url
+  // The primary action follows the agent's declared access type. It used to
+  // collapse to "Request access" for every sample listing -- so an agent whose
+  // card said "Open" asked the user to request it on the next page.
+  const access = agent.access.type
+  const isSample = agent.source_kind === 'sample'
+  const canLaunch = !isSample && !!agent.access.launch_url
+  const ownerMail = agent.owner.email
+    ? `mailto:${agent.owner.email}?subject=${encodeURIComponent(`Access to ${agent.name}`)}`
+    : undefined
 
   return (
     <div className="content agent">
@@ -150,24 +158,48 @@ export function AgentDetailPage() {
         </div>
 
         <div className="agent__actions">
-          {canLaunch && (
-            <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--inline">
-              <Rocket size={18} /> Launch agent
-            </ExtLink>
+          {access === 'open' &&
+            (canLaunch ? (
+              <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--inline">
+                <Rocket size={18} /> Launch agent
+              </ExtLink>
+            ) : (
+              <button
+                type="button"
+                className="btn btn--inline"
+                disabled
+                title="Open to all employees. This sample listing has no live destination yet."
+              >
+                <Rocket size={18} /> Open agent
+              </button>
+            ))}
+
+          {access === 'request' && (
+            <>
+              {!isSample && agent.access.request_url && (
+                <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
+                  Open enterprise access portal
+                </ExtLink>
+              )}
+              <a className="btn btn--inline" href="#request-access">
+                Request access
+              </a>
+            </>
           )}
-          {agent.source_kind === 'enterprise' && agent.access.request_url && (
-            <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
-              Open enterprise access portal
-            </ExtLink>
+
+          {access === 'restricted' && (
+            <a className="btn-outline" href={ownerMail} aria-disabled={!ownerMail}>
+              Contact the owner for access
+            </a>
           )}
-          <a className="btn-outline" href="#request-access">
-            Request access
-          </a>
-          {agent.source_kind === 'sample' && <span>Sample listing · Live launch is not configured.</span>}
+
+          {isSample && <span>Sample listing · Live launch is not configured.</span>}
         </div>
       </header>
 
-      <AccessRequestForm key={agent.id} agentId={agent.id} />
+      {/* A request form only makes sense where a request is the route in.
+          Open agents need none; restricted ones go through the owner. */}
+      {access === 'request' && <AccessRequestForm key={agent.id} agentId={agent.id} />}
       <div className="agent__layout">
         <div className="agent__main">
           <section className="panel">

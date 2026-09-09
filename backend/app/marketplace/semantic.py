@@ -70,6 +70,44 @@ def enabled() -> bool:
     return os.environ.get("CREDITWIZ_DISABLE_SEMANTIC") not in ("1", "true")
 
 
+def _embedding_function():
+    """Chroma's default MiniLM, with the ONNX session pinned to one thread.
+
+    onnxruntime sizes its intra-op pool from the HOST's core count. Inside a
+    small container that is dozens of threads contending for a fraction of a
+    core, and a 50 ms inference took 12-15 s on Render's free tier. One thread
+    for a 22M-parameter model on a short query is the right size anywhere.
+
+    Subclasses DefaultEmbeddingFunction rather than the base class so the
+    registered name stays "default" and an index created before this change
+    reopens without an embedding-function mismatch.
+    """
+    from functools import cached_property
+
+    from chromadb.utils import embedding_functions
+
+    class OneThreadMiniLM(embedding_functions.DefaultEmbeddingFunction):
+        @cached_property
+        def model(self):  # type: ignore[override]
+            import os as _os
+
+            ort = self.ort
+            providers = ort.get_available_providers()
+            providers = [p for p in providers if p != "CoreMLExecutionProvider"]
+            so = ort.SessionOptions()
+            so.log_severity_level = 3
+            so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            so.intra_op_num_threads = 1
+            so.inter_op_num_threads = 1
+            return ort.InferenceSession(
+                _os.path.join(self.DOWNLOAD_PATH, self.EXTRACTED_FOLDER_NAME, "model.onnx"),
+                providers=providers,
+                sess_options=so,
+            )
+
+    return OneThreadMiniLM()
+
+
 class SemanticIndex:
     """Chroma-backed retrieval with a hard rule: never break search.
 
@@ -92,7 +130,6 @@ class SemanticIndex:
                 return self._collection
             try:
                 import chromadb
-                from chromadb.utils import embedding_functions
 
                 from ..database import VAR_DIR
 
@@ -103,7 +140,7 @@ class SemanticIndex:
                 client = chromadb.PersistentClient(path=str(path))
                 self._collection = client.get_or_create_collection(
                     COLLECTION,
-                    embedding_function=embedding_functions.DefaultEmbeddingFunction(),
+                    embedding_function=_embedding_function(),
                     # Cosine, so a similarity is 1 - distance and comparable
                     # across queries of different lengths.
                     metadata={"hnsw:space": "cosine"},
