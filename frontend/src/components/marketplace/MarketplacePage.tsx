@@ -33,6 +33,17 @@ function MarketplaceContent() {
   const [searchError, setSearchError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // What to search for, and a nonce saying "asked again". The URL alone drove
+  // this once, and re-submitting a query the URL already held changed nothing:
+  // the submit fired, no request went out, and the page sat there. The nonce
+  // makes an explicit submit a new request even when the text is identical.
+  //
+  // Deliberately the ONLY trigger for the search effect. Setting the URL and a
+  // separate counter in the same handler looked equivalent but was not --
+  // setParams does not batch with a plain setState, so the effect ran twice and
+  // every edited query cost two searches.
+  const [request, setRequest] = useState(() => ({ q: params.get('q') ?? '', nonce: 0 }))
+
   // Home content (carousels) depends on persona.
   useEffect(() => {
     const ctrl = new AbortController()
@@ -54,8 +65,14 @@ function MarketplaceContent() {
   useEffect(() => {
     setQuery(urlQuery)
   }, [urlQuery])
+  // A URL that changed on its own -- back, forward, a shared link, a starter
+  // from the home page -- becomes a request. After runSearch the URL already
+  // matches, so this does not fire a second time for the same search.
   useEffect(() => {
-    const q = urlQuery.trim()
+    setRequest((r) => (r.q === urlQuery ? r : { q: urlQuery, nonce: r.nonce + 1 }))
+  }, [urlQuery])
+  useEffect(() => {
+    const q = request.q.trim()
     if (!q) return
     const ctrl = new AbortController()
     // Keep the previous results on screen, dimmed, until the new ones land.
@@ -72,7 +89,7 @@ function MarketplaceContent() {
         if (!ctrl.signal.aborted) setSearching(false)
       })
     return () => ctrl.abort()
-  }, [urlQuery, persona, domain])
+  }, [request, persona, domain])
 
   function runSearch(q: string) {
     const trimmed = q.trim()
@@ -83,6 +100,7 @@ function MarketplaceContent() {
     if (domain) next.set('domain', domain)
     else next.delete('domain')
     setParams(next, { replace: true })
+    setRequest((r) => ({ q: trimmed, nonce: r.nonce + 1 }))
   }
 
   function clearSearch() {
@@ -92,6 +110,7 @@ function MarketplaceContent() {
     setResult(null)
     setSearchError(null)
     setSearching(false)
+    setRequest((r) => ({ q: '', nonce: r.nonce + 1 }))
     const next = new URLSearchParams(params)
     next.delete('q')
     setParams(next, { replace: true })
