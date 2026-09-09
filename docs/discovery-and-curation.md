@@ -58,11 +58,17 @@ A **curation score**, not a recommendation model. Rule-based on purpose so any p
 ```text
 domain match        +3 each
 capability match    +2 each
+use-case match      +2 each  (capped at 3)
 tag match           +1 each
                     ─────────
 persona named       +25% of the above, when the owner names this persona
 popularity          tie-breaker
 ```
+
+Every dimension counts **distinct persona interests covered**, not matching
+entries on the agent. That matters for prose: the Policy Q&A agent lists two
+separate use cases about policy, and counting entries scored that interest
+twice, lifting it above better-matched agents on wordiness alone.
 
 Relevance is **derived from business metadata**. An owner describes what the
 agent does; they do not enumerate every role that might want it. An agent that
@@ -83,11 +89,23 @@ significant words are a subset of the other's. It stays tight enough that
 
 `GET /api/marketplace/curation` returns the full breakdown, so "why is KYC Risk Screening first?" has a direct answer:
 
-| Agent | Domain | Capability | Tag | Persona boost | Total |
-| --- | --- | --- | --- | --- | --- |
-| KYC Risk Screening | 9 | 6 | 3 | 4.5 | 23.31 |
-| KYC Document Verifier | 6 | 4 | 1 | 2.75 | 14.67 |
-| Policy Q&A | 3 | 2 | 2 | 1.75 | 9.70 |
+| Agent | Domain | Capability | Use case | Tag | Persona boost | Total |
+| --- | --- | --- | --- | --- | --- | --- |
+| KYC Risk Screening | 9 | 6 | 4 | 3 | 5.5 | 28.31 |
+| KYC Document Verifier | 6 | 4 | 2 | 1 | 3.25 | 17.17 |
+| Policy Q&A | 3 | 2 | 4 | 2 | 2.75 | 14.70 |
+
+## Two ranking modes, two different questions
+
+```text
+RECOMMENDED FOR YOU          SEARCH
+"who are you?"               "what do you need right now?"
+persona drives it            query intent drives it
+                             persona is a x1.2 nudge at most
+```
+
+A compliance user searching *"I need something to review Python code"* gets the
+Code Review Assistant, not KYC. A test pins that.
 
 Code: `curation_breakdown()` and `recommend_for_persona()` in `backend/app/marketplace/search.py`.
 

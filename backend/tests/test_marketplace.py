@@ -590,6 +590,7 @@ def test_naming_a_persona_cannot_manufacture_relevance():
         personas=["compliance_user"],
         business_domains=["Engineering"],
         capabilities=["Code review"],
+        use_cases=["Review a pull request for style issues"],
         tags=["python"],
         popularity=0,
     )
@@ -633,3 +634,52 @@ def test_capability_matching_tolerates_wording_differences():
         capabilities=["Customer communication"], tags=[], popularity=0,
     )
     assert search.curation_breakdown(unrelated, _compliance())["capability"] == 0.0
+
+
+def test_use_cases_count_toward_relevance():
+    """An owner's description of what the agent is for is evidence, even when
+    the capability list is thin."""
+    from app.marketplace import search
+
+    described = _agent(
+        id="described-only", personas=[], business_domains=[], capabilities=[], tags=[],
+        use_cases=["Screen a customer against sanctions lists"], popularity=0,
+    )
+    # Covers two interests: the capability "Sanctions screening" and the tag.
+    assert search.curation_breakdown(described, _compliance())["use_case"] == 4.0
+
+
+def test_a_wordy_listing_cannot_outscore_a_precise_one():
+    """Coverage is counted per persona interest, not per sentence, so writing
+    four use cases about the same thing scores once."""
+    from app.marketplace import search
+
+    repetitive = _agent(
+        id="repetitive", personas=[], business_domains=[], capabilities=[], tags=[],
+        use_cases=[
+            "Ask what the policy says",
+            "Find the policy section that applies",
+            "Look up a policy exception",
+            "Explain a policy in plain language",
+        ],
+        popularity=0,
+    )
+    broad = _agent(
+        id="broad", personas=[], business_domains=[], capabilities=[], tags=[],
+        use_cases=["Check a policy", "Screen for sanctions"], popularity=0,  # 3 interests
+    )
+    parts = search.curation_breakdown(repetitive, _compliance())
+    assert parts["use_case"] == 2.0, "one interest, however many sentences"
+    assert search.curation_breakdown(broad, _compliance())["use_case"] == 6.0
+
+
+def test_search_intent_outranks_persona():
+    """The two modes are different questions. 'Who are you' drives the
+    carousels; 'what do you need right now' must drive search -- a compliance
+    user asking about Python gets the code agent, not KYC."""
+    results = client.post(
+        "/api/marketplace/search",
+        json={"query": "I need something to review Python code"},
+    ).json()["results"]
+    assert results, "expected at least one match"
+    assert results[0]["agent"]["id"] == "code-review-assistant"

@@ -353,7 +353,7 @@ def _reasons(agent: Agent, hits: dict[str, set[str]], intent: SearchIntent, pers
 # explainable curation score. Deliberately rule-based, not a learned model, so
 # every position in "Recommended for you" can be justified in review.
 #
-#   domain match +3 each | capability +2 each | tag match +1 each
+#   domain +3 each | capability +2 each | use case +2 each (capped) | tag +1 each
 #   persona named by the owner: +25% of the above | popularity = tie-breaker
 #
 # Relevance is derived from business metadata. An agent that never names a
@@ -363,7 +363,10 @@ def _reasons(agent: Agent, hits: dict[str, set[str]], intent: SearchIntent, pers
 # Inputs are the derived persona and static agent metadata ONLY. Behavioural
 # footprints (app/context) are collected but deliberately not read here.
 
-CURATION_WEIGHTS = {"domain": 3.0, "capability": 2.0, "tag": 1.0}
+CURATION_WEIGHTS = {"domain": 3.0, "capability": 2.0, "use_case": 2.0, "tag": 1.0}
+# Use cases are sentences, and a wordy agent can list several. Without a cap a
+# verbose listing would outrank a precise one on prose volume alone.
+USE_CASE_CAP = 3
 # An owner writing "designed for compliance users" is a curator hint, not
 # evidence in itself. It scales what the business metadata already shows rather
 # than adding a flat score, so a stray persona tag on an unrelated agent lifts
@@ -373,33 +376,46 @@ CURATION_WEIGHTS = {"domain": 3.0, "capability": 2.0, "tag": 1.0}
 PERSONA_BOOST = 0.25
 
 
-def _overlap(agent_values: list[str], wanted: list[str]) -> int:
-    """Count matches, tolerating wording differences between two catalogues.
+def _covered(agent_values: list[str], wanted: list[str]) -> int:
+    """How many of the persona's interests this agent covers.
 
-    Exact equality missed "Sanctions screening" against "Sanctions list
-    screening". A phrase counts when one side's significant words are a subset
-    of the other's, which stays tight enough that "Customer communication" does
-    not match "Customer onboarding".
+    Counting distinct interests rather than matching agent entries matters for
+    prose fields: the Policy Q&A agent lists two separate use cases about
+    policy, and counting entries scored that interest twice, rewarding a wordy
+    listing over a precise one. Breadth of coverage is the honest measure.
+
+    Matching tolerates wording differences between two catalogues -- exact
+    equality missed "Sanctions screening" against "Sanctions list screening" --
+    by treating a phrase as matched when one side's significant words are a
+    subset of the other's. That stays tight enough that "Customer
+    communication" does not match "Customer onboarding".
     """
-    targets = [t for t in (set(tokens(w)) for w in wanted) if t]
-    hits = 0
-    for value in agent_values:
-        have = set(tokens(value))
-        if have and any(have <= t or t <= have for t in targets):
-            hits += 1
-    return hits
+    have = [h for h in (set(tokens(v)) for v in agent_values) if h]
+    covered = 0
+    for target in wanted:
+        want = set(tokens(target))
+        if want and any(h <= want or want <= h for h in have):
+            covered += 1
+    return covered
 
 
 def curation_breakdown(agent: Agent, persona: Persona | None) -> dict[str, float]:
     """Per-component curation score, so any ranking can be explained."""
     popularity = agent.popularity / 100
     if persona is None:
-        return {"domain": 0.0, "capability": 0.0, "tag": 0.0, "persona_boost": 0.0, "popularity": popularity}
+        return {"domain": 0.0, "capability": 0.0, "use_case": 0.0, "tag": 0.0,
+                "persona_boost": 0.0, "popularity": popularity}
     interests = persona.interests
+    # What the agent is for, in the owner's own words. A use case counts when it
+    # actually covers one of the persona's interests, which catches agents whose
+    # capability list is thin but whose described purpose is squarely relevant.
+    wanted = interests.capabilities + interests.tags
     evidence = {
-        "domain": CURATION_WEIGHTS["domain"] * _overlap(agent.business_domains, interests.domains),
-        "capability": CURATION_WEIGHTS["capability"] * _overlap(agent.capabilities, interests.capabilities),
-        "tag": CURATION_WEIGHTS["tag"] * _overlap(agent.tags, interests.tags),
+        "domain": CURATION_WEIGHTS["domain"] * _covered(agent.business_domains, interests.domains),
+        "capability": CURATION_WEIGHTS["capability"] * _covered(agent.capabilities, interests.capabilities),
+        "use_case": CURATION_WEIGHTS["use_case"]
+        * min(_covered(agent.use_cases, wanted), USE_CASE_CAP),
+        "tag": CURATION_WEIGHTS["tag"] * _covered(agent.tags, interests.tags),
     }
     targeted = persona.id in agent.personas
     boost = sum(evidence.values()) * PERSONA_BOOST if targeted else 0.0
