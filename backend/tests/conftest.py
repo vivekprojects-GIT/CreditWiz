@@ -1,4 +1,5 @@
 import pytest
+
 from app import auth, database
 from app.learning.store import store as learning_store
 

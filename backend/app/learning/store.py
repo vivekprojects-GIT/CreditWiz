@@ -21,6 +21,7 @@ from pathlib import Path
 
 from .models import Item, LearningPath
 
+
 def _data_dir() -> Path:
     """Resolved per read, not at import, so CREDITWIZ_DATA_DIR can be pointed
     somewhere else by a test or a deployment without reimporting the module."""

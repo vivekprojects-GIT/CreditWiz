@@ -2,9 +2,11 @@
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+
 from .auth import user_id
 from .database import connect
 from .marketplace.store import store
@@ -59,7 +61,7 @@ def request_access(body: AccessRequest):
                 user_id(),
                 agent.id,
                 body.reason.strip(),
-                datetime.now(timezone.utc).isoformat(),
+                datetime.now(UTC).isoformat(),
             ),
         )
         row = conn.execute(

@@ -14,7 +14,7 @@ still ignores ratings entirely -- see learning/router.curation_breakdown.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .. import database
 
@@ -73,7 +73,7 @@ def summaries(user_id: str) -> dict[str, dict]:
 
 def record(user_id: str, item_id: str, stars: int) -> None:
     """One rating per user per item. Rating again replaces the previous one."""
-    now = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    now = datetime.now(UTC).isoformat(timespec="milliseconds")
     with database.connect(write=True) as conn:
         conn.execute(
             "INSERT INTO learning_ratings VALUES (?,?,?,?,?) "

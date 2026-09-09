@@ -1,6 +1,7 @@
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+
 from ..content_validation import safe_link
 
 AgentStatus = Literal["production", "pilot", "beta", "in_development", "deprecated"]

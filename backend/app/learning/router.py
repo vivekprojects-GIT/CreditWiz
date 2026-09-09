@@ -1,18 +1,19 @@
 """Learning owns the catalog, authored paths, curation and progress."""
 
 from __future__ import annotations
-import json
+
 import os
 from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
+
 from .. import personas as hub_personas
-from ..identity import derive_persona, load_profile
-from ..permissions import visible, resolve_persona
-from ..marketplace.store import store as marketplace_store
 from ..context import store as context_store
+from ..identity import derive_persona, load_profile
+from ..marketplace.store import store as marketplace_store
+from ..permissions import resolve_persona, visible
 from . import progress as progress_store
 from . import ratings as ratings_store
-from .store import store as catalog_store
 from .models import (
     Item,
     ItemDetail,
@@ -25,6 +26,7 @@ from .models import (
     Section,
     TopicCoverage,
 )
+from .store import store as catalog_store
 
 _DATA_DIR = Path(
     os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data")

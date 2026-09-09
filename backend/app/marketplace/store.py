@@ -219,6 +219,12 @@ class MarketplaceStore:
         self._lock = threading.Lock()
         self._loaded_at = 0.0
         self._agents: list[Agent] = []
+        # id -> agent, derived from whichever list `_agents` currently is. A
+        # separately maintained dict can drift from the list (a test that swaps
+        # `_agents` proved it, leaking a hidden agent); memoising on the list's
+        # identity cannot.
+        self._index_for: list[Agent] | None = None
+        self._index: dict[str, Agent] = {}
         self._personas: list[Persona] = []
         self._carousels: list[CarouselDef] = []
 
@@ -270,8 +276,19 @@ class MarketplaceStore:
         self._refresh()
         return self._carousels
 
+    def _by_id(self) -> dict[str, Agent]:
+        if self._index_for is not self._agents:
+            self._index = {a.id: a for a in self._agents}
+            self._index_for = self._agents
+        return self._index
+
     def agent(self, agent_id: str) -> Agent | None:
-        return next((a for a in self.agents if a.id == agent_id), None)
+        """O(1) by id. Visibility is checked on the one record, not the list."""
+        self._refresh()
+        from ..permissions import visible
+
+        found = self._by_id().get(agent_id)
+        return found if found is not None and visible(found) else None
 
     def persona(self, persona_id: str | None) -> Persona | None:
         if not persona_id:

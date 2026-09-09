@@ -1,10 +1,12 @@
 """User-scoped SQL footprints. No behavioral signal is used for MVP ranking."""
 
 from __future__ import annotations
+
 import json
 import uuid
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from .. import database
 from ..auth import user_id
 
@@ -31,7 +33,7 @@ def _insert(
     conn, table: str, record: dict, uid: str, event_key: str | None = None
 ) -> str:
     rid = uuid.uuid4().hex
-    now = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    now = datetime.now(UTC).isoformat(timespec="milliseconds")
     values = (rid, uid, now, json.dumps(record, ensure_ascii=False))
     if table == "events":
         conn.execute(
@@ -60,11 +62,21 @@ def record_feedback(record: dict) -> str:
         return _insert(conn, "feedback", record, user_id())
 
 
-def _read(table: str) -> list[dict]:
+def _read(table: str, limit: int | None = None) -> list[dict]:
+    """This user's rows, oldest first. `limit` keeps the newest N: a footprint
+    trail grows without bound, and reading all of it per request is O(history)
+    for a signal that only the recent past should carry."""
+    query = f"SELECT * FROM {table} WHERE user_id=?"
+    params: tuple = (user_id(),)
+    if limit:
+        query += " ORDER BY at DESC, id DESC LIMIT ?"
+        params += (limit,)
+    else:
+        query += " ORDER BY at, id"
     with database.connect() as conn:
-        rows = conn.execute(
-            f"SELECT * FROM {table} WHERE user_id=? ORDER BY at,id", (user_id(),)
-        ).fetchall()
+        rows = conn.execute(query, params).fetchall()
+    if limit:
+        rows = list(reversed(rows))
     return [
         {
             **json.loads(r["payload"]),
@@ -76,8 +88,12 @@ def _read(table: str) -> list[dict]:
     ]
 
 
-def events() -> list[dict]:
-    return _read("events")
+# Interest derivation looks at the recent trail, not the lifetime one.
+RECENT_EVENTS = 500
+
+
+def events(limit: int | None = None) -> list[dict]:
+    return _read("events", limit)
 
 
 def feedback() -> list[dict]:
@@ -88,7 +104,7 @@ def derive_interests(limit: int = 8) -> list[dict]:
     weights: dict[str, float] = defaultdict(float)
     counts: Counter = Counter()
     pillars: dict[str, set] = defaultdict(set)
-    for ev in events():
+    for ev in events(RECENT_EVENTS):
         for topic in {
             str(t).strip().lower() for t in ev.get("topics", []) if str(t).strip()
         }:

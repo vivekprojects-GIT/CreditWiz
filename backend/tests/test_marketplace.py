@@ -4,11 +4,13 @@ from fastapi.testclient import TestClient
 
 os.environ["CREDITWIZ_DISABLE_LLM"] = "1"
 
-from app.main import app  # noqa: E402
-from app.marketplace import search  # noqa: E402
-from app.marketplace.models import Agent  # noqa: E402
-from app.marketplace.store import normalize_agent  # noqa: E402
-from app.marketplace.store import store  # noqa: E402
+from app.main import app
+from app.marketplace import search
+from app.marketplace.models import Agent
+from app.marketplace.store import (
+    normalize_agent,
+    store,
+)
 
 client = TestClient(app)
 

@@ -1,8 +1,9 @@
 """Visibility is independent of recommendation relevance or persona previews."""
 
 from fastapi import HTTPException
-from .identity import derive_persona, is_admin, load_profile
+
 from . import personas
+from .identity import derive_persona, is_admin, load_profile
 
 
 def visible(record) -> bool:

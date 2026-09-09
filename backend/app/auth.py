@@ -58,15 +58,15 @@ def seed_users() -> None:
                     raise RuntimeError(
                         "Provision a local account or configure CREDITWIZ_BOOTSTRAP_EMAIL and a password of at least 12 characters."
                     )
-                profile = dict(
-                    id="administrator",
-                    name="Hub administrator",
-                    first_name="Admin",
-                    initials="AD",
-                    email=email,
-                    job_title="Platform Engineer",
-                    groups=["AI-Hub-Users", "AI-Hub-Admins"],
-                )
+                profile = {
+                    "id": "administrator",
+                    "name": "Hub administrator",
+                    "first_name": "Admin",
+                    "initials": "AD",
+                    "email": email,
+                    "job_title": "Platform Engineer",
+                    "groups": ["AI-Hub-Users", "AI-Hub-Admins"],
+                }
                 conn.execute(
                     "INSERT OR IGNORE INTO users(id,email,password_hash,profile) VALUES (?,?,?,?)",
                     (
@@ -111,16 +111,16 @@ def seed_users() -> None:
                 ),
             ):
                 profiles.append(
-                    dict(
-                        id=uid,
-                        name=name,
-                        first_name=name.split()[0],
-                        initials="".join(n[0] for n in name.split()),
-                        email=f"{uid}@mufg.example",
-                        job_title=role,
-                        department=dept,
-                        groups=["AI-Hub-Users", *groups],
-                    )
+                    {
+                        "id": uid,
+                        "name": name,
+                        "first_name": name.split()[0],
+                        "initials": "".join(n[0] for n in name.split()),
+                        "email": f"{uid}@mufg.example",
+                        "job_title": role,
+                        "department": dept,
+                        "groups": ["AI-Hub-Users", *groups],
+                    }
                 )
             for profile in profiles:
                 conn.execute(

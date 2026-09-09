@@ -2,7 +2,6 @@
 
 from .models import Link, Notification, Pillar, Section
 
-
 PILLARS = [
     Pillar(
         id="marketplace",

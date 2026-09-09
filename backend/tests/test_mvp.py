@@ -6,9 +6,10 @@ import sys
 import time
 
 from fastapi.testclient import TestClient
-from app.main import app
+
 from app import auth, database
 from app.learning import router as learning
+from app.main import app
 from app.marketplace.store import store
 
 client = TestClient(app)
@@ -366,6 +367,7 @@ def test_legacy_migration_preserves_files_and_only_imports_once(tmp_path, monkey
 
 def test_unreviewed_content_hidden_and_unsafe_urls_rejected(tmp_path, monkeypatch):
     import pytest
+
     from app.learning.models import Item
     from app.marketplace.models import Agent
 

@@ -1,8 +1,10 @@
 """Monotonic per-user learning state and exactly-once completion events in SQL."""
 
 from __future__ import annotations
-from datetime import datetime, timezone
+
+from datetime import UTC, datetime
 from typing import Literal
+
 from .. import database
 
 Status = Literal["not_started", "in_progress", "completed"]
@@ -24,7 +26,7 @@ def record(
     progress: int | None = None,
     completion_event: dict | None = None,
 ) -> dict:
-    now = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    now = datetime.now(UTC).isoformat(timespec="milliseconds")
     pct = 100 if status == "completed" else min(99, max(0, progress or 0))
     # BEGIN IMMEDIATE serializes read/modify/write across threads AND processes.
     with database.connect(write=True) as conn:

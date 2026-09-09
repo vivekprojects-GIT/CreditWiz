@@ -45,8 +45,8 @@ def provision(email, name, role, department, groups, password):
 
 def validate():
     from .learning.router import _raw
-    from .marketplace.store import _read_json, normalize_agent
     from .marketplace.models import Agent
+    from .marketplace.store import _read_json, normalize_agent
 
     agents = [
         Agent.model_validate(normalize_agent(a)) for a in _read_json("agents.json")

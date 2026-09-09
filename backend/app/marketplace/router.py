@@ -1,8 +1,9 @@
+import time
+
 from fastapi import APIRouter, HTTPException, Query
 
 from ..context import store as context_store
-import time
-
+from ..permissions import resolve_persona
 from . import search, semantic
 from .models import (
     Ack,
@@ -16,7 +17,6 @@ from .models import (
     SearchResponse,
 )
 from .store import store
-from ..permissions import resolve_persona
 
 router = APIRouter(prefix="/api/marketplace", tags=["marketplace"])
 
@@ -285,13 +285,13 @@ def metadata_template() -> dict:
 
 # ---------------------------------------------------------------- docs, architecture, learning
 
-from pathlib import Path as _Path  # noqa: E402
+from pathlib import Path as _Path
 
-from pydantic import BaseModel as _BaseModel  # noqa: E402
+from pydantic import BaseModel as _BaseModel
 
 from ..learning.models import ItemWithProgress
-from ..learning.router import for_agent as learning_for_agent  # noqa: E402
-from .store import _DATA_DIR  # noqa: E402
+from ..learning.router import for_agent as learning_for_agent
+from .store import _DATA_DIR
 
 
 class DocPage(_BaseModel):

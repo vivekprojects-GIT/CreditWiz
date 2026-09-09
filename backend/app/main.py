@@ -1,12 +1,12 @@
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from . import data, identity, auth  # noqa: E402
-from .permissions import visible
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+
+from . import auth, data, identity
 from .account import router as account_router
 from .context.router import router as context_router
 from .learning.router import router as learning_router
@@ -22,6 +22,7 @@ from .models import (
     SearchResponse,
     SearchResult,
 )
+from .permissions import visible
 
 
 @asynccontextmanager

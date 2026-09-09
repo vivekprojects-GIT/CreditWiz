@@ -42,15 +42,16 @@ def test_persona_is_derived_from_role_not_stored():
     assert me["job_title"] == "Compliance Analyst"
     assert me["persona"]["id"] == "compliance_user"
     assert me["persona"]["derived_from"] == "role"
-    assert "persona" not in __import__("json").load(
-        open("data/user.json", encoding="utf-8")
-    )
+    import json
+
+    with open("data/user.json", encoding="utf-8") as fh:
+        assert "persona" not in json.load(fh)
 
 
 def test_persona_mapping_rules():
     from app.identity import DirectoryProfile, derive_persona
 
-    base = dict(id="x", name="X Y", first_name="X", initials="XY")
+    base = {"id": "x", "name": "X Y", "first_name": "X", "initials": "XY"}
     assert (
         derive_persona(
             DirectoryProfile(**base, job_title="Senior Compliance Analyst")

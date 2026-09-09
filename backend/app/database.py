@@ -6,8 +6,8 @@ import json
 import os
 import sqlite3
 import threading
-from datetime import datetime, timezone
 from contextlib import contextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 
 VAR_DIR = Path(
@@ -96,7 +96,7 @@ def _migrate(conn: sqlite3.Connection) -> None:
                             row.get("started_at"),
                             row.get("completed_at"),
                             row.get(
-                                "updated_at", datetime.now(timezone.utc).isoformat()
+                                "updated_at", datetime.now(UTC).isoformat()
                             ),
                         ),
                     )

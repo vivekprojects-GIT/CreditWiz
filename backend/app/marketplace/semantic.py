@@ -28,6 +28,7 @@ import hashlib
 import logging
 import os
 import threading
+from collections import OrderedDict
 from pathlib import Path
 
 from .models import Agent
@@ -38,6 +39,7 @@ COLLECTION = "agents"
 # Retrieval is the ranking. Ask for more than we show so the similarity floors
 # and the per-user visibility drop still leave a full page.
 DEFAULT_CANDIDATES = 12
+CACHE_SIZE = 256
 
 
 def embedding_text(agent: Agent) -> str:
@@ -71,41 +73,48 @@ def enabled() -> bool:
 
 
 def _embedding_function():
-    """Chroma's default MiniLM, with the ONNX session pinned to one thread.
+    """One long-lived MiniLM with its ONNX session built once and pinned to one thread.
 
-    onnxruntime sizes its intra-op pool from the HOST's core count. Inside a
-    small container that is dozens of threads contending for a fraction of a
-    core, and a 50 ms inference took 12-15 s on Render's free tier. One thread
-    for a 22M-parameter model on a short query is the right size anywhere.
+    Chroma's DefaultEmbeddingFunction is a thin wrapper whose __call__ does
+    `return ONNXMiniLM_L6_V2()(input)`: it constructs a NEW model object per
+    call, and each one builds its own InferenceSession from model.onnx. Every
+    search was loading and graph-optimising the model from disk -- ~130 ms on
+    a laptop, 4.5-6.6 s on a tenth of a core on Render. Holding one instance
+    makes session construction a one-off, so the per-query cost is inference
+    alone. That instance also pins onnxruntime to one intra-op thread: ORT
+    otherwise sizes its pool from the host's core count, which in a small
+    container is dozens of threads contending for a fraction of a core.
 
-    Subclasses DefaultEmbeddingFunction rather than the base class so the
-    registered name stays "default" and an index created before this change
-    reopens without an embedding-function mismatch.
+    name() still reports "default" so an index created with the stock
+    function reopens without an embedding-function mismatch; it is the same
+    model producing the same vectors.
     """
     from functools import cached_property
 
-    from chromadb.utils import embedding_functions
+    from chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2 import ONNXMiniLM_L6_V2
 
-    class OneThreadMiniLM(embedding_functions.DefaultEmbeddingFunction):
+    class OneSessionMiniLM(ONNXMiniLM_L6_V2):
         @cached_property
         def model(self):  # type: ignore[override]
-            import os as _os
-
-            ort = self.ort
-            providers = ort.get_available_providers()
-            providers = [p for p in providers if p != "CoreMLExecutionProvider"]
-            so = ort.SessionOptions()
+            providers = [
+                p for p in self.ort.get_available_providers() if p != "CoreMLExecutionProvider"
+            ]
+            so = self.ort.SessionOptions()
             so.log_severity_level = 3
-            so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            so.graph_optimization_level = self.ort.GraphOptimizationLevel.ORT_ENABLE_ALL
             so.intra_op_num_threads = 1
             so.inter_op_num_threads = 1
-            return ort.InferenceSession(
-                _os.path.join(self.DOWNLOAD_PATH, self.EXTRACTED_FOLDER_NAME, "model.onnx"),
+            return self.ort.InferenceSession(
+                os.path.join(self.DOWNLOAD_PATH, self.EXTRACTED_FOLDER_NAME, "model.onnx"),
                 providers=providers,
                 sess_options=so,
             )
 
-    return OneThreadMiniLM()
+        @staticmethod
+        def name() -> str:
+            return "default"
+
+    return OneSessionMiniLM()
 
 
 class SemanticIndex:
@@ -121,6 +130,10 @@ class SemanticIndex:
         self._lock = threading.Lock()
         self._collection = None
         self._broken = False
+        # Retrieval results keyed by (text, limit). The embedding is the whole
+        # cost of a search, and demo queries repeat; a hit skips the model
+        # entirely. Cleared whenever sync() changes the index.
+        self._cache: OrderedDict[tuple[str, int], dict[str, float]] = OrderedDict()
 
     def _open(self):
         if self._collection is not None or self._broken or not enabled():
@@ -184,6 +197,8 @@ class SemanticIndex:
             stale = [i for i in known if i not in {a.id for a in agents}]
             if stale:
                 collection.delete(ids=stale)
+            if ids or stale:
+                self._cache.clear()
             return {
                 "added": added,
                 "updated": updated,
@@ -204,15 +219,24 @@ class SemanticIndex:
         collection = self._open()
         if collection is None or not query.strip():
             return {}
+        key = (query.strip().lower(), limit)
+        hit = self._cache.get(key)
+        if hit is not None:
+            self._cache.move_to_end(key)
+            return dict(hit)
         try:
             found = collection.query(query_texts=[query], n_results=limit)
             ids = found.get("ids", [[]])[0]
             distances = found.get("distances", [[]])[0]
             # Cosine distance can drift marginally outside [0, 2]; clamp so a
             # similarity never leaves 0..1.
-            return {
+            result = {
                 i: max(0.0, min(1.0, 1.0 - float(d))) for i, d in zip(ids, distances)
             }
+            self._cache[key] = dict(result)
+            if len(self._cache) > CACHE_SIZE:
+                self._cache.popitem(last=False)
+            return result
         except Exception as exc:  # noqa: BLE001
             log.warning("Semantic query failed, using lexical search: %s", exc)
             return {}

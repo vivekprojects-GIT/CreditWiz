@@ -62,7 +62,7 @@ def _read(name: str) -> dict:
 # profile: one /api/learning request read the same row 65 times. The profile
 # cannot change mid-request, so hold it for the duration of one. Reset by the
 # session middleware, so nothing leaks between requests or between users.
-_current: ContextVar[tuple[str, "DirectoryProfile"] | None] = ContextVar(
+_current: ContextVar[tuple[str, DirectoryProfile] | None] = ContextVar(
     "creditwiz_profile", default=None
 )
 
