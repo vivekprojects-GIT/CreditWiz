@@ -752,3 +752,40 @@ def test_search_still_works_when_the_semantic_index_is_disabled(monkeypatch):
         "/api/marketplace/search", json={"query": "validating customer documents"}
     ).json()["results"]
     assert results and results[0]["agent"]["id"] == "kyc-document-verifier"
+
+
+def test_search_records_a_trace_that_explains_the_ranking():
+    """Afterwards it must be possible to tell whether an agent was missed
+    because retrieval never proposed it or because the ranker dropped it."""
+    client.post(
+        "/api/marketplace/search",
+        json={"query": "anti-money-laundering watchlist checks"},
+    )
+    trace = client.get(
+        "/api/context/events?pillar=marketplace&type=search&limit=1"
+    ).json()[0]
+    assert trace["query"] == "anti-money-laundering watchlist checks"
+    assert trace["persona"] == "compliance_user"
+
+    meta = trace["meta"]
+    assert meta["engine"] in {"claude", "local"}
+    assert meta["results"] and set(meta["scores"]) == set(meta["results"])
+    assert "domains" in meta["intent"] and "capabilities" in meta["intent"]
+    assert "available" in meta["retrieval"] and "candidates" in meta["retrieval"]
+    assert meta["no_match"] is False
+    assert isinstance(meta["took_ms"], int)
+
+
+def test_the_footprint_trail_is_scoped_to_the_signed_in_user():
+    client.post("/api/marketplace/search", json={"query": "sanctions screening"})
+    assert client.get("/api/context/events").json(), "own trail is readable"
+
+    # Switching the session swaps the cookie, so this reads the other user's trail.
+    assert (
+        client.post("/api/auth/demo", json={"user_id": "demo-developer"}).status_code
+        == 200
+    )
+    theirs = [
+        e.get("query") for e in client.get("/api/context/events?type=search").json()
+    ]
+    assert "sanctions screening" not in theirs

@@ -76,8 +76,8 @@ Explain             → "Why this matched: This agent supports review customer o
 
 Intent understanding has two engines behind one interface:
 
-- **Claude** when `ANTHROPIC_API_KEY` is set (in `backend/.env`). The request goes to `claude-sonnet-5` by default (about 3 seconds; `CREDITWIZ_SEARCH_MODEL=claude-opus-5` is more thorough but takes about 30 seconds) with a structured output schema (`SearchIntent`). The UI shows "Interpreted by Claude".
-- **Local lexicon** otherwise. A concept lexicon (onboarding / KYC, AML screening, contracts, disputes, collections, asset tracing, policy, communication, engineering, and so on) expands the query. The UI shows "Interpreted locally".
+- **Claude** when `ANTHROPIC_API_KEY` is set (in `backend/.env`). The request goes to `claude-sonnet-5` by default (about 3 seconds; `CREDITWIZ_SEARCH_MODEL=claude-opus-5` is more thorough but takes about 30 seconds) with a structured output schema (`SearchIntent`). Recorded in the search footprint as `meta.engine`.
+- **Local lexicon** otherwise. A concept lexicon (onboarding / KYC, AML screening, contracts, disputes, collections, asset tracing, policy, communication, engineering, and so on) expands the query. Recorded in the search footprint as `meta.engine`.
 
 Final relevance = semantic match (intent concepts and expanded keywords) + keyword match (direct terms) + metadata match (domain, capability, persona). Any Claude failure falls back to the local engine, so the demo never breaks. With ten agents this runs in microseconds and needs no vector database. When the catalogue grows, embeddings over the same searchable text (name, description, domain, use cases, capabilities, personas, tags) slot into the `SearchIntent -> ranked matches` seam.
 

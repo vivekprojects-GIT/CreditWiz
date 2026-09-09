@@ -74,6 +74,22 @@ def interests() -> list[InterestSignal]:
     return [InterestSignal(**i) for i in store.derive_interests()]
 
 
+@router.get("/events")
+def events(limit: int = 50, pillar: str | None = None, type: str | None = None) -> list[dict]:
+    """This user's own footprint trail, newest first.
+
+    Scoped to the caller by the store, so one person cannot read another's
+    trail. Useful for showing what a search actually did: the recorded meta
+    carries the interpretation, the retrieval candidates and the final scores.
+    """
+    rows = store.events()
+    if pillar:
+        rows = [r for r in rows if r.get("pillar") == pillar]
+    if type:
+        rows = [r for r in rows if r.get("type") == type]
+    return list(reversed(rows))[: max(1, min(limit, 200))]
+
+
 @router.get("/summary", response_model=ContextSummary)
 def summary() -> ContextSummary:
     return ContextSummary(**store.summary())

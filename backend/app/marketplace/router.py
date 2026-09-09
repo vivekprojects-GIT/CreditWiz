@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query
 
 from ..context import store as context_store
-from . import search
+import time
+
+from . import search, semantic
 from .models import (
     Ack,
     Agent,
@@ -181,12 +183,18 @@ def related_agents(agent_id: str) -> list[Agent]:
 
 @router.post("/search", response_model=SearchResponse)
 def nlp_search(req: SearchRequest) -> SearchResponse:
+    started = time.perf_counter()
     agents = store.agents
     persona = store.persona(resolve_persona(req.persona).id)
     intent, engine = search.understand(req.query, agents)
+    retrieved = semantic.index.search(req.query)
     results = search.rank(
         req.query, intent, agents, persona=persona, domain=req.domain, limit=req.limit
     )
+    # Trace enough to reconstruct why this ranking happened: how the request was
+    # interpreted, what retrieval proposed, and what came out. Without the
+    # candidates it is impossible to tell afterwards whether an agent was missed
+    # because retrieval never proposed it or because the ranker dropped it.
     context_store.record_event(
         {
             "pillar": "marketplace",
@@ -197,7 +205,24 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
                 {d for m in results for d in m.agent.business_domains}
                 | set(intent.domains)
             ),
-            "meta": {"engine": engine, "results": [m.agent.id for m in results]},
+            "meta": {
+                "engine": engine,
+                "results": [m.agent.id for m in results],
+                "scores": {m.agent.id: m.score for m in results},
+                "intent": {
+                    "domains": intent.domains,
+                    "capabilities": intent.capabilities,
+                },
+                "retrieval": {
+                    "available": semantic.index.available,
+                    "candidates": dict(
+                        sorted(retrieved.items(), key=lambda kv: -kv[1])[:5]
+                    ),
+                },
+                "domain_filter": req.domain or None,
+                "no_match": not results,
+                "took_ms": round((time.perf_counter() - started) * 1000),
+            },
         }
     )
     return SearchResponse(

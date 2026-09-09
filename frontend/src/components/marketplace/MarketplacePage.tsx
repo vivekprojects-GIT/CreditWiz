@@ -162,22 +162,15 @@ function MarketplaceContent() {
         <section className="results" aria-live="polite">
           <div className="results__head">
             <div>
+              {/* What we understood, in the user's own terms. The engine badge
+                  and the extracted concept chips were plumbing on display: which
+                  model read the sentence is not the user's problem, and the
+                  concepts restate the query they just typed. Each result still
+                  explains itself from the metadata that matched. */}
               <div className="results__intent">
                 <Sparkles size={16} strokeWidth={2.4} />
                 <span>{result.intent.summary}</span>
-                <span className={`engine engine--${result.engine}`} title="How the request was interpreted">
-                  {result.engine === 'claude' ? 'Interpreted by Claude' : 'Interpreted locally'}
-                </span>
               </div>
-              {result.intent.concepts.length > 0 && (
-                <div className="results__concepts">
-                  {result.intent.concepts.map((c) => (
-                    <span key={c} className="concept">
-                      {c}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
             <button type="button" className="results__clear" onClick={clearSearch}>
               Clear results

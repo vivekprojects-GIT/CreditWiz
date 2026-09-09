@@ -46,7 +46,7 @@ Claude interprets the request into concepts — document validation, onboarding 
 
 > **Why this matched:** This agent supports "Review customer onboarding documents for completeness", covers document extraction, identity verification and completeness checking, works in Onboarding and Compliance. It is built for compliance users.
 
-No key configured? A local concept lexicon does the same job and the badge reads "Interpreted locally". The fallback is labeled explicitly.
+No key configured? A local concept lexicon does the same job, and a semantic index over the agent metadata still retrieves agents that share no words with the query. Which engine interpreted the request is recorded in the search footprint rather than shown on the page: users care about the answer, not the plumbing.
 
 ### 4. Agent detail — understand, then act
 
