@@ -197,11 +197,14 @@ function MarketplaceContent() {
             <div className="results__grid">
               {result.results.map((m, i) => (
                 <div key={m.agent.id} className={`results__item${i === 0 ? ' is-top' : ''}`}>
-                  {/* Rank 1 is the best match; ranks 2 and 3 show their
-                      percentage only, quieter; rank 4 onward shows nothing.
-                      The percentage is coverage of the extracted domains and
-                      capabilities, omitted when nothing was extracted rather
-                      than invented. */}
+                  {/* Only the best match carries a percentage. Ranking is a
+                      rank-fusion of two retrievers, so no per-card number can
+                      be guaranteed to agree with the order below the top --
+                      a "38% best match" above a "50% second" read as wrong.
+                      Ranks 2 and 3 are labelled by position; rank 4 onward
+                      shows nothing. The best-match percentage is coverage of
+                      the extracted domains and capabilities, omitted when
+                      nothing was extracted rather than invented. */}
                   {i === 0 && (
                     <span className="results__best">
                       Best match
@@ -212,10 +215,8 @@ function MarketplaceContent() {
                       )}
                     </span>
                   )}
-                  {i > 0 && i < 3 && m.coverage != null && (
-                    <span className="results__rank" title="Covers this share of what we understood you needed">
-                      {m.coverage}% match
-                    </span>
+                  {i > 0 && i < 3 && (
+                    <span className="results__rank">{i === 1 ? '2nd match' : '3rd match'}</span>
                   )}
                   <AgentCard agent={m.agent} why={m.why} source="search" />
                 </div>
