@@ -24,6 +24,36 @@ def test_search_matches_title_and_kind():
     assert client.get("/api/search", params={"q": ""}).json()["results"] == []
 
 
+def test_header_search_answers_a_sentence_not_just_a_substring():
+    """The header and the marketplace page must agree.
+
+    The header used to substring-match the whole typed string against a name,
+    tagline or tag. No sentence is a substring of any of those, so a plain
+    question dead-ended in "No matches" while the marketplace page below
+    answered it correctly -- the most prominent control on the page failing at
+    exactly what the search engine was built for.
+    """
+    q = "check customers against sanctions lists"
+    header = client.get("/api/search", params={"q": q}).json()["results"]
+    assert [r["title"] for r in header if r["kind"] == "agent"] == [
+        "Sanctions Review Agent"
+    ]
+
+    page = client.post("/api/marketplace/search", json={"query": q}).json()
+    assert page["results"][0]["agent"]["name"] == "Sanctions Review Agent"
+
+    # A paraphrase with no shared words still resolves.
+    paraphrase = client.get(
+        "/api/search", params={"q": "someone owes us money, where are their assets"}
+    ).json()["results"]
+    assert "Asset Locator" in [r["title"] for r in paraphrase]
+
+    # Navigation still works: a bare generic word clears no relevance floor, so
+    # the name matches have to carry it.
+    generic = client.get("/api/search", params={"q": "agent"}).json()["results"]
+    assert [r for r in generic if r["kind"] == "agent"]
+
+
 def test_pillar_detail_and_404():
     body = client.get("/api/pillars/learning").json()
     assert body["title"] == "AI Learning and Enablement"

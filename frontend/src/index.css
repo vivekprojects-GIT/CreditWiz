@@ -447,6 +447,13 @@ h3 {
   text-align: center;
 }
 
+/* The row offered when the typeahead finds nothing: an action, not a result,
+   so the badge carries the brand colour rather than the neutral one. */
+.search__kind--action {
+  color: var(--red-700, #b30000);
+  background: var(--red-50, #fdecec);
+}
+
 .topbar__actions {
   display: flex;
   align-items: center;

@@ -254,21 +254,86 @@ def mark_notifications_read():
     return {"ok": True}
 
 
+# A typed character triggers this, so it must stay cheap. Below this length a
+# query is still being typed and hybrid retrieval would rank noise.
+TYPEAHEAD_MIN_QUERY = 3
+TYPEAHEAD_AGENTS = 5
+
+
+def _typeahead_agents(needle: str) -> list[SearchResult]:
+    """Agent suggestions for the header search: name matches, then real search.
+
+    Two different questions get typed into one box. "Sanctions Review" is
+    navigation -- the person knows the name and wants to be taken there, which
+    substring matching answers instantly and exactly. "check customers against
+    sanctions lists" is a search, and no substring of it appears in any name or
+    tagline, which is why the header used to dead-end in "No matches" while the
+    marketplace page below answered the same question correctly.
+
+    So: exact-ish matches first because they are precise, then the same hybrid
+    retrieval and fusion the marketplace page runs, filling what is left. A
+    single generic word like "agent" clears no relevance floor and is meant not
+    to -- the name matches carry it.
+
+    One deliberate difference from the marketplace path: intent comes from the
+    local lexicon, never from Claude. This fires every 160 ms while someone
+    types, and a model call per keystroke would be slow and expensive for a
+    suggestion list. The lexicon is the same fallback a search uses when Claude
+    is unavailable.
+    """
+    from .identity import load_profile
+    from .marketplace import keyword, search as marketplace_search, semantic
+
+    visible_agents = [a for a in marketplace_store.agents if visible(a)]
+
+    def as_result(agent) -> SearchResult:
+        return SearchResult(
+            kind="agent", title=agent.name, href=f"/marketplace/agents/{agent.id}"
+        )
+
+    by_name = [
+        a
+        for a in visible_agents
+        if needle in a.name.lower()
+        or needle in a.tagline.lower()
+        or any(needle in t.lower() for t in a.tags)
+    ]
+    if len(needle) < TYPEAHEAD_MIN_QUERY or len(by_name) >= TYPEAHEAD_AGENTS:
+        return [as_result(a) for a in by_name[:TYPEAHEAD_AGENTS]]
+
+    intent = marketplace_search.local_intent(needle)
+    audience = load_profile().groups
+    retrieved = (
+        semantic.index.search(
+            marketplace_search.retrieval_text(needle, intent), groups=audience
+        )
+        if semantic.index.available
+        else None
+    )
+    if keyword.index.size == 0:
+        keyword.index.sync(marketplace_store.all_agents)
+    matched = keyword.index.search(
+        marketplace_search.keyword_text(needle, intent),
+        allowed={a.id for a in visible_agents},
+    )
+    matches = marketplace_search.rank(
+        needle,
+        intent,
+        visible_agents,
+        similar=retrieved,
+        keywords=matched,
+    )
+    seen = {a.id for a in by_name}
+    ordered = by_name + [m.agent for m in matches if m.agent.id not in seen]
+    return [as_result(a) for a in ordered[:TYPEAHEAD_AGENTS]]
+
+
 @app.get("/api/search", response_model=SearchResponse)
 def search(q: str = Query(default="", max_length=200)) -> SearchResponse:
     needle = q.strip().lower()
     if not needle:
         return SearchResponse(query=q, results=[])
-    agent_hits = [
-        SearchResult(kind="agent", title=a.name, href=f"/marketplace/agents/{a.id}")
-        for a in marketplace_store.agents
-        if visible(a)
-        and (
-            needle in a.name.lower()
-            or needle in a.tagline.lower()
-            or any(needle in t.lower() for t in a.tags)
-        )
-    ]
+    agent_hits = _typeahead_agents(needle)
     from .learning.router import _load
 
     _, items = _load()

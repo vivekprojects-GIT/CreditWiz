@@ -64,8 +64,26 @@ export function TopBar({ user, onMenu }: Props) {
     navigate(href)
   }
 
+  // A typeahead that finds nothing should still take you somewhere. The
+  // marketplace page runs the same engine and, when it also finds nothing,
+  // says so properly and offers next steps.
+  function goToMarketplace() {
+    const q = query.trim()
+    setSearchOpen(false)
+    setQuery('')
+    navigate(`/marketplace?q=${encodeURIComponent(q)}`)
+  }
+
   function onSearchKey(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!results || results.length === 0) return
+    if (!results || results.length === 0) {
+      // Enter is the reflex after typing a question; honour it rather than
+      // leaving the person staring at an empty menu.
+      if (e.key === 'Enter' && query.trim() && !searchError) {
+        e.preventDefault()
+        goToMarketplace()
+      }
+      return
+    }
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setHighlight((h) => (h + 1) % results.length)
@@ -158,7 +176,22 @@ export function TopBar({ user, onMenu }: Props) {
         {showResults && (
           <div className="menu search__results" id="hub-search-results" role="listbox">
             {results.length === 0 ? (
-              <div className="menu__empty">{searchError || `No matches for “${query.trim()}”.`}</div>
+              searchError ? (
+                <div className="menu__empty">{searchError}</div>
+              ) : (
+                <button
+                  type="button"
+                  className="search__result search__result--fallback is-highlight"
+                  role="option"
+                  aria-selected="true"
+                  onClick={goToMarketplace}
+                >
+                  <span className="search__kind search__kind--action">search</span>
+                  <span>
+                    Search the marketplace for “{query.trim()}”
+                  </span>
+                </button>
+              )
             ) : (
               results.map((r, i) => (
                 <button
