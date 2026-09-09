@@ -294,7 +294,10 @@ export function AgentDetailPage() {
               <dt>
                 <Server size={16} strokeWidth={2.2} /> Platform
               </dt>
-              <dd>{agent.platform}</dd>
+              {/* Blank until the owning team confirms it. Say so, the way
+                  models and tools do, rather than leaving a label with
+                  nothing under it. */}
+              <dd>{agent.platform || 'Not listed'}</dd>
               <dt>
                 <Cpu size={16} strokeWidth={2.2} /> Models
               </dt>
