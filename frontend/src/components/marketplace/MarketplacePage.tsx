@@ -12,9 +12,11 @@ import { PageBand } from '../PageBand'
 import { PersonaPreview } from './PersonaPicker'
 
 export function MarketplacePage() {
-  const [params] = useSearchParams()
-  const { persona } = usePersona()
-  return <MarketplaceContent key={`${params.toString()}|${persona}`} />
+  // No key here. Keying on the URL remounted the whole page on every search
+  // and every clear: carousels vanished and refetched, the input reset, and
+  // the results panel replayed its entrance -- the flicker users reported.
+  // The effects below already re-run on query, persona and domain changes.
+  return <MarketplaceContent />
 }
 function MarketplaceContent() {
   const { persona } = usePersona()
@@ -47,10 +49,20 @@ function MarketplaceContent() {
 
   // Run (or re-run) the search when the URL query, persona or domain changes.
   const urlQuery = params.get('q') ?? ''
+  // Back/forward changes the URL without going through runSearch; keep the
+  // input in step with it now that the component survives navigation.
+  useEffect(() => {
+    setQuery(urlQuery)
+  }, [urlQuery])
   useEffect(() => {
     const q = urlQuery.trim()
     if (!q) return
     const ctrl = new AbortController()
+    // Keep the previous results on screen, dimmed, until the new ones land.
+    // Unmounting them first blanked the panel and replayed its entrance
+    // animation on every search, which read as flicker.
+    setSearching(true)
+    setSearchError(null)
     searchAgents(q, persona, domain, ctrl.signal)
       .then((r) => setResult(r))
       .catch((err: unknown) => {
@@ -75,6 +87,11 @@ function MarketplaceContent() {
 
   function clearSearch() {
     setQuery('')
+    // Drop the result too. Leaving it in state meant the next search mounted
+    // the panel instantly with the OLD query's results, then swapped them.
+    setResult(null)
+    setSearchError(null)
+    setSearching(false)
     const next = new URLSearchParams(params)
     next.delete('q')
     setParams(next, { replace: true })
@@ -92,7 +109,10 @@ function MarketplaceContent() {
       <PageBand
         kicker="AI Marketplace"
         title="Find the right agent for the job"
-        lead={`Describe what you need in plain language. We match it against ${home?.agent_count ?? '…'} sample agents. Enterprise listings and launch destinations are awaiting client confirmation.`}
+        // Product copy, not prototype status. The catalogue size and the
+        // sample/enterprise distinction are stated where they matter: on each
+        // listing, and in the "All N agents" link below.
+        lead="Describe what you need in plain language and we'll find the agents that fit."
       >
         <form
           className={`gsearch${searching ? ' is-busy' : ''}`}
@@ -142,7 +162,7 @@ function MarketplaceContent() {
       )}
 
       {urlQuery && result && (
-        <section className="results" aria-live="polite">
+        <section className={`results${searching ? ' is-refreshing' : ''}`} aria-live="polite" aria-busy={searching}>
           <div className="results__head">
             <div>
               {/* What we understood, in the user's own terms. The engine badge

@@ -42,9 +42,9 @@ Two discovery paths, as discussed: generative search at the top, Netflix-style c
 
 > *"I need something for validating customer documents during onboarding"*
 
-Claude interprets the request into concepts — document validation, onboarding compliance, identity verification — then the ranker matches those against agent metadata. Every result explains itself:
+Claude restates the request in one line — *"Looking for an agent that validates customer documents during onboarding"* — so the user sees what was understood. That restatement, plus the words they typed, is embedded once and compared with every agent's embedded description; results are ordered by similarity, and anything not close enough is cut rather than padded in. The best match carries a **coverage %**: of the domains and capabilities extracted from the request, how many this agent has. Every result explains itself from the metadata that overlaps the request — not generated prose:
 
-> **Why this matched:** This agent supports "Review customer onboarding documents for completeness", covers document extraction, identity verification and completeness checking, works in Onboarding and Compliance. It is built for compliance users.
+> **Why this matched:** This agent covers document extraction, identity verification and completeness checking, works in Onboarding and Compliance. It is built for compliance users.
 
 No key configured? A local concept lexicon does the same job, and a semantic index over the agent metadata still retrieves agents that share no words with the query. Which engine interpreted the request is recorded in the search footprint rather than shown on the page: users care about the answer, not the plumbing.
 
@@ -52,7 +52,7 @@ No key configured? A local concept lexicon does the same job, and a semantic ind
 
 ![Agent detail](docs/screenshots/04-agent-detail.png)
 
-One page answers what it is, why it exists, what to ask it, who owns it, what it runs on, and how to get access. Actions include local access requests, documentation and architecture. Confirmed enterprise listings also use their configured launch/access URLs and owner email; sample listings explicitly label unavailable live destinations. Related learning is consumed from the Learning pillar.
+One page answers what it is, why it exists, what to ask it, who owns it, what it runs on, and how to get access. The primary action follows the agent's declared access type: open agents open, request-based agents show the request form, restricted agents route to the owner. Documentation and architecture are one click away. Confirmed enterprise listings also use their configured launch/access URLs and owner email; sample listings explicitly label unavailable live destinations. Related learning is consumed from the Learning pillar.
 
 ### 5. Documentation lives in the hub
 

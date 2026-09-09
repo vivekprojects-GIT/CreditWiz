@@ -1654,6 +1654,17 @@ a.plain {
   text-decoration: underline;
 }
 
+/* Previous results stay put while a new search runs; they dim instead of
+   vanishing, so nothing blanks or re-animates between two searches. */
+.results.is-refreshing {
+  opacity: 0.55;
+  transition: opacity var(--fast);
+}
+
+.results.is-refreshing .results__grid {
+  pointer-events: none;
+}
+
 .results__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

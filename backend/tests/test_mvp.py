@@ -482,3 +482,27 @@ def test_one_request_reads_the_signed_in_profile_once():
     finally:
         identity.DirectoryProfile.model_validate = original
     assert reads["n"] == 1, f"profile parsed {reads['n']} times in one request"
+
+
+def test_csrf_accepts_any_loopback_origin_in_development_only(monkeypatch):
+    """Vite moves to the next free port when 5173 is busy. A developer on
+    localhost:5174 was refused with "Request verification failed"; a remote
+    attacker cannot present a loopback Origin, so outside production any
+    loopback port is fine. Production keeps the strict allowlist."""
+    from app.main import origin_allowed
+
+    monkeypatch.setenv("CREDITWIZ_ORIGINS", "http://localhost:5173")
+    monkeypatch.setenv("CREDITWIZ_ENV", "development")
+    assert origin_allowed("http://localhost:5174")
+    assert origin_allowed("http://127.0.0.1:3000")
+    assert origin_allowed("http://[::1]:5173")
+    assert not origin_allowed("https://evil.example")
+
+    monkeypatch.setenv("CREDITWIZ_ENV", "production")
+    assert origin_allowed("http://localhost:5173")  # still on the list
+    assert not origin_allowed("http://localhost:5174")
+
+    # And the refusal says what to fix, not just that it failed.
+    c = TestClient(app, headers={**HEADERS, "Origin": "https://evil.example"})
+    r = c.post("/api/auth/demo", json={"user_id": "u-1001"})
+    assert r.status_code == 403 and "CREDITWIZ_ORIGINS" in r.json()["detail"]

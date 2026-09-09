@@ -1,6 +1,7 @@
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -75,18 +76,40 @@ def allowed_origins() -> list[str]:
     return origins
 
 
+def origin_allowed(origin: str) -> bool:
+    """The CSRF allowlist, plus any loopback origin in development.
+
+    Vite picks the next free port when 5173 is busy, and a developer on
+    http://localhost:5174 was met with "Request verification failed". A
+    remote attacker cannot present a loopback Origin, so accepting them
+    outside production costs nothing. Production keeps the strict list.
+    """
+    if origin in allowed_origins():
+        return True
+    if auth.production():
+        return False
+    host = urlparse(origin).hostname or ""
+    return host in {"localhost", "127.0.0.1", "::1"}
+
+
 @app.middleware("http")
 async def session_boundary(request: Request, call_next):
     if not request.url.path.startswith("/api/") or request.method == "OPTIONS":
         return await call_next(request)
-    origins = allowed_origins()
     if request.method not in ("GET", "HEAD"):
         origin = request.headers.get("origin")
-        if (origin and origin not in origins) or request.headers.get(
-            "X-CreditWiz-Request"
-        ) != "1":
+        if request.headers.get("X-CreditWiz-Request") != "1":
             return JSONResponse(
-                {"detail": "Request verification failed"}, status_code=403
+                {"detail": "Request blocked: missing X-CreditWiz-Request header"},
+                status_code=403,
+            )
+        if origin and not origin_allowed(origin):
+            return JSONResponse(
+                {
+                    "detail": f"Request blocked: origin {origin} is not allowed. "
+                    "Set CREDITWIZ_ORIGINS to include it."
+                },
+                status_code=403,
             )
     public = request.url.path in (
         "/api/health",
