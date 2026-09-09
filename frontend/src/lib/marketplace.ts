@@ -69,6 +69,8 @@ export interface AgentMatch {
   score: number
   why: string
   reasons: string[]
+  /** Share of the understood request this agent covers, 0-100; null when nothing was extracted. */
+  coverage: number | null
 }
 
 export interface SearchResponse {

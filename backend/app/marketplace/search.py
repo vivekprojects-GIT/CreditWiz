@@ -311,7 +311,15 @@ def rank(
             score *= 0.5
 
         reasons = _reasons(agent, hits, intent, persona)
-        matches.append(AgentMatch(agent=agent, score=round(score, 2), why=_why(agent, hits, intent, persona), reasons=reasons))
+        matches.append(
+            AgentMatch(
+                agent=agent,
+                score=round(score, 2),
+                why=_why(agent, hits, intent, persona),
+                reasons=reasons,
+                coverage=_coverage(agent, intent),
+            )
+        )
 
     if not matches:
         return []
@@ -335,6 +343,23 @@ def rank(
     # Drop long-tail noise: keep anything within 35% of the best score.
     best = matches[0].score
     return [m for m in matches if m.score >= best * 0.35][:limit]
+
+
+
+def _coverage(agent: Agent, intent: SearchIntent) -> int | None:
+    """What share of the understood request this agent actually covers.
+
+    A defensible percentage needs a definition the reader can check. This one
+    is: of the domains and capabilities we extracted from the query, how many
+    does this agent have? Nothing extracted means no percentage rather than a
+    made-up one.
+    """
+    wanted = [*intent.domains, *intent.capabilities]
+    if not wanted:
+        return None
+    have = [*agent.business_domains, *agent.capabilities]
+    matched = _covered(have, wanted)
+    return round(100 * matched / len(wanted))
 
 
 def _join(items: list[str]) -> str:

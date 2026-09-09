@@ -23,13 +23,9 @@ function MarketplaceContent() {
   const [homeError, setHomeError] = useState<string | null>(null)
 
   const [query, setQuery] = useState(params.get('q') ?? '')
+  // No longer a control on this page, but a ?domain= link from the browse list
+  // still narrows the search, so the parameter is still honoured.
   const domain = params.get('domain') ?? ''
-  function setDomain(value: string) {
-    const next = new URLSearchParams(params)
-    if (value) next.set('domain', value)
-    else next.delete('domain')
-    setParams(next)
-  }
   const [result, setResult] = useState<SearchResponse | null>(null)
   const [searching, setSearching] = useState(!!params.get('q')?.trim())
   const [searchError, setSearchError] = useState<string | null>(null)
@@ -121,19 +117,6 @@ function MarketplaceContent() {
               <X size={18} strokeWidth={2.4} />
             </button>
           )}
-          <select
-            className="gsearch__domain"
-            value={domain}
-            onChange={(e) => setDomain(e.target.value)}
-            aria-label="Limit to business domain"
-          >
-            <option value="">All domains</option>
-            {home?.domains.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
           <button type="submit" className="gsearch__go" disabled={searching || !query.trim()}>
             {searching ? <Loader2 className="spin" size={20} strokeWidth={2.4} /> : <Search size={20} strokeWidth={2.4} />}
             Find agents
@@ -193,7 +176,19 @@ function MarketplaceContent() {
             <div className="results__grid">
               {result.results.map((m, i) => (
                 <div key={m.agent.id} className={`results__item${i === 0 ? ' is-top' : ''}`}>
-                  {i === 0 && <span className="results__best">Best match</span>}
+                  {i === 0 && (
+                    <span className="results__best">
+                      Best match
+                      {/* Share of the extracted domains and capabilities this
+                          agent covers. Absent when nothing structured was
+                          extracted, rather than showing an invented number. */}
+                      {m.coverage !== null && m.coverage !== undefined && (
+                        <span className="results__pct" title="Covers this share of what we understood you needed">
+                          {m.coverage}% match
+                        </span>
+                      )}
+                    </span>
+                  )}
                   <AgentCard agent={m.agent} why={m.why} source="search" />
                 </div>
               ))}

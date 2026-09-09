@@ -3107,3 +3107,13 @@ button:disabled {
     transition: none;
   }
 }
+
+/* Match percentage beside the best-match badge. Reads as a fact about the
+   result, not a second badge competing with it. */
+.results__pct {
+  margin-left: var(--s-2);
+  padding-left: var(--s-2);
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.92;
+}

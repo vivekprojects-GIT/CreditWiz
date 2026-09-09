@@ -135,6 +135,12 @@ class AgentMatch(BaseModel):
     score: float
     why: str
     reasons: list[str]
+    # Share of what we understood the user asked for that this agent covers,
+    # 0-100. None when nothing structured was extracted, because a percentage of
+    # nothing would be an invented number. Deliberately NOT derived from `score`:
+    # that is a relative ranking value, so a percentage from it would either
+    # always read 100 for the winner or imply a confidence we cannot justify.
+    coverage: int | None = None
 
 
 class SearchIntent(BaseModel):
