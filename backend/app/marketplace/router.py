@@ -187,7 +187,7 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     agents = store.agents
     persona = store.persona(resolve_persona(req.persona).id)
     intent, engine = search.understand(req.query, agents)
-    retrieved = semantic.index.search(req.query)
+    retrieved = semantic.index.search(search.retrieval_text(req.query, intent))
     results = search.rank(
         req.query, intent, agents, persona=persona, domain=req.domain, limit=req.limit
     )

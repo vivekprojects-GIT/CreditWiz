@@ -2,9 +2,9 @@
 
     agents.json  ──authoritative──>  factual metadata (owner, access, URLs)
          │
-         └──derived──>  embedding text  ──>  ChromaDB  ──>  candidate retrieval
+         └──derived──>  embedding text  ──>  ChromaDB  ──>  ranked by similarity
                                                               │
-                                          persona / metadata reranking (search.py)
+                                              floors + visibility (search.py)
 
 agents.json stays the source of truth. Nothing is ever read back out of Chroma
 as fact: retrieval returns agent ids and a similarity, and the agent itself is
@@ -28,14 +28,15 @@ import hashlib
 import logging
 import os
 import threading
+from pathlib import Path
 
 from .models import Agent
 
 log = logging.getLogger("mufg.semantic")
 
 COLLECTION = "agents"
-# Retrieval is a candidate filter, not the ranking. Ask for more than we show so
-# the reranker has room to reorder on persona and metadata.
+# Retrieval is the ranking. Ask for more than we show so the similarity floors
+# and the per-user visibility drop still leave a full page.
 DEFAULT_CANDIDATES = 12
 
 
@@ -73,8 +74,9 @@ class SemanticIndex:
     """Chroma-backed retrieval with a hard rule: never break search.
 
     Every failure path -- import error, unwritable directory, model download
-    failure, a corrupt index -- disables this index and leaves the caller on the
-    lexical ranker. A prototype that cannot embed should still find agents.
+    failure, a corrupt index -- disables this index and the caller falls back
+    to plain token overlap. A prototype that cannot embed should still find
+    agents.
     """
 
     def __init__(self) -> None:
@@ -94,7 +96,9 @@ class SemanticIndex:
 
                 from ..database import VAR_DIR
 
-                path = VAR_DIR / "chroma"
+                # Override so a test suite can hold one index for its whole run
+                # instead of an empty one per temp directory.
+                path = Path(os.environ.get("CREDITWIZ_INDEX_DIR") or VAR_DIR / "chroma")
                 path.mkdir(parents=True, exist_ok=True)
                 client = chromadb.PersistentClient(path=str(path))
                 self._collection = client.get_or_create_collection(
@@ -157,8 +161,8 @@ class SemanticIndex:
     def search(self, query: str, limit: int = DEFAULT_CANDIDATES) -> dict[str, float]:
         """Candidate agent ids mapped to cosine similarity in 0..1.
 
-        An empty result means "no opinion" and the caller ranks lexically, which
-        is also what a disabled or broken index returns.
+        An empty result means "nothing close enough", which is also what a
+        disabled or broken index returns; the caller then falls back.
         """
         collection = self._open()
         if collection is None or not query.strip():
@@ -168,7 +172,7 @@ class SemanticIndex:
             ids = found.get("ids", [[]])[0]
             distances = found.get("distances", [[]])[0]
             # Cosine distance can drift marginally outside [0, 2]; clamp so a
-            # similarity never leaves 0..1 and destabilises the blended score.
+            # similarity never leaves 0..1.
             return {
                 i: max(0.0, min(1.0, 1.0 - float(d))) for i, d in zip(ids, distances)
             }
@@ -178,7 +182,16 @@ class SemanticIndex:
 
     @property
     def available(self) -> bool:
-        return self._open() is not None
+        """Open AND populated. A collection that exists but holds nothing -- a
+        first boot before sync, a wiped disk -- must not answer "no agents";
+        the caller falls back instead."""
+        collection = self._open()
+        if collection is None:
+            return False
+        try:
+            return collection.count() > 0
+        except Exception:  # noqa: BLE001
+            return False
 
 
 index = SemanticIndex()

@@ -104,10 +104,17 @@ Lexical matching has a hard ceiling: the stemmer treats "Risk scoring" and
 ```text
 agents.json  ──authoritative──>  factual metadata (owner, access, URLs)
      │
-     └──derived──>  embedding text  ──>  ChromaDB  ──>  candidates
+     └──derived──>  embedding text  ──>  ChromaDB  ──>  ranked by similarity
                                                             │
-                                            lexical + persona reranking
+                                                  floors + visibility
 ```
+
+Typed search is **pure retrieval**: results are ordered by cosine similarity
+and nothing else. The request is enriched first -- the typed words plus the
+extracted summary, domains and capabilities, as one text -- because bare words
+embed weakly ("code" alone lands at 0.26 against the Code Review Assistant).
+That is query expansion done once before a single retrieval; understanding
+informs the search, it does not rank it.
 
 `agents.json` remains the source of truth. Chroma is a derived index: retrieval
 returns agent ids and a similarity, and the agent is then read from the store.
@@ -118,21 +125,33 @@ searchable text, so a restart re-embeds nothing and an edit re-embeds only the
 agent that changed. `sync()` covers the whole lifecycle in one idempotent pass:
 add, re-embed, delete.
 
-Scoring blends two rankers whose numbers are not comparable -- a lexical score
-is unbounded and swings with query length, a cosine similarity sits in 0..1 --
-so both are normalised against the best in the result set:
+Cosine has no notion of "nothing else is relevant" -- it always fills top-K --
+so two floors decide what is shown:
 
 ```text
-blended = 0.6 x lexical_normalised + 0.4 x similarity_normalised
+keep a result if  similarity >= 0.45
+             and  similarity >= 0.65 x best similarity
 ```
 
-If the nearest agent is below a similarity floor, retrieval is treated as "no
-opinion" and the lexical order stands, rather than promoting the least-bad
-vector match.
+Measured on this catalogue with the enriched query: real matches sit at
+0.54-0.85, noise at 0.35-0.47. A query with nothing close ("zebra origami")
+scores 0.00 everywhere and correctly returns no match. Both numbers are
+model-dependent and should be retuned if the embedding model changes.
+
+Explanations stay checkable. "Why this matched" names the agent's own
+capabilities and domains that the extracted intent asked for, and the coverage
+percentage is the share of those extracted items the agent has. Neither is
+generated prose.
 
 Every failure path -- import error, unwritable directory, model download
-failure, corrupt index -- disables retrieval and leaves search on the lexical
-ranker. A prototype that cannot embed still finds agents.
+failure, corrupt or empty index -- falls back to plain token overlap so search
+still finds agents. That fallback is resilience, not ranking design, and is
+not tuned.
+
+The carousel is the deliberate exception: **Recommended for you** keeps the
+rule-based curation score above, because its per-component table is the thing
+a reviewer can verify by hand. Typed search does not need that table; a
+persona preview of the carousel does.
 
 The embedding model (ONNX MiniLM, via Chroma's default embedding function) is
 baked into the Docker image. Otherwise it downloads from HuggingFace on first

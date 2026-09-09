@@ -3,6 +3,26 @@ from app import auth, database
 from app.learning.store import store as learning_store
 
 
+@pytest.fixture(scope="session", autouse=True)
+def semantic_index(tmp_path_factory):
+    """One populated index for the whole run.
+
+    The module-level TestClient never enters the lifespan, so nothing would
+    build the index and every search would hit the fallback. Build it once
+    here, in its own directory, so tests exercise the retrieval path that
+    production uses.
+    """
+    import os
+
+    os.environ["CREDITWIZ_INDEX_DIR"] = str(tmp_path_factory.mktemp("chroma"))
+    from app.marketplace.semantic import index
+    from app.marketplace.store import store
+
+    index.sync(store.all_agents)
+    yield
+    os.environ.pop("CREDITWIZ_INDEX_DIR", None)
+
+
 @pytest.fixture(autouse=True)
 def isolated_state(tmp_path, monkeypatch, request):
     monkeypatch.setenv("CREDITWIZ_ENV", "development")

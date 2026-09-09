@@ -65,21 +65,40 @@ The "Recommended for you" ordering is a **curation score**, not a learned model,
 ```text
 "I need an agent that can review customer onboarding documents"
         ↓
-Understand intent   → summary, concepts, domains, capabilities, keywords
+Authorisation       → only agents this user may see are ever considered
         ↓
-Match metadata      → weighted fields: name, use cases, capabilities, domains, tags, category, description
+Understand intent   → summary, domains, capabilities   (Claude, or the local lexicon)
         ↓
-Rank                → direct-term boost, persona boost, status penalty, drop long tail
+Enrich the request  → query + summary + domains + capabilities, as one text
         ↓
-Explain             → "Why this matched: This agent supports review customer onboarding documents; covers document extraction and identity verification; works in Onboarding and Compliance."
+Semantic retrieval  → embed that text once; ChromaDB similarity against every agent
+        ↓
+Floors              → drop anything under 0.45, or under 65% of the best hit
+        ↓
+Explain             → "Why this matched: covers document extraction and identity verification, works in Onboarding."
+                       plus a coverage %: of the extracted domains and capabilities, how many this agent has
 ```
+
+Ranking is similarity, nothing else. There is no per-field weighting, no
+popularity, and no persona multiplier in typed search: the query is the
+question, so the query decides. Understanding the request informs the
+retrieval; it does not rank it, and Claude never picks an agent.
 
 Intent understanding has two engines behind one interface:
 
 - **Claude** when `ANTHROPIC_API_KEY` is set (in `backend/.env`). The request goes to `claude-sonnet-5` by default (about 3 seconds; `CREDITWIZ_SEARCH_MODEL=claude-opus-5` is more thorough but takes about 30 seconds) with a structured output schema (`SearchIntent`). Recorded in the search footprint as `meta.engine`.
 - **Local lexicon** otherwise. A concept lexicon (onboarding / KYC, AML screening, contracts, disputes, collections, asset tracing, policy, communication, engineering, and so on) expands the query. Recorded in the search footprint as `meta.engine`.
 
-Final relevance = semantic match (intent concepts and expanded keywords) + keyword match (direct terms) + metadata match (domain, capability, persona). Any Claude failure falls back to the local engine, so the demo never breaks. With ten agents this runs in microseconds and needs no vector database. When the catalogue grows, embeddings over the same searchable text (name, description, domain, use cases, capabilities, personas, tags) slot into the `SearchIntent -> ranked matches` seam.
+Any Claude failure falls back to the local lexicon for understanding; any
+index failure falls back to plain token overlap for retrieval. The demo has no
+single point of failure. The two floors are measured against this catalogue and
+this embedding model (real matches 0.54-0.85, noise 0.35-0.47); retune them if
+the model changes.
+
+The **Recommended for you** carousel deliberately does *not* use this path. It
+keeps a rule-based curation score whose per-component breakdown is returned by
+`GET /api/marketplace/curation`, so every carousel position is arithmetic a
+reviewer can check. See [discovery-and-curation.md](discovery-and-curation.md).
 
 Set `CREDITWIZ_DISABLE_LLM=1` to force the local engine even when a key is present.
 

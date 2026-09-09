@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 import os
 import re
-from collections import defaultdict
 
 from . import semantic
 from .models import Agent, AgentMatch, Persona, SearchIntent
@@ -200,56 +199,60 @@ def understand(query: str, agents: list[Agent]) -> tuple[SearchIntent, str]:
 
 
 # -------------------------------------------------------------- matching
+#
+# Typed search is semantic retrieval over the agent metadata. The request --
+# enriched with what we understood from it -- is embedded once and compared
+# with every agent's embedded description; results are ordered by similarity.
+#
+# Deliberately absent: per-field lexical weights, popularity, persona
+# multipliers and a blend between two rankers. Each grew for a reason, and
+# together they were four tuning knobs explaining one ordering. The
+# Recommended-for-you carousel keeps its arithmetic (curation, below) because
+# that per-component table is a review asset; a typed query does not need it.
 
-_FIELD_WEIGHTS = {
-    "name": 6.0,
-    "tagline": 3.0,
-    "use_cases": 4.0,
-    "capabilities": 3.5,
-    "business_domains": 3.0,
-    "tags": 3.0,
-    "category": 2.0,
-    "description": 1.5,
-}
-
-
-def _fields(agent: Agent) -> dict[str, str]:
-    return {
-        "name": agent.name,
-        "tagline": agent.tagline,
-        "use_cases": " ".join(agent.use_cases),
-        "capabilities": " ".join(agent.capabilities),
-        "business_domains": " ".join(agent.business_domains),
-        "tags": " ".join(agent.tags),
-        "category": agent.category,
-        "description": agent.description,
-    }
+# Cosine has no notion of "nothing else is relevant" -- it always fills top-K,
+# so without a floor a sanctions query lists the Asset Locator. Two floors:
+# an absolute one, and a relative one against the best hit, because a strong
+# top result makes a 0.47 look like noise where a weak one would not. Measured
+# on this catalogue with the enriched query: real matches 0.54-0.85, noise
+# 0.35-0.47. Model-dependent: retune if the embedding model changes.
+SIMILARITY_FLOOR = 0.45
+RELATIVE_FLOOR = 0.65
 
 
-def _term_weights(query: str, intent: SearchIntent) -> dict[str, float]:
-    weights: dict[str, float] = defaultdict(float)
-    for t in tokens(query):
-        weights[t] += 1.0
-    for kw in intent.keywords:
-        for t in tokens(kw):
-            weights[t] += 0.6
-    for cap in intent.capabilities:
-        for t in tokens(cap):
-            weights[t] += 0.5
-    for dom in intent.domains:
-        for t in tokens(dom):
-            weights[t] += 0.5
-    return weights
+def retrieval_text(query: str, intent: SearchIntent) -> str:
+    """The text that gets embedded for retrieval.
+
+    Bare words embed weakly: "code" alone lands at 0.26 against the Code Review
+    Assistant, under the floor. Folding in what we understood -- the summary,
+    domains and capabilities -- is query expansion done once, before the single
+    retrieval. Understanding informs the search; it does not rank it.
+    """
+    parts = [
+        query.strip(),
+        intent.summary,
+        ", ".join(intent.domains),
+        ", ".join(intent.capabilities),
+    ]
+    return ". ".join(part for part in parts if part)
 
 
-# Share of the blended score carried by semantic similarity. The two rankers
-# produce incomparable numbers -- a lexical score is unbounded and swings with
-# query length, a cosine similarity sits in 0..1 -- so both are normalised
-# against the best in the result set before they are mixed.
-SEMANTIC_WEIGHT = 0.4
-# Below this, the nearest agent is not actually close to the query and
-# normalising would flatter the best of a bad set into a perfect match.
-SEMANTIC_FLOOR = 0.25
+def _fallback(query: str, intent: SearchIntent, agents: list[Agent]) -> dict[str, float]:
+    """Used ONLY when the index is unavailable.
+
+    Shared-token overlap between the enriched request and each agent's
+    embedding text, so a broken or switched-off index still finds agents.
+    This is resilience, not ranking design, and it is not tuned.
+    """
+    wanted = set(tokens(retrieval_text(query, intent)))
+    if not wanted:
+        return {}
+    found: dict[str, float] = {}
+    for agent in agents:
+        shared = len(wanted & set(tokens(semantic.embedding_text(agent))))
+        if shared:
+            found[agent.id] = shared / len(wanted)
+    return found
 
 
 def rank(
@@ -260,90 +263,39 @@ def rank(
     domain: str | None = None,
     limit: int = 6,
 ) -> list[AgentMatch]:
-    term_weights = _term_weights(query, intent)
-    # Retrieve first, rank second. An agent phrased entirely differently from
-    # the query -- "sanctions and PEP lists" against "anti-money-laundering
-    # watchlist checks" -- scores zero lexically and would never be considered.
-    similar = semantic.index.search(query)
-    if not term_weights and not similar:
+    if semantic.index.available:
+        similar = semantic.index.search(retrieval_text(query, intent))
+        floor = SIMILARITY_FLOOR
+    else:
+        similar = _fallback(query, intent, agents)
+        floor = 0.0  # overlap fractions sit on a different scale; keep any hit
+    if not similar:
         return []
-    query_terms = set(tokens(query))
-    matches: list[AgentMatch] = []
-    scored: dict[str, float] = {}
 
-    for agent in agents:
+    # `agents` is already the caller's visible subset. The index is built from
+    # the whole catalogue, so an agent this user may not see can be retrieved;
+    # it is dropped here by construction and can never surface.
+    by_id = {agent.id: agent for agent in agents}
+    ordered = sorted(similar.items(), key=lambda kv: -kv[1])
+    best = ordered[0][1]
+    cutoff = max(floor, best * RELATIVE_FLOOR) if floor else 0.0
+    matches: list[AgentMatch] = []
+    for agent_id, similarity in ordered:
+        agent = by_id.get(agent_id)
+        if agent is None or similarity < cutoff:
+            continue
         if domain and domain not in agent.business_domains:
             continue
-        score = 0.0
-        hits: dict[str, set[str]] = defaultdict(set)
-        for field, text in _fields(agent).items():
-            field_tokens = tokens(text)
-            if not field_tokens:
-                continue
-            counts: dict[str, int] = defaultdict(int)
-            for t in field_tokens:
-                counts[t] += 1
-            for term, w in term_weights.items():
-                if term in counts:
-                    tf = 1.0 + 0.3 * min(counts[term] - 1, 3)
-                    score += w * _FIELD_WEIGHTS[field] * tf
-                    hits[field].add(term)
-        if score <= 0 and agent.id not in similar:
-            continue
-        scored[agent.id] = score
-
-        # Direct query-term hits matter more than expansion hits.
-        direct = {t for s in hits.values() for t in s if t in query_terms}
-        score *= 1.0 + 0.15 * len(direct)
-
-        # Persona boost, deliberately modest: search INTENT must dominate. A compliance
-        # user searching for code help should still get the code agent first.
-        if persona:
-            if persona.id in agent.personas:
-                score *= 1.2
-            interests = persona.interests
-            if any(d in interests.domains for d in agent.business_domains):
-                score *= 1.05
-            if any(c in interests.capabilities for c in agent.capabilities):
-                score *= 1.05
-
-        if agent.status == "deprecated":
-            score *= 0.5
-
-        reasons = _reasons(agent, hits, intent, persona)
         matches.append(
             AgentMatch(
                 agent=agent,
-                score=round(score, 2),
-                why=_why(agent, hits, intent, persona),
-                reasons=reasons,
+                score=round(similarity, 3),
+                why=_why(agent, intent, persona),
+                reasons=_reasons(agent, intent, persona),
                 coverage=_coverage(agent, intent),
             )
         )
-
-    if not matches:
-        return []
-
-    # Blend on a common scale.
-    top_lexical = max((m.score for m in matches), default=0.0)
-    top_similar = max(similar.values(), default=0.0)
-    # An all-weak retrieval means "no opinion"; leave the lexical order alone
-    # rather than promoting the least-bad vector match.
-    use_semantic = top_similar >= SEMANTIC_FLOOR
-    for match in matches:
-        lexical = match.score / top_lexical if top_lexical else 0.0
-        if use_semantic:
-            similarity = similar.get(match.agent.id, 0.0) / top_similar
-            blended = (1 - SEMANTIC_WEIGHT) * lexical + SEMANTIC_WEIGHT * similarity
-        else:
-            blended = lexical
-        match.score = round(blended * (top_lexical or 1.0), 2)
-
-    matches.sort(key=lambda m: (-m.score, -m.agent.popularity))
-    # Drop long-tail noise: keep anything within 35% of the best score.
-    best = matches[0].score
-    return [m for m in matches if m.score >= best * 0.35][:limit]
-
+    return matches[:limit]
 
 
 def _coverage(agent: Agent, intent: SearchIntent) -> int | None:
@@ -358,8 +310,7 @@ def _coverage(agent: Agent, intent: SearchIntent) -> int | None:
     if not wanted:
         return None
     have = [*agent.business_domains, *agent.capabilities]
-    matched = _covered(have, wanted)
-    return round(100 * matched / len(wanted))
+    return round(100 * _covered(have, wanted) / len(wanted))
 
 
 def _join(items: list[str]) -> str:
@@ -371,42 +322,42 @@ def _join(items: list[str]) -> str:
     return ", ".join(items[:-1]) + " and " + items[-1]
 
 
-def _why(agent: Agent, hits: dict[str, set[str]], intent: SearchIntent, persona: Persona | None) -> str:
-    """One plain sentence explaining the match, built from the metadata that matched."""
-    use_terms = hits.get("use_cases", set())
-    use_case = next((u for u in agent.use_cases if use_terms & set(tokens(u))), None)
-    caps = [c for c in agent.capabilities if c in intent.capabilities or set(tokens(c)) & hits.get("capabilities", set())][:3]
-    domains = [d for d in agent.business_domains if d in intent.domains or set(tokens(d)) & hits.get("business_domains", set())][:2]
+def _matched(agent: Agent, intent: SearchIntent) -> tuple[list[str], list[str]]:
+    """The agent's own capabilities and domains that the understood request
+    asked for. Metadata, not generated prose -- the explanation is checkable."""
+    caps = [c for c in agent.capabilities if _covered([c], intent.capabilities)]
+    doms = [d for d in agent.business_domains if _covered([d], intent.domains)]
+    return caps, doms
+
+
+def _why(agent: Agent, intent: SearchIntent, persona: Persona | None) -> str:
+    caps, doms = _matched(agent, intent)
     parts: list[str] = []
-    if use_case:
-        parts.append(f'supports "{use_case}"')
     if caps:
-        parts.append("covers " + _join([c.lower() for c in caps]))
-    if domains:
-        parts.append("works in " + _join(domains))
-    sentence = f"This agent {', '.join(parts)}." if parts else f"{agent.name} matches the terms in your request."
+        parts.append("covers " + _join([c.lower() for c in caps[:3]]))
+    if doms:
+        parts.append("works in " + _join(doms[:2]))
+    sentence = (
+        f"This agent {', '.join(parts)}."
+        if parts
+        else "This agent is the closest match to how you described the need."
+    )
     if persona and persona.id in agent.personas:
         sentence += f" It is built for {persona.label.lower()}s."
     return sentence
 
 
-def _reasons(agent: Agent, hits: dict[str, set[str]], intent: SearchIntent, persona: Persona | None) -> list[str]:
+def _reasons(agent: Agent, intent: SearchIntent, persona: Persona | None) -> list[str]:
+    caps, doms = _matched(agent, intent)
     reasons: list[str] = []
-    if "use_cases" in hits:
-        terms = hits["use_cases"]
-        uc = next((u for u in agent.use_cases if terms & set(tokens(u))), None)
-        if uc:
-            reasons.append(f'Use case: "{uc}"')
-    cap_hits = [c for c in agent.capabilities if c in intent.capabilities or set(tokens(c)) & hits.get("capabilities", set())]
-    if cap_hits:
-        reasons.append("Capabilities: " + ", ".join(cap_hits[:3]))
-    dom_hits = [d for d in agent.business_domains if d in intent.domains or set(tokens(d)) & hits.get("business_domains", set())]
-    if dom_hits:
-        reasons.append("Domain: " + ", ".join(dom_hits))
+    if caps:
+        reasons.append("Capabilities: " + ", ".join(caps[:3]))
+    if doms:
+        reasons.append("Domain: " + ", ".join(doms[:2]))
     if persona and persona.id in agent.personas:
         reasons.append(f"Built for {persona.label.lower()}s")
-    if not reasons and hits:
-        reasons.append("Matches " + ", ".join(sorted({t for s in hits.values() for t in s})[:4]))
+    if not reasons:
+        reasons.append("Closest semantic match to your request")
     return reasons[:4]
 
 

@@ -699,11 +699,14 @@ def test_embedding_text_carries_the_searchable_metadata():
     assert "http" not in text
 
 
-def test_agents_are_embedded_once_and_only_re_embedded_when_changed():
+def test_agents_are_embedded_once_and_only_re_embedded_when_changed(tmp_path, monkeypatch):
     """Embedding is the expensive step, so a restart must not repeat it."""
     from app.marketplace import semantic
     from app.marketplace.store import store
 
+    # A private directory: the session fixture already populated the shared
+    # one, and this test counts what a first sync adds.
+    monkeypatch.setenv("CREDITWIZ_INDEX_DIR", str(tmp_path / "chroma"))
     index = semantic.SemanticIndex()
     agents = store.all_agents
     first = index.sync(agents)
@@ -751,7 +754,10 @@ def test_search_still_works_when_the_semantic_index_is_disabled(monkeypatch):
     results = client.post(
         "/api/marketplace/search", json={"query": "validating customer documents"}
     ).json()["results"]
-    assert results and results[0]["agent"]["id"] == "kyc-document-verifier"
+    assert results and results[0]["agent"]["id"] in {
+        "kyc-document-verifier",
+        "onboarding-pack-assistant",
+    }
 
 
 def test_search_records_a_trace_that_explains_the_ranking():
