@@ -21,6 +21,7 @@ import os
 import re
 from collections import defaultdict
 
+from . import semantic
 from .models import Agent, AgentMatch, Persona, SearchIntent
 
 log = logging.getLogger(__name__)
@@ -63,7 +64,8 @@ _LEXICON: list[tuple[tuple[str, ...], str, list[str], list[str], list[str]]] = [
     (("contract", "agreement", "clause", "terms", "supplier", "vendor", "legal"),
      "Contract analysis", ["Legal"], ["Clause classification", "Playbook comparison", "Summarisation"],
      ["contract", "clause", "agreement", "legal"]),
-    (("sanction", "sanctions", "pep", "aml", "screen", "screening", "money laundering", "due diligence"),
+    (("sanction", "sanctions", "pep", "aml", "screen", "screening", "money laundering",
+      "watchlist", "watch list", "ofac", "due diligence"),
      "AML screening", ["Compliance", "Fraud & Risk"], ["Sanctions screening", "Risk scoring"],
      ["sanctions", "aml", "pep", "screening"]),
     (("fraud", "suspicious", "unusual", "investigat", "alert"),
@@ -99,7 +101,10 @@ _LEXICON: list[tuple[tuple[str, ...], str, list[str], list[str], list[str]]] = [
 
 
 def local_intent(query: str) -> SearchIntent:
-    q = " " + query.lower() + " "
+    # Punctuation between words defeated substring triggers: the phrase
+    # "money laundering" never matched "anti-money-laundering" because of the
+    # hyphens. Flatten separators before looking for trigger phrases.
+    q = " " + re.sub(r"[^a-z0-9]+", " ", query.lower()).strip() + " "
     concepts: list[str] = []
     domains: list[str] = []
     caps: list[str] = []
@@ -237,6 +242,16 @@ def _term_weights(query: str, intent: SearchIntent) -> dict[str, float]:
     return weights
 
 
+# Share of the blended score carried by semantic similarity. The two rankers
+# produce incomparable numbers -- a lexical score is unbounded and swings with
+# query length, a cosine similarity sits in 0..1 -- so both are normalised
+# against the best in the result set before they are mixed.
+SEMANTIC_WEIGHT = 0.4
+# Below this, the nearest agent is not actually close to the query and
+# normalising would flatter the best of a bad set into a perfect match.
+SEMANTIC_FLOOR = 0.25
+
+
 def rank(
     query: str,
     intent: SearchIntent,
@@ -246,10 +261,15 @@ def rank(
     limit: int = 6,
 ) -> list[AgentMatch]:
     term_weights = _term_weights(query, intent)
-    if not term_weights:
+    # Retrieve first, rank second. An agent phrased entirely differently from
+    # the query -- "sanctions and PEP lists" against "anti-money-laundering
+    # watchlist checks" -- scores zero lexically and would never be considered.
+    similar = semantic.index.search(query)
+    if not term_weights and not similar:
         return []
     query_terms = set(tokens(query))
     matches: list[AgentMatch] = []
+    scored: dict[str, float] = {}
 
     for agent in agents:
         if domain and domain not in agent.business_domains:
@@ -268,8 +288,9 @@ def rank(
                     tf = 1.0 + 0.3 * min(counts[term] - 1, 3)
                     score += w * _FIELD_WEIGHTS[field] * tf
                     hits[field].add(term)
-        if score <= 0:
+        if score <= 0 and agent.id not in similar:
             continue
+        scored[agent.id] = score
 
         # Direct query-term hits matter more than expansion hits.
         direct = {t for s in hits.values() for t in s if t in query_terms}
@@ -292,9 +313,25 @@ def rank(
         reasons = _reasons(agent, hits, intent, persona)
         matches.append(AgentMatch(agent=agent, score=round(score, 2), why=_why(agent, hits, intent, persona), reasons=reasons))
 
-    matches.sort(key=lambda m: (-m.score, -m.agent.popularity))
     if not matches:
         return []
+
+    # Blend on a common scale.
+    top_lexical = max((m.score for m in matches), default=0.0)
+    top_similar = max(similar.values(), default=0.0)
+    # An all-weak retrieval means "no opinion"; leave the lexical order alone
+    # rather than promoting the least-bad vector match.
+    use_semantic = top_similar >= SEMANTIC_FLOOR
+    for match in matches:
+        lexical = match.score / top_lexical if top_lexical else 0.0
+        if use_semantic:
+            similarity = similar.get(match.agent.id, 0.0) / top_similar
+            blended = (1 - SEMANTIC_WEIGHT) * lexical + SEMANTIC_WEIGHT * similarity
+        else:
+            blended = lexical
+        match.score = round(blended * (top_lexical or 1.0), 2)
+
+    matches.sort(key=lambda m: (-m.score, -m.agent.popularity))
     # Drop long-tail noise: keep anything within 35% of the best score.
     best = matches[0].score
     return [m for m in matches if m.score >= best * 0.35][:limit]

@@ -251,6 +251,16 @@ class MarketplaceStore:
         return [a for a in self._agents if visible(a)]
 
     @property
+    def all_agents(self) -> list[Agent]:
+        """Every agent, before the per-user visibility filter.
+
+        The semantic index is shared across users, so it is built from the whole
+        catalogue; `visible()` is applied to retrieved candidates instead.
+        """
+        self._refresh()
+        return list(self._agents)
+
+    @property
     def personas(self) -> list[Persona]:
         self._refresh()
         return self._personas

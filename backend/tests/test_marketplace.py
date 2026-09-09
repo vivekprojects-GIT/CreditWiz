@@ -683,3 +683,72 @@ def test_search_intent_outranks_persona():
     ).json()["results"]
     assert results, "expected at least one match"
     assert results[0]["agent"]["id"] == "code-review-assistant"
+
+
+def test_embedding_text_carries_the_searchable_metadata():
+    """Governance fields stay out: the index describes what an agent does, and
+    owner, access and URLs are read from agents.json, never from Chroma."""
+    from app.marketplace import semantic
+    from app.marketplace.store import store
+
+    agent = next(a for a in store.all_agents if a.id == "kyc-risk-screening")
+    text = semantic.embedding_text(agent)
+    assert agent.name in text
+    assert "Sanctions screening" in text and "Compliance" in text
+    assert agent.owner.name not in text and agent.owner.email not in text
+    assert "http" not in text
+
+
+def test_agents_are_embedded_once_and_only_re_embedded_when_changed():
+    """Embedding is the expensive step, so a restart must not repeat it."""
+    from app.marketplace import semantic
+    from app.marketplace.store import store
+
+    index = semantic.SemanticIndex()
+    agents = store.all_agents
+    first = index.sync(agents)
+    if not index.available:
+        import pytest
+
+        pytest.skip("semantic index unavailable in this environment")
+    assert first["added"] == len(agents)
+
+    again = index.sync(agents)
+    assert again["unchanged"] == len(agents)
+    assert again["added"] == 0 and again["updated"] == 0
+
+    edited = agents[0].model_copy(update={"tagline": "A completely new tagline"})
+    third = index.sync([edited, *agents[1:]])
+    assert third["updated"] == 1 and third["unchanged"] == len(agents) - 1
+
+    dropped = index.sync(agents[1:])
+    assert dropped["removed"] == 1
+
+
+def test_semantic_retrieval_finds_an_agent_that_shares_no_words():
+    """The gap lexical matching cannot close: the KYC agent says "sanctions and
+    PEP lists" and never uses the words in this query."""
+    from app.marketplace import semantic
+    from app.marketplace.store import store
+
+    index = semantic.SemanticIndex()
+    index.sync(store.all_agents)
+    if not index.available:
+        import pytest
+
+        pytest.skip("semantic index unavailable in this environment")
+    hits = index.search("anti-money-laundering watchlist checks", limit=3)
+    assert hits, "expected candidates"
+    assert max(hits, key=hits.get) == "kyc-risk-screening"
+
+
+def test_search_still_works_when_the_semantic_index_is_disabled(monkeypatch):
+    """A failed or switched-off index must degrade to lexical, never 500."""
+    monkeypatch.setenv("CREDITWIZ_DISABLE_SEMANTIC", "1")
+    from app.marketplace import semantic
+
+    assert semantic.SemanticIndex().search("sanctions screening") == {}
+    results = client.post(
+        "/api/marketplace/search", json={"query": "validating customer documents"}
+    ).json()["results"]
+    assert results and results[0]["agent"]["id"] == "kyc-document-verifier"

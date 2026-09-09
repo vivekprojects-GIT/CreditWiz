@@ -27,6 +27,17 @@ from .models import (
 @asynccontextmanager
 async def lifespan(app):
     auth.seed_users()
+    # Embed the catalogue once at boot. Unchanged agents are skipped, so this is
+    # a no-op on every restart after the first unless the catalogue was edited.
+    # It never raises: a failed index leaves search on the lexical ranker.
+    from .marketplace.semantic import index as semantic_index
+    from .marketplace.store import store as agent_store
+
+    counts = semantic_index.sync(agent_store.all_agents)
+    if any(counts.values()):
+        import logging
+
+        logging.getLogger("mufg.semantic").info("Semantic index synced: %s", counts)
     yield
 
 

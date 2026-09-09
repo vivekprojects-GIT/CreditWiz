@@ -27,3 +27,6 @@ backend/var/
 backend/var/*.db
 backend/var/*.db-wal
 backend/var/*.db-shm
+
+# Derived semantic index; rebuilt from agents.json on boot
+backend/var/chroma/

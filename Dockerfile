@@ -40,6 +40,11 @@ WORKDIR /app/backend
 COPY --from=deps /lock/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+# Bake the embedding model into the image. Chroma otherwise fetches it from
+# HuggingFace on first use, which on a free-tier instance with no disk means a
+# download on every cold start -- before the first search can return.
+RUN python -c "from chromadb.utils import embedding_functions as ef; ef.DefaultEmbeddingFunction()(['warm the cache'])"
+
 COPY backend/ ./
 COPY --from=web /web/dist /app/frontend/dist
 

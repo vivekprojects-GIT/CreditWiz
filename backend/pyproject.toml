@@ -4,6 +4,9 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=1.4.0",
+    # Derived semantic index over agent metadata. agents.json stays the source
+    # of truth; Chroma is rebuilt from it and never authoritative.
+    "chromadb>=1.4.0",
     "fastapi>=0.141.1",
     "python-dotenv>=1.2.3",
     "uvicorn[standard]>=0.52.4",

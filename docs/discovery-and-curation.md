@@ -95,6 +95,50 @@ significant words are a subset of the other's. It stays tight enough that
 | KYC Document Verifier | 6 | 4 | 2 | 1 | 3.25 | 17.17 |
 | Policy Q&A | 3 | 2 | 4 | 2 | 2.75 | 14.70 |
 
+## Semantic retrieval
+
+Lexical matching has a hard ceiling: the stemmer treats "Risk scoring" and
+"Score the risk" as unrelated, and no token overlap connects "AML" to
+"anti-money-laundering" or "sanctions screening" to "watchlist checks".
+
+```text
+agents.json  ──authoritative──>  factual metadata (owner, access, URLs)
+     │
+     └──derived──>  embedding text  ──>  ChromaDB  ──>  candidates
+                                                            │
+                                            lexical + persona reranking
+```
+
+`agents.json` remains the source of truth. Chroma is a derived index: retrieval
+returns agent ids and a similarity, and the agent is then read from the store.
+Deleting the index directory costs a rebuild and nothing else.
+
+Embeddings are computed **once per agent** and keyed by a fingerprint of the
+searchable text, so a restart re-embeds nothing and an edit re-embeds only the
+agent that changed. `sync()` covers the whole lifecycle in one idempotent pass:
+add, re-embed, delete.
+
+Scoring blends two rankers whose numbers are not comparable -- a lexical score
+is unbounded and swings with query length, a cosine similarity sits in 0..1 --
+so both are normalised against the best in the result set:
+
+```text
+blended = 0.6 x lexical_normalised + 0.4 x similarity_normalised
+```
+
+If the nearest agent is below a similarity floor, retrieval is treated as "no
+opinion" and the lexical order stands, rather than promoting the least-bad
+vector match.
+
+Every failure path -- import error, unwritable directory, model download
+failure, corrupt index -- disables retrieval and leaves search on the lexical
+ranker. A prototype that cannot embed still finds agents.
+
+The embedding model (ONNX MiniLM, via Chroma's default embedding function) is
+baked into the Docker image. Otherwise it downloads from HuggingFace on first
+use, which on a free-tier instance with no disk means a download on every cold
+start. Measured resident memory with the index loaded: 137 MB.
+
 ## Two ranking modes, two different questions
 
 ```text
