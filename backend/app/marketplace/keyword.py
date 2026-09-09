@@ -59,16 +59,33 @@ class KeywordIndex:
             self._fingerprint = mark
         return True
 
-    def search(self, text: str, limit: int = DEFAULT_CANDIDATES) -> dict[str, float]:
-        """Agent ids mapped to BM25 score, best first, only agents with a hit."""
+    def search(
+        self,
+        text: str,
+        limit: int = DEFAULT_CANDIDATES,
+        allowed: set[str] | None = None,
+    ) -> dict[str, float]:
+        """Agent ids mapped to BM25 score, best first, only agents with a hit.
+
+        `allowed` restricts scoring to ids the caller may see. The semantic side
+        filters inside its query for the same reason: without it an invisible
+        agent takes one of the six candidate slots and a permitted one drops off
+        the end. Note that the corpus statistics -- document frequency and
+        average length -- stay whole-catalogue, so a term is weighted the same
+        for everyone; only the candidates are narrowed.
+        """
         from .search import tokens
 
         query = tokens(text)
         if not query or not self._docs:
             return {}
+        if allowed is not None and not allowed:
+            return {}
         n = len(self._docs)
         scored: dict[str, float] = {}
         for agent_id, doc in self._docs.items():
+            if allowed is not None and agent_id not in allowed:
+                continue
             score = 0.0
             dl = len(doc)
             for term in query:

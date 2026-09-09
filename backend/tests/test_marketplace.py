@@ -821,9 +821,9 @@ def test_a_search_embeds_the_query_exactly_once(monkeypatch):
     calls = {"n": 0}
     real = semantic.index.search
 
-    def counted(query, limit=semantic.DEFAULT_CANDIDATES):
+    def counted(query, limit=semantic.DEFAULT_CANDIDATES, groups=None):
         calls["n"] += 1
-        return real(query, limit)
+        return real(query, limit, groups)
 
     monkeypatch.setattr(semantic.index, "search", counted)
     body = client.post(
@@ -869,3 +869,49 @@ def test_search_trace_records_both_rankers():
     assert meta["fusion"] == "rrf"
     assert "candidates" in meta["keyword"] and "candidates" in meta["retrieval"]
     assert meta["results"][0] == "kyc-sanctions-review-agent"
+
+
+def test_retrieval_is_filtered_by_audience_not_after_it():
+    """Permission narrows the candidates inside the query, not afterwards.
+
+    Post-filtering silently costs recall: an agent the user cannot see occupies
+    one of the six candidate slots, so a permitted agent falls off the end. The
+    fix only holds if the filter really reaches the index, which is what this
+    asserts -- an audience that matches nothing must come back empty rather
+    than come back full and be trimmed later.
+    """
+    from app.marketplace import keyword, semantic
+
+    query = "sanctions screening"
+    assert semantic.index.available, "index must be built for this to mean anything"
+
+    permitted = semantic.index.search(query, groups=["AI-Hub-Users"])
+    assert permitted, "the demo audience should retrieve something"
+
+    assert semantic.index.search(query, groups=["Group-That-Owns-Nothing"]) == {}
+    assert semantic.index.search(query, groups=[]) == {}
+
+    # Passing no audience at all still searches the whole catalogue, which is
+    # what the sync path and the tests rely on.
+    assert semantic.index.search(query) != {}
+
+
+def test_audience_filter_shape_matches_what_chroma_accepts():
+    """`$or` needs two clauses or more; a single group must be a bare clause."""
+    from app.marketplace.semantic import _audience_filter
+
+    assert _audience_filter([]) is None
+    assert _audience_filter(["one"]) == {"groups": {"$contains": "one"}}
+    assert _audience_filter(["b", "a"]) == {
+        "$or": [{"groups": {"$contains": "a"}}, {"groups": {"$contains": "b"}}]
+    }
+
+
+def test_keyword_search_honours_the_allow_list():
+    from app.marketplace import keyword
+
+    everything = keyword.index.search("sanctions screening")
+    assert everything
+    one = next(iter(everything))
+    assert set(keyword.index.search("sanctions screening", allowed={one})) == {one}
+    assert keyword.index.search("sanctions screening", allowed=set()) == {}

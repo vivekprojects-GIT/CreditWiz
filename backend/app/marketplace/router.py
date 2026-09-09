@@ -183,21 +183,34 @@ def related_agents(agent_id: str) -> list[Agent]:
 
 @router.post("/search", response_model=SearchResponse)
 def nlp_search(req: SearchRequest) -> SearchResponse:
+    from ..identity import load_profile  # local import avoids a cycle
+
     started = time.perf_counter()
     agents = store.agents
     persona = store.persona(resolve_persona(req.persona).id)
     intent, engine = search.understand(req.query, agents)
+    # Both indexes cover the whole catalogue, so both are told who is asking:
+    # candidates come back already permitted rather than being retrieved
+    # globally and dropped afterwards, which would let agents this user cannot
+    # see occupy candidate slots. rank() still applies its own visibility drop
+    # -- this is a recall fix, not the security boundary.
+    audience = load_profile().groups
+    permitted = {agent.id for agent in agents}
     # Embed once. The same retrieval feeds the ranking and the trace.
     embed_started = time.perf_counter()
     retrieved = (
-        semantic.index.search(search.retrieval_text(req.query, intent))
+        semantic.index.search(
+            search.retrieval_text(req.query, intent), groups=audience
+        )
         if semantic.index.available
         else None
     )
     embed_ms = round((time.perf_counter() - embed_started) * 1000)
     if keyword.index.size == 0:
         keyword.index.sync(store.all_agents)
-    matched = keyword.index.search(search.keyword_text(req.query, intent))
+    matched = keyword.index.search(
+        search.keyword_text(req.query, intent), allowed=permitted
+    )
     results = search.rank(
         req.query,
         intent,

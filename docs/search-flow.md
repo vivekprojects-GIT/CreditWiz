@@ -21,8 +21,8 @@ flowchart TB
 
   subgraph H ["Hybrid search"]
     direction LR
-    K["BM25<br/>keyword · top 6"]
-    S["Semantic<br/>ChromaDB · cosine · top 6"]
+    K["BM25<br/>keyword · allow-list · top 6"]
+    S["Semantic<br/>ChromaDB · cosine · top 6<br/>filtered by audience in the query"]
   end
 
   Q --> A
@@ -36,7 +36,7 @@ flowchart TB
   G -- "survivors, in fused order" --> T
   G -- "nothing clears the floors" --> N
   T --> X
-  V -. "dropped again here, after fusion" .-> T
+  V -. "second enforcement, after fusion" .-> T
 
   classDef fuse fill:#fdecec,stroke:#e60000,stroke-width:1.5px,color:#141516
   class R fuse
@@ -47,7 +47,7 @@ flowchart TB
 | Stage | Behaviour | If it fails |
 | --- | --- | --- |
 | Session boundary | Custom header required; Origin must be on the allowlist, the Render URL, or any loopback port outside production. | `403` naming the reason; `401` without a session. |
-| Visible catalogue | Filtered per user before any scoring. Both indexes are built from the whole catalogue and shared. | An invisible agent can be retrieved; it is dropped before display and can never surface. |
+| Visible catalogue | Filtered per user before any scoring, and pushed down into retrieval: the vector query carries a `$contains` filter on the agent's audience, and BM25 scores only permitted ids. Both indexes still hold the whole catalogue and are shared. | Nothing impermissible is retrieved in the first place, and the post-fusion drop still runs as a second enforcement. |
 | Understand | Claude returns a restatement plus domains and capabilities, intersected with the real catalogue so it cannot invent a category. It never picks an agent. | Local lexicon produces the same shape. Any Claude failure lands here. |
 | Semantic retrieval | Agents embedded once at start, keyed by a content fingerprint; only the query is embedded per search. About 0.5 s on Render's free tier. | Index broken or empty → keyword-only. |
 | Keyword retrieval | BM25 over the same text the semantic index embeds, so a ranking difference is a difference in method, not input. | Rebuilt in microseconds from the catalogue. |
@@ -62,4 +62,4 @@ flowchart TB
 - **The model understands; the registry decides.** Claude produces a `SearchIntent` and nothing else. Owner, status, access and URLs come from `agents.json` alone.
 - **Every step degrades.** No key → lexicon. Timeout → lexicon. Broken index → keyword only. Nonsense → no match. The demo has no single point of failure.
 
-Constants: candidates 6 · k 60 · floors 0.45 / 65% / 50% · limit 6 · intent cache 256 · retrieval cache 256 · model `claude-sonnet-5` · index ONNX MiniLM-L6-v2.
+Constants: candidates 6 (per audience) · k 60 · floors 0.45 / 65% / 50% · limit 6 · intent cache 256 · retrieval cache 256 · model `claude-sonnet-5` · index ONNX MiniLM-L6-v2.

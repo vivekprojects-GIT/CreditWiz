@@ -67,8 +67,29 @@ def embedding_text(agent: Agent) -> str:
     return " ".join(p.strip() for p in parts if p and p.strip())
 
 
-def _fingerprint(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+def _fingerprint(text: str, groups: list[str] | None = None) -> str:
+    """Identity of what is stored for an agent: the text and its audience.
+
+    The audience is part of it because it is stored as metadata and filtered
+    on. Fingerprinting the text alone would let a permission change pass
+    silently, leaving the index enforcing yesterday's audience.
+    """
+    material = text if not groups else text + str(sorted(groups))
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
+
+
+def _audience_filter(groups: list[str]) -> dict | None:
+    """Chroma `where` restricting results to agents this audience may see.
+
+    Group membership is stored as a list, and Chroma matches into a list with
+    `$contains`; `$in` and `$eq` both silently return nothing against a list
+    value, so neither is a safe substitute here. `$or` needs at least two
+    clauses, hence the single-group case.
+    """
+    clauses = [{"groups": {"$contains": g}} for g in sorted(set(groups))]
+    if not clauses:
+        return None
+    return clauses[0] if len(clauses) == 1 else {"$or": clauses}
 
 
 def enabled() -> bool:
@@ -136,7 +157,9 @@ class SemanticIndex:
         # Retrieval results keyed by (text, limit). The embedding is the whole
         # cost of a search, and demo queries repeat; a hit skips the model
         # entirely. Cleared whenever sync() changes the index.
-        self._cache: OrderedDict[tuple[str, int], dict[str, float]] = OrderedDict()
+        self._cache: OrderedDict[
+            tuple[str, int, tuple[str, ...]], dict[str, float]
+        ] = OrderedDict()
 
     def _open(self):
         if self._collection is not None or self._broken or not enabled():
@@ -186,7 +209,7 @@ class SemanticIndex:
             added = updated = unchanged = 0
             for agent in agents:
                 text = embedding_text(agent)
-                mark = _fingerprint(text)
+                mark = _fingerprint(text, agent.audience_groups)
                 if known.get(agent.id) == mark:
                     unchanged += 1
                     continue
@@ -194,7 +217,15 @@ class SemanticIndex:
                 added += agent.id not in known
                 ids.append(agent.id)
                 documents.append(text)
-                metadatas.append({"fingerprint": mark, "name": agent.name})
+                metadata: dict[str, object] = {
+                    "fingerprint": mark,
+                    "name": agent.name,
+                }
+                # An agent with no audience is visible to nobody, so leave the
+                # key off entirely: a $contains filter then cannot match it.
+                if agent.audience_groups:
+                    metadata["groups"] = list(agent.audience_groups)
+                metadatas.append(metadata)
             if ids:
                 collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
             stale = [i for i in known if i not in {a.id for a in agents}]
@@ -213,8 +244,20 @@ class SemanticIndex:
             self._broken = True
             return {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}
 
-    def search(self, query: str, limit: int = DEFAULT_CANDIDATES) -> dict[str, float]:
+    def search(
+        self,
+        query: str,
+        limit: int = DEFAULT_CANDIDATES,
+        groups: list[str] | None = None,
+    ) -> dict[str, float]:
         """Candidate agent ids mapped to cosine similarity in 0..1.
+
+        `groups` is the caller's audience. Passing it filters inside the query,
+        so the candidates come back already permitted: the alternative is to
+        retrieve globally and drop afterwards, which silently costs recall,
+        because invisible agents occupy slots that permitted ones would have
+        taken. Callers still apply their own visibility check -- this narrows
+        what is ranked, it is not the security boundary on its own.
 
         An empty result means "nothing close enough", which is also what a
         disabled or broken index returns; the caller then falls back.
@@ -222,13 +265,21 @@ class SemanticIndex:
         collection = self._open()
         if collection is None or not query.strip():
             return {}
-        key = (query.strip().lower(), limit)
+        audience = tuple(sorted(set(groups))) if groups is not None else ()
+        if groups is not None and not audience:
+            # Belongs to no group, so may see nothing. Chroma cannot express an
+            # always-false filter, and there is nothing to ask it for anyway.
+            return {}
+        key = (query.strip().lower(), limit, audience)
         hit = self._cache.get(key)
         if hit is not None:
             self._cache.move_to_end(key)
             return dict(hit)
         try:
-            found = collection.query(query_texts=[query], n_results=limit)
+            where = _audience_filter(groups) if groups is not None else None
+            found = collection.query(
+                query_texts=[query], n_results=limit, **({"where": where} if where else {})
+            )
             ids = found.get("ids", [[]])[0]
             distances = found.get("distances", [[]])[0]
             # Cosine distance can drift marginally outside [0, 2]; clamp so a
