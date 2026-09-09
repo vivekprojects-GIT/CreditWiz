@@ -21,9 +21,8 @@ flowchart TB
 
   subgraph H ["Hybrid search"]
     direction LR
-    S["Semantic<br/>ChromaDB · cosine · top 12"]
     K["BM25<br/>keyword · top 12"]
-    S ~~~ K
+    S["Semantic<br/>ChromaDB · cosine · top 12"]
   end
 
   Q --> A
