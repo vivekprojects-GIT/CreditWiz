@@ -188,66 +188,61 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     started = time.perf_counter()
     agents = store.agents
     persona = store.persona(resolve_persona(req.persona).id)
-    intent, engine = search.understand(req.query, agents)
+    audience = load_profile().groups
+    permitted = {agent.id for agent in agents}
+
+    # The flow is: query -> embedding -> hybrid -> rerank -> context.
+    #
+    # No interpretation step ahead of retrieval. The query is embedded as
+    # typed, so what you search for is what you asked for, and the same words
+    # return the same agents every time. A model reads the request once, at the
+    # rerank, where it judges candidates against it rather than rewriting it.
+    #
+    # `intent` below is the local lexicon and is used ONLY to explain results.
+    # It costs a fraction of a millisecond, never calls a model, and never
+    # touches what is retrieved or how anything is ordered.
+    intent = search.local_intent(req.query)
+
     # Both indexes cover the whole catalogue, so both are told who is asking:
     # candidates come back already permitted rather than being retrieved
     # globally and dropped afterwards, which would let agents this user cannot
     # see occupy candidate slots. rank() still applies its own visibility drop
     # -- this is a recall fix, not the security boundary.
-    audience = load_profile().groups
-    permitted = {agent.id for agent in agents}
-    # Domains the request was understood to be about. A hard filter: agents
-    # outside them are not retrieved at all, which sharpens results when the
-    # request was read correctly and hides the right answer when it was not.
-    # Hence the relaxation below -- precision first, but never a dead end.
-    wanted = list(intent.domains)
-    on_topic = (
-        {a.id for a in agents if set(a.business_domains) & set(wanted)}
-        if wanted
+    #
+    # The only other filter is a domain the user chose themselves from the
+    # browse list. Nothing is inferred and then filtered on.
+    chosen = [req.domain] if req.domain else []
+    allowed = (
+        {a.id for a in agents if req.domain in a.business_domains}
+        if req.domain
         else permitted
     )
 
     if keyword.index.size == 0:
         keyword.index.sync(store.all_agents)
 
-    def retrieve(domains: list[str], allowed: set[str]):
-        # Embed once per attempt. The same retrieval feeds ranking and trace.
-        started = time.perf_counter()
-        sem = (
-            semantic.index.search(
-                search.retrieval_text(req.query, intent),
-                groups=audience,
-                domains=domains,
-            )
-            if semantic.index.available
-            else None
+    embed_started = time.perf_counter()
+    retrieved = (
+        semantic.index.search(
+            search.retrieval_text(req.query), groups=audience, domains=chosen
         )
-        took = round((time.perf_counter() - started) * 1000)
-        kw = keyword.index.search(
-            search.keyword_text(req.query, intent), allowed=allowed
-        )
-        return sem, kw, took
-
-    retrieved, matched, embed_ms = retrieve(wanted, on_topic)
+        if semantic.index.available
+        else None
+    )
+    embed_ms = round((time.perf_counter() - embed_started) * 1000)
+    matched = keyword.index.search(
+        search.keyword_text(req.query), allowed=allowed
+    )
     results = search.rank(
         req.query, intent, agents, persona=persona, domain=req.domain,
         similar=retrieved, keywords=matched,
     )
-    # An understood domain that turns out to be wrong would otherwise read as
-    # "no such agent". Widen once and say so in the trace, rather than report a
-    # dead end the catalogue does not actually have.
     relaxed = False
-    if wanted and not results:
-        relaxed = True
-        retrieved, matched, embed_ms = retrieve([], permitted)
-        results = search.rank(
-            req.query, intent, agents, persona=persona, domain=req.domain,
-            similar=retrieved, keywords=matched,
-        )
 
     fused_order = [m.agent.id for m in results]
     rerank_started = time.perf_counter()
     results, reranker = search.rerank(req.query, results)
+    engine = reranker
     rerank_ms = round((time.perf_counter() - rerank_started) * 1000)
     results = results[: len(fused_order)]
     # Trace enough to reconstruct why this ranking happened: how the request was

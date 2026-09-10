@@ -218,12 +218,14 @@ def understand(query: str, agents: list[Agent]) -> tuple[SearchIntent, str]:
 # absolute one, and a relative one against the best hit, because a strong top
 # result makes a 0.47 look like noise where a weak one would not.
 #
-# Measured on this catalogue with the EXPANDED query: real matches 0.54-0.85,
-# noise 0.35-0.47. The number depends on the shape of what is embedded as much
-# as on the model -- searching the bare query instead needs roughly 0.30, since
-# a short question scores far lower for the same meaning. Retune if either the
-# model or the expansion changes.
-SIMILARITY_FLOOR = 0.45
+# Set for the bare query that is actually embedded. 0.45 was measured back when
+# the query was expanded first; a short question scores far lower for the same
+# meaning -- "is this customer on a blacklist" reaches 0.246, "is my code safe
+# to merge" 0.088 -- so 0.45 silently cut the semantic side and left BM25 doing
+# the work alone. Swept 0.45 down to 0.15 against a 15-query junk set: 0.30
+# answers no more nonsense than 0.45 did and recovers two real queries.
+# Model-dependent and query-shape-dependent: retune if either changes.
+SIMILARITY_FLOOR = 0.30
 RELATIVE_FLOOR = 0.65
 # Rank fusion constant. 60 is the value from the original RRF paper and the one
 # nearly every hybrid-search implementation uses; it damps the gap between rank
@@ -240,30 +242,27 @@ KEYWORD_RELATIVE_FLOOR = 0.5
 RESULT_LIMIT = 6
 
 
-def retrieval_text(query: str, intent: SearchIntent) -> str:
-    """The text that gets embedded: the query plus what we understood from it.
+def retrieval_text(query: str) -> str:
+    """What gets embedded: exactly what the user typed.
 
-    Bare words embed weakly -- "code" alone lands at 0.26 against the Code
-    Review Assistant, "is my code safe to merge" at 0.088 -- because a short
-    question shares little surface with a catalogue entry. Folding in the
-    restatement, domains and capabilities is query expansion done once, before
-    the single retrieval. Understanding informs the search; it does not rank it.
+    Retrieval takes the query as given. Expanding it first -- folding in a
+    model's restatement and its guess at the domains and capabilities -- reads
+    better in a diagram than it works in practice: it puts a model call on the
+    critical path of every search, and it makes the results depend on how well
+    that guess went rather than on what the person asked. Measured on this
+    catalogue, expansion was worth about one query in fourteen and cost several
+    seconds. A model still reads the request, once, at the rerank -- where it
+    judges candidates against the query instead of rewriting the query.
+
+    The floors below are set for this shape: a bare query scores far lower than
+    an expanded one for the same meaning.
     """
-    parts = [
-        query.strip(),
-        intent.summary,
-        ", ".join(intent.domains),
-        ", ".join(intent.capabilities),
-    ]
-    return ". ".join(part for part in parts if part)
+    return query.strip()
 
 
-def keyword_text(query: str, intent: SearchIntent) -> str:
-    """What the keyword ranker sees: the typed words plus the extracted domains
-    and capabilities. Not the restatement -- prose dilutes exact tokens, which
-    are the whole reason a keyword ranker is here."""
-    parts = (query.strip(), ", ".join(intent.domains), ", ".join(intent.capabilities))
-    return ". ".join(p for p in parts if p)
+def keyword_text(query: str) -> str:
+    """What the keyword ranker sees. Same words, same reason as above."""
+    return query.strip()
 
 
 def rrf(*rankings: dict[str, float], k: int = RRF_K) -> dict[str, float]:
@@ -303,14 +302,14 @@ def rank(
     keyword hit. "zebra origami" clears neither and returns no match.
     """
     if similar is None and semantic.index.available:
-        similar = semantic.index.search(retrieval_text(query, intent))
+        similar = semantic.index.search(retrieval_text(query))
     similar = similar or {}
     if keywords is None:
         if keyword.index.size == 0:
             from .store import store as agent_store
 
             keyword.index.sync(agent_store.all_agents)
-        keywords = keyword.index.search(keyword_text(query, intent))
+        keywords = keyword.index.search(keyword_text(query))
     if not similar and not keywords:
         return []
 

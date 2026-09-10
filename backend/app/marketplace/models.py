@@ -167,7 +167,10 @@ class SearchIntent(BaseModel):
 class SearchResponse(BaseModel):
     query: str
     intent: SearchIntent
-    engine: Literal["claude", "local"]
+    # What ordered these results. Retrieval no longer has an "engine" to
+    # report -- the query is embedded as typed -- so this names the reranker:
+    # "claude" when it ordered them, "fusion" when RRF's order stands.
+    engine: Literal["claude", "fusion"]
     results: list[AgentMatch]
     no_match: bool
     next_steps: list[dict[str, str]] = []

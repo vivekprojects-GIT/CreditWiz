@@ -76,7 +76,7 @@ export interface AgentMatch {
 export interface SearchResponse {
   query: string
   intent: SearchIntent
-  engine: 'claude' | 'local'
+  engine: 'claude' | 'fusion'
   results: AgentMatch[]
   no_match: boolean
   next_steps: { label: string; href: string }[]
