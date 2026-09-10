@@ -67,29 +67,48 @@ def embedding_text(agent: Agent) -> str:
     return " ".join(p.strip() for p in parts if p and p.strip())
 
 
-def _fingerprint(text: str, groups: list[str] | None = None) -> str:
-    """Identity of what is stored for an agent: the text and its audience.
+def _fingerprint(
+    text: str,
+    groups: list[str] | None = None,
+    domains: list[str] | None = None,
+) -> str:
+    """Identity of what is stored for an agent: its text and every field we
+    filter on.
 
-    The audience is part of it because it is stored as metadata and filtered
-    on. Fingerprinting the text alone would let a permission change pass
-    silently, leaving the index enforcing yesterday's audience.
+    Everything filtered on belongs here. Fingerprinting the text alone would
+    let a permission or domain change pass silently, leaving the index
+    enforcing yesterday's rules.
     """
-    material = text if not groups else text + str(sorted(groups))
+    material = text + str(sorted(groups or [])) + str(sorted(domains or []))
     return hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
 
 
-def _audience_filter(groups: list[str]) -> dict | None:
-    """Chroma `where` restricting results to agents this audience may see.
+def _any_of(field: str, values: list[str]) -> dict | None:
+    """Chroma `where` matching any of `values` against a list-valued field.
 
-    Group membership is stored as a list, and Chroma matches into a list with
-    `$contains`; `$in` and `$eq` both silently return nothing against a list
-    value, so neither is a safe substitute here. `$or` needs at least two
-    clauses, hence the single-group case.
+    Chroma matches into a list with `$contains`; `$in` and `$eq` both silently
+    return nothing against a list value, so neither is a safe substitute. `$or`
+    rejects fewer than two clauses, hence the single-value case.
     """
-    clauses = [{"groups": {"$contains": g}} for g in sorted(set(groups))]
+    clauses = [{field: {"$contains": v}} for v in sorted(set(values))]
     if not clauses:
         return None
     return clauses[0] if len(clauses) == 1 else {"$or": clauses}
+
+
+def _where(groups: list[str] | None, domains: list[str] | None) -> dict | None:
+    """Audience and domain conditions, combined with `$and`."""
+    parts = [
+        c
+        for c in (
+            _any_of("groups", groups) if groups is not None else None,
+            _any_of("domains", domains) if domains else None,
+        )
+        if c is not None
+    ]
+    if not parts:
+        return None
+    return parts[0] if len(parts) == 1 else {"$and": parts}
 
 
 def enabled() -> bool:
@@ -158,7 +177,7 @@ class SemanticIndex:
         # cost of a search, and demo queries repeat; a hit skips the model
         # entirely. Cleared whenever sync() changes the index.
         self._cache: OrderedDict[
-            tuple[str, int, tuple[str, ...]], dict[str, float]
+            tuple[str, int, tuple[str, ...], tuple[str, ...]], dict[str, float]
         ] = OrderedDict()
 
     def _open(self):
@@ -209,7 +228,9 @@ class SemanticIndex:
             added = updated = unchanged = 0
             for agent in agents:
                 text = embedding_text(agent)
-                mark = _fingerprint(text, agent.audience_groups)
+                mark = _fingerprint(
+                    text, agent.audience_groups, agent.business_domains
+                )
                 if known.get(agent.id) == mark:
                     unchanged += 1
                     continue
@@ -225,6 +246,10 @@ class SemanticIndex:
                 # key off entirely: a $contains filter then cannot match it.
                 if agent.audience_groups:
                     metadata["groups"] = list(agent.audience_groups)
+                # Filtered on when the request names domains, so it has to be
+                # on the vector rather than looked up afterwards.
+                if agent.business_domains:
+                    metadata["domains"] = list(agent.business_domains)
                 metadatas.append(metadata)
             if ids:
                 collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
@@ -249,15 +274,21 @@ class SemanticIndex:
         query: str,
         limit: int = DEFAULT_CANDIDATES,
         groups: list[str] | None = None,
+        domains: list[str] | None = None,
     ) -> dict[str, float]:
         """Candidate agent ids mapped to cosine similarity in 0..1.
 
-        `groups` is the caller's audience. Passing it filters inside the query,
-        so the candidates come back already permitted: the alternative is to
-        retrieve globally and drop afterwards, which silently costs recall,
-        because invisible agents occupy slots that permitted ones would have
-        taken. Callers still apply their own visibility check -- this narrows
-        what is ranked, it is not the security boundary on its own.
+        `groups` is the caller's audience and `domains` the business domains the
+        request was understood to be about. Both filter inside the query, so
+        candidates come back already permitted and already on-topic. Retrieving
+        globally and dropping afterwards silently costs recall: an excluded
+        agent occupies a slot a wanted one would have taken.
+
+        The audience filter is a permission narrowing and the caller still
+        applies its own visibility check behind it. The domain filter is not
+        security -- it is precision, and it can exclude a right answer when the
+        request was understood wrongly, so the caller is expected to retry
+        without it rather than report no match.
 
         An empty result means "nothing close enough", which is also what a
         disabled or broken index returns; the caller then falls back.
@@ -270,13 +301,18 @@ class SemanticIndex:
             # Belongs to no group, so may see nothing. Chroma cannot express an
             # always-false filter, and there is nothing to ask it for anyway.
             return {}
-        key = (query.strip().lower(), limit, audience)
+        key = (
+            query.strip().lower(),
+            limit,
+            audience,
+            tuple(sorted(set(domains or ()))),
+        )
         hit = self._cache.get(key)
         if hit is not None:
             self._cache.move_to_end(key)
             return dict(hit)
         try:
-            where = _audience_filter(groups) if groups is not None else None
+            where = _where(groups, domains)
             found = collection.query(
                 query_texts=[query], n_results=limit, **({"where": where} if where else {})
             )

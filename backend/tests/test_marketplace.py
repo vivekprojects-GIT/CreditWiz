@@ -815,15 +815,19 @@ def test_the_footprint_trail_is_scoped_to_the_signed_in_user():
 
 def test_a_search_embeds_the_query_exactly_once(monkeypatch):
     """Embedding is the slow step. The router used to embed once for the trace
-    and rank() embedded again -- two model calls per search."""
+    and rank() embedded again -- two model calls per search.
+
+    A search whose understood domains exclude everything is retried without
+    them and does embed twice, by design. This query is not one of those.
+    """
     from app.marketplace import semantic
 
     calls = {"n": 0}
     real = semantic.index.search
 
-    def counted(query, limit=semantic.DEFAULT_CANDIDATES, groups=None):
+    def counted(query, limit=semantic.DEFAULT_CANDIDATES, groups=None, domains=None):
         calls["n"] += 1
-        return real(query, limit, groups)
+        return real(query, limit, groups, domains)
 
     monkeypatch.setattr(semantic.index, "search", counted)
     body = client.post(
@@ -896,14 +900,26 @@ def test_retrieval_is_filtered_by_audience_not_after_it():
     assert semantic.index.search(query) != {}
 
 
-def test_audience_filter_shape_matches_what_chroma_accepts():
-    """`$or` needs two clauses or more; a single group must be a bare clause."""
-    from app.marketplace.semantic import _audience_filter
+def test_filter_shape_matches_what_chroma_accepts():
+    """`$or` needs two clauses or more; a single value must be a bare clause.
 
-    assert _audience_filter([]) is None
-    assert _audience_filter(["one"]) == {"groups": {"$contains": "one"}}
-    assert _audience_filter(["b", "a"]) == {
+    Chroma matches into a list-valued field with `$contains` only -- `$in` and
+    `$eq` return nothing without erroring, so a wrong shape here looks like
+    "no results" rather than a failure.
+    """
+    from app.marketplace.semantic import _any_of, _where
+
+    assert _any_of("groups", []) is None
+    assert _any_of("groups", ["one"]) == {"groups": {"$contains": "one"}}
+    assert _any_of("groups", ["b", "a"]) == {
         "$or": [{"groups": {"$contains": "a"}}, {"groups": {"$contains": "b"}}]
+    }
+
+    # Audience and domain conditions combine with $and; either alone stays bare.
+    assert _where(["g"], None) == {"groups": {"$contains": "g"}}
+    assert _where(None, ["Compliance"]) == {"domains": {"$contains": "Compliance"}}
+    assert _where(["g"], ["Compliance"]) == {
+        "$and": [{"groups": {"$contains": "g"}}, {"domains": {"$contains": "Compliance"}}]
     }
 
 

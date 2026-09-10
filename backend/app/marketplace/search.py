@@ -21,7 +21,7 @@ import os
 import re
 
 from . import keyword, semantic
-from .models import Agent, AgentMatch, Persona, SearchIntent
+from .models import Agent, AgentMatch, Persona, RerankedOrder, SearchIntent
 
 log = logging.getLogger(__name__)
 
@@ -218,14 +218,12 @@ def understand(query: str, agents: list[Agent]) -> tuple[SearchIntent, str]:
 # absolute one, and a relative one against the best hit, because a strong top
 # result makes a 0.47 look like noise where a weak one would not.
 #
-# 0.30, not the 0.45 this used to be. That number was measured when the query
-# was expanded before embedding; a bare query scores far lower for the same
-# meaning -- "is this customer on a blacklist" reaches 0.246, "is my code safe
-# to merge" 0.088 -- so 0.45 silently cut the semantic side on short queries
-# and left BM25 doing the work alone. Swept against a 15-query junk set: 0.30
-# answers no more nonsense than 0.45 did, and recovers two real queries.
-# Model-dependent, and query-shape-dependent: retune if either changes.
-SIMILARITY_FLOOR = 0.30
+# Measured on this catalogue with the EXPANDED query: real matches 0.54-0.85,
+# noise 0.35-0.47. The number depends on the shape of what is embedded as much
+# as on the model -- searching the bare query instead needs roughly 0.30, since
+# a short question scores far lower for the same meaning. Retune if either the
+# model or the expansion changes.
+SIMILARITY_FLOOR = 0.45
 RELATIVE_FLOOR = 0.65
 # Rank fusion constant. 60 is the value from the original RRF paper and the one
 # nearly every hybrid-search implementation uses; it damps the gap between rank
@@ -242,25 +240,30 @@ KEYWORD_RELATIVE_FLOOR = 0.5
 RESULT_LIMIT = 6
 
 
-def retrieval_text(query: str) -> str:
-    """What gets embedded: exactly what the user typed.
+def retrieval_text(query: str, intent: SearchIntent) -> str:
+    """The text that gets embedded: the query plus what we understood from it.
 
-    An earlier version expanded the query with the extracted summary, domains
-    and capabilities before embedding. That helped paraphrases and cost a
-    language-model round trip on the critical path of every search, and it made
-    the result depend on how well the extraction went rather than on what the
-    person asked for. Retrieval now takes the query as given: what you type is
-    what is searched, and the same words produce the same results every time.
-
-    The floors below were re-measured for this, because a bare query scores far
-    lower than an expanded one.
+    Bare words embed weakly -- "code" alone lands at 0.26 against the Code
+    Review Assistant, "is my code safe to merge" at 0.088 -- because a short
+    question shares little surface with a catalogue entry. Folding in the
+    restatement, domains and capabilities is query expansion done once, before
+    the single retrieval. Understanding informs the search; it does not rank it.
     """
-    return query.strip()
+    parts = [
+        query.strip(),
+        intent.summary,
+        ", ".join(intent.domains),
+        ", ".join(intent.capabilities),
+    ]
+    return ". ".join(part for part in parts if part)
 
 
-def keyword_text(query: str) -> str:
-    """What the keyword ranker sees. Same words, same reason as above."""
-    return query.strip()
+def keyword_text(query: str, intent: SearchIntent) -> str:
+    """What the keyword ranker sees: the typed words plus the extracted domains
+    and capabilities. Not the restatement -- prose dilutes exact tokens, which
+    are the whole reason a keyword ranker is here."""
+    parts = (query.strip(), ", ".join(intent.domains), ", ".join(intent.capabilities))
+    return ". ".join(p for p in parts if p)
 
 
 def rrf(*rankings: dict[str, float], k: int = RRF_K) -> dict[str, float]:
@@ -300,14 +303,14 @@ def rank(
     keyword hit. "zebra origami" clears neither and returns no match.
     """
     if similar is None and semantic.index.available:
-        similar = semantic.index.search(retrieval_text(query))
+        similar = semantic.index.search(retrieval_text(query, intent))
     similar = similar or {}
     if keywords is None:
         if keyword.index.size == 0:
             from .store import store as agent_store
 
             keyword.index.sync(agent_store.all_agents)
-        keywords = keyword.index.search(keyword_text(query))
+        keywords = keyword.index.search(keyword_text(query, intent))
     if not similar and not keywords:
         return []
 
@@ -345,6 +348,72 @@ def rank(
             )
         )
     return matches[:limit]
+
+
+RERANK_CANDIDATES = 10
+
+
+def rerank(query: str, matches: list[AgentMatch]) -> tuple[list[AgentMatch], str]:
+    """Reorder fused candidates by reading them against the request.
+
+    RRF orders by agreement between two retrievers, which is a proxy for
+    relevance rather than a judgement about it: neither retriever ever compares
+    a candidate with the request as a whole. This does, over the shortlist only,
+    where the cost is bounded.
+
+    Returns the matches and how they were ordered, so the trace can say which.
+    Any failure returns the fused order untouched -- a reranker that cannot run
+    must never cost a user their results.
+    """
+    if len(matches) < 2 or not claude_available():
+        return matches, "fusion"
+    shortlist = matches[:RERANK_CANDIDATES]
+    catalogue = "\n".join(
+        f"{m.agent.id}: {m.agent.name}. {m.agent.tagline} "
+        f"Capabilities: {', '.join(m.agent.capabilities)}."
+        for m in shortlist
+    )
+    system = (
+        "You rank internal AI agents against an employee's request. Return the ids "
+        "in order, best first, using only ids from the list. Drop an agent only if "
+        "it is clearly irrelevant to the request. Judge fit to the request, not how "
+        "impressive the agent sounds."
+    )
+    try:
+        import anthropic
+
+        client = anthropic.Anthropic(timeout=20.0, max_retries=1)
+        model = _model()
+        kwargs: dict = {}
+        if "haiku" not in model:
+            kwargs["output_config"] = {"effort": "low"}
+        response = client.messages.parse(
+            model=model,
+            max_tokens=512,
+            system=system,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Request: {query}\n\nAgents:\n{catalogue}",
+                }
+            ],
+            output_format=RerankedOrder,
+            **kwargs,
+        )
+        if response.stop_reason == "refusal" or response.parsed_output is None:
+            return matches, "fusion"
+        by_id = {m.agent.id: m for m in shortlist}
+        ordered = [by_id[i] for i in response.parsed_output.order if i in by_id]
+        if not ordered:
+            return matches, "fusion"
+        # Anything the reranker did not mention keeps its fused position behind
+        # what it did rank, so a truncated reply cannot silently lose results.
+        named = {m.agent.id for m in ordered}
+        rest = [m for m in matches if m.agent.id not in named]
+        return ordered + rest, "claude"
+    except Exception as exc:  # noqa: BLE001 - a failed rerank keeps the fused order
+        log.warning("Rerank failed, keeping fused order: %s", exc)
+        return matches, "fusion"
 
 
 def _coverage(agent: Agent, intent: SearchIntent) -> int | None:

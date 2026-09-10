@@ -196,30 +196,60 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     # -- this is a recall fix, not the security boundary.
     audience = load_profile().groups
     permitted = {agent.id for agent in agents}
-    # Embed once. The same retrieval feeds the ranking and the trace.
-    embed_started = time.perf_counter()
-    retrieved = (
-        semantic.index.search(
-            search.retrieval_text(req.query), groups=audience
-        )
-        if semantic.index.available
-        else None
+    # Domains the request was understood to be about. A hard filter: agents
+    # outside them are not retrieved at all, which sharpens results when the
+    # request was read correctly and hides the right answer when it was not.
+    # Hence the relaxation below -- precision first, but never a dead end.
+    wanted = list(intent.domains)
+    on_topic = (
+        {a.id for a in agents if set(a.business_domains) & set(wanted)}
+        if wanted
+        else permitted
     )
-    embed_ms = round((time.perf_counter() - embed_started) * 1000)
+
     if keyword.index.size == 0:
         keyword.index.sync(store.all_agents)
-    matched = keyword.index.search(
-        search.keyword_text(req.query), allowed=permitted
-    )
+
+    def retrieve(domains: list[str], allowed: set[str]):
+        # Embed once per attempt. The same retrieval feeds ranking and trace.
+        started = time.perf_counter()
+        sem = (
+            semantic.index.search(
+                search.retrieval_text(req.query, intent),
+                groups=audience,
+                domains=domains,
+            )
+            if semantic.index.available
+            else None
+        )
+        took = round((time.perf_counter() - started) * 1000)
+        kw = keyword.index.search(
+            search.keyword_text(req.query, intent), allowed=allowed
+        )
+        return sem, kw, took
+
+    retrieved, matched, embed_ms = retrieve(wanted, on_topic)
     results = search.rank(
-        req.query,
-        intent,
-        agents,
-        persona=persona,
-        domain=req.domain,
-        similar=retrieved,
-        keywords=matched,
+        req.query, intent, agents, persona=persona, domain=req.domain,
+        similar=retrieved, keywords=matched,
     )
+    # An understood domain that turns out to be wrong would otherwise read as
+    # "no such agent". Widen once and say so in the trace, rather than report a
+    # dead end the catalogue does not actually have.
+    relaxed = False
+    if wanted and not results:
+        relaxed = True
+        retrieved, matched, embed_ms = retrieve([], permitted)
+        results = search.rank(
+            req.query, intent, agents, persona=persona, domain=req.domain,
+            similar=retrieved, keywords=matched,
+        )
+
+    fused_order = [m.agent.id for m in results]
+    rerank_started = time.perf_counter()
+    results, reranker = search.rerank(req.query, results)
+    rerank_ms = round((time.perf_counter() - rerank_started) * 1000)
+    results = results[: len(fused_order)]
     # Trace enough to reconstruct why this ranking happened: how the request was
     # interpreted, what retrieval proposed, and what came out. Without the
     # candidates it is impossible to tell afterwards whether an agent was missed
@@ -257,6 +287,20 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
                     ),
                 },
                 "fusion": "rrf",
+                # The order fusion produced, before the reranker saw it. Without
+                # both, a changed ordering cannot be attributed to either stage.
+                "fused_order": fused_order,
+                "rerank": {
+                    "by": reranker,
+                    "ms": rerank_ms,
+                    "changed": fused_order != [m.agent.id for m in results],
+                },
+                "filters": {
+                    "domains": intent.domains,
+                    # True when the understood domains excluded everything and
+                    # the search was retried without them.
+                    "relaxed": relaxed,
+                },
                 "domain_filter": req.domain or None,
                 "no_match": not results,
                 "took_ms": round((time.perf_counter() - started) * 1000),

@@ -305,7 +305,7 @@ def _typeahead_agents(needle: str) -> list[SearchResult]:
     audience = load_profile().groups
     retrieved = (
         semantic.index.search(
-            marketplace_search.retrieval_text(needle), groups=audience
+            marketplace_search.retrieval_text(needle, intent), groups=audience
         )
         if semantic.index.available
         else None
@@ -313,7 +313,7 @@ def _typeahead_agents(needle: str) -> list[SearchResult]:
     if keyword.index.size == 0:
         keyword.index.sync(marketplace_store.all_agents)
     matched = keyword.index.search(
-        marketplace_search.keyword_text(needle),
+        marketplace_search.keyword_text(needle, intent),
         allowed={a.id for a in visible_agents},
     )
     matches = marketplace_search.rank(

@@ -131,6 +131,12 @@ class SearchRequest(BaseModel):
     domain: str | None = None
 
 
+class RerankedOrder(BaseModel):
+    """How the reranker ordered the candidates it was given."""
+
+    order: list[str] = []
+
+
 class AgentMatch(BaseModel):
     agent: Agent
     score: float
