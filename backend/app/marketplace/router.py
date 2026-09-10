@@ -200,7 +200,7 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     embed_started = time.perf_counter()
     retrieved = (
         semantic.index.search(
-            search.retrieval_text(req.query, intent), groups=audience
+            search.retrieval_text(req.query), groups=audience
         )
         if semantic.index.available
         else None
@@ -209,7 +209,7 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     if keyword.index.size == 0:
         keyword.index.sync(store.all_agents)
     matched = keyword.index.search(
-        search.keyword_text(req.query, intent), allowed=permitted
+        search.keyword_text(req.query), allowed=permitted
     )
     results = search.rank(
         req.query,
