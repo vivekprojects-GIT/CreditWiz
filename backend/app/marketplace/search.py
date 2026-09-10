@@ -316,12 +316,25 @@ def rank(
 
     top_similarity = max(similar.values(), default=0.0)
     top_keyword = max(keywords.values(), default=0.0)
+    # A keyword rescue has to rest on words the user actually typed. The text
+    # BM25 scores also carries the domains and capabilities we extracted, and
+    # the keyword floor is relative -- half of the best score, whatever that
+    # is -- so a request with no real lexical overlap could be rescued entirely
+    # by our own expansion. "zebra origami" returned the Code Review Assistant
+    # that way once: nothing matched the typed words, the extraction supplied a
+    # capability, and that capability was the best keyword score in the set.
+    # Scoring the bare query costs microseconds and settles it.
+    typed_hits = keyword.index.search(query, limit=max(len(agents), 1))
 
     def relevant(agent_id: str) -> bool:
         sim = similar.get(agent_id, 0.0)
         kw = keywords.get(agent_id, 0.0)
         close = sim >= SIMILARITY_FLOOR and sim >= top_similarity * RELATIVE_FLOOR
-        strong_keyword = kw > 0 and kw >= top_keyword * KEYWORD_RELATIVE_FLOOR
+        strong_keyword = (
+            kw > 0
+            and kw >= top_keyword * KEYWORD_RELATIVE_FLOOR
+            and agent_id in typed_hits
+        )
         return close or strong_keyword
 
     # `agents` is already the caller's visible subset. Both indexes cover the

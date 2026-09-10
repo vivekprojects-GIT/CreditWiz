@@ -931,3 +931,49 @@ def test_keyword_search_honours_the_allow_list():
     one = next(iter(everything))
     assert set(keyword.index.search("sanctions screening", allowed={one})) == {one}
     assert keyword.index.search("sanctions screening", allowed=set()) == {}
+
+
+def test_expansion_alone_cannot_rescue_an_irrelevant_agent():
+    """A keyword rescue must rest on words the user actually typed.
+
+    The text BM25 scores carries the domains and capabilities we extracted as
+    well as the query, and the keyword floor is relative -- half of the best
+    score, whatever that is. So a request with no lexical overlap at all could
+    be rescued entirely by our own expansion. That is not hypothetical: with a
+    live model, "zebra origami" once returned the Code Review Assistant,
+    because the extraction supplied a capability and that capability was the
+    best keyword score in the set.
+    """
+    from app.marketplace import keyword, search
+    from app.marketplace.models import SearchIntent
+    from app.marketplace.store import store as agent_store
+
+    agents = store.agents
+    nonsense = "zebra origami"
+
+    # An extraction that is confidently wrong: nothing to do with the query,
+    # and pointing squarely at one real agent.
+    misread = SearchIntent(
+        summary="Looking for software engineering work",
+        concepts=["Software engineering"],
+        domains=["Engineering"],
+        capabilities=["Code review", "Security analysis", "Test generation"],
+    )
+    keyword.index.sync(agent_store.all_agents)
+    hijacked = keyword.index.search(search.keyword_text(nonsense, misread))
+    assert "code-review-assistant" in hijacked, (
+        "precondition: the injected capabilities should score against that agent"
+    )
+
+    # Retrieval is offered those keyword hits and no semantic support at all.
+    results = search.rank(nonsense, misread, agents, similar={}, keywords=hijacked)
+    assert results == [], (
+        "nonsense was rescued by our own expansion: "
+        f"{[m.agent.id for m in results]}"
+    )
+
+    # The same mechanism must still rescue a real query whose words do match.
+    typed = "code review"
+    hits = keyword.index.search(search.keyword_text(typed, misread))
+    rescued = search.rank(typed, misread, agents, similar={}, keywords=hits)
+    assert rescued and rescued[0].agent.id == "code-review-assistant"
