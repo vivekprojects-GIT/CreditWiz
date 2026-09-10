@@ -105,9 +105,19 @@ Lexical matching has a hard ceiling: the stemmer treats "Risk scoring" and
 agents.json  ──authoritative──>  factual metadata (owner, access, URLs)
      │
      └──derived──>  embedding text  ──>  ChromaDB  ──>  ranked by similarity
+                    + audience groups      (queried with an audience filter)
                                                             │
-                                                  floors + visibility
+                                                    floors, then the
+                                                  visibility drop again
 ```
+
+Permission is applied twice, and the first time is inside the query. Each
+vector carries its agent's `audience_groups`, and the search passes the
+caller's groups as a Chroma `$contains` filter; BM25 scores only permitted ids
+for the same reason. Retrieving globally and dropping afterwards is safe but
+lossy -- an agent the caller cannot see takes one of the six candidate slots
+and a permitted one falls off the end. The post-fusion drop still runs, so a
+retrieval fault cannot surface an agent someone may not see.
 
 Typed search is **hybrid retrieval**: a semantic index (meaning) and a BM25
 keyword index (exact names, acronyms, IDs) over the same agent text, fused by

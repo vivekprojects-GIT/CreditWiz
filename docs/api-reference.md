@@ -31,7 +31,7 @@ Learning item filters: `path`, `type` (or `docs` for documentation/guide/Conflue
 | `GET /api/pillars/{id}` | One pillar with its sections, 404 if hidden or unknown |
 | `GET /api/notifications` | Notifications for the current user |
 | `GET /api/domains` | Business domain filter options |
-| `GET /api/search?q=` | Search the authorized agent and complete learning catalogs |
+| `GET /api/search?q=` | Header typeahead. Name and tag matches first, then the same hybrid retrieval, fusion and relevance gate the marketplace uses, so a typed sentence resolves here too. Intent comes from the local lexicon, never Claude, because this fires while the user types. |
 | `GET /api/health` | Liveness |
 | `GET /api/marketplace/home?persona=` | Personas, domains and persona-ranked carousels |
 | `GET /api/marketplace/agents` | All agents, filter by `domain`, `category`, `persona`, `status` |

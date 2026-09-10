@@ -161,9 +161,11 @@ Two questions, two mechanisms. Full detail in [docs/discovery-and-curation.md](d
 Claude's restatement go to two rankers over the same agent text, fused by rank:
 
 ```text
-semantic (ChromaDB)   meaning: "AML" finds "sanctions and PEP lists"
-keyword  (BM25)       exact tokens: names, acronyms, IDs
+audience filter       both retrievers see only agents this user may use
+semantic (ChromaDB)   meaning: "AML" finds "sanctions and PEP lists"   top 6
+keyword  (BM25)       exact tokens: names, acronyms, IDs               top 6
 fusion   (RRF, k=60)  score = sum of 1 / (60 + rank)
+relevance gate        keep, or return nothing                        limit 6
 ```
 
 Rank fusion, not a score blend: a cosine sits in 0–1 and a BM25 score in 0–10,
@@ -171,6 +173,13 @@ and blending magnitudes let lexical noise outvote a correct semantic hit. A
 relevance gate then decides what is shown, so nonsense returns nothing rather
 than the least-bad match. No persona multiplier here — the query is the
 question, so the query decides.
+
+Permission is enforced twice. The vector query carries a `$contains` filter on
+each agent's audience groups and BM25 scores only permitted ids, so nothing
+impermissible is retrieved at all; the post-fusion visibility drop still runs
+behind it. Six results, fixed — not a caller-supplied limit, since the gate
+decides relevance and a caller asking for twenty would only be served what it
+already let through. Full flow: [docs/search-flow.md](docs/search-flow.md).
 
 **Recommended for you — "who are you?"** A curation score on the agent's own
 metadata, not a learned model:
@@ -340,6 +349,7 @@ backend/
     database.py        transactional SQLite and legacy migration
     account.py         preferences and local access requests
     manage.py          account provisioning and catalog validation
+    main.py            app wiring, session boundary, SPA, header typeahead
     context/           shared footprints + user context (all nine pillars)
     marketplace/       ← Swim Lane 1
       store.py         agent catalogue, normalisation, TTL cache

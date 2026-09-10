@@ -71,8 +71,10 @@ Understand intent   → summary, domains, capabilities   (Claude, or the local l
         ↓
 Enrich the request  → query + summary + domains + capabilities, as one text
         ↓
-Semantic retrieval  → embed that text once; ChromaDB similarity against every agent
-Keyword retrieval   → BM25 over the same agent text: exact names, acronyms, IDs
+Semantic retrieval  → embed that text once; ChromaDB similarity, filtered in the
+                      query to agents this user may see (top 6)
+Keyword retrieval   → BM25 over the same agent text, same allow-list: exact
+                      names, acronyms, IDs (top 6)
         ↓
 Fuse by rank        → Reciprocal Rank Fusion (k=60): the two scales never meet
         ↓
