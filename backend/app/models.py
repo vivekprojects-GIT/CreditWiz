@@ -14,6 +14,19 @@ class Section(BaseModel):
     blurb: str
 
 
+class PillarSearch(BaseModel):
+    """What a pillar's search bar says and suggests.
+
+    Lives with the pillar rather than in the page, because each pillar is meant
+    to become an agent that answers its own searches; the bar describes what
+    that pillar can be asked.
+    """
+
+    placeholder: str
+    action: str
+    examples: list[str] = []
+
+
 class Pillar(BaseModel):
     id: str
     number: int
@@ -30,6 +43,7 @@ class Pillar(BaseModel):
     cta_href: str
     admin_only: bool = False
     sections: list[Section] = []
+    search: PillarSearch | None = None
 
 
 class PersonaInfo(BaseModel):

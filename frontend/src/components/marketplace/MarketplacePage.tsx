@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronRight, Loader2, Search, Sparkles, X } from 'lucide-react'
+import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
@@ -8,6 +8,8 @@ import { usePersona } from '../../lib/personaContext'
 import { AgentCard } from './AgentCard'
 import { Carousel } from './Carousel'
 import { FeedbackPrompt } from './FeedbackPrompt'
+import { useHub } from '../../lib/hub'
+import { BandSearch } from '../BandSearch'
 import { PageBand } from '../PageBand'
 import { PersonaPreview } from './PersonaPicker'
 
@@ -20,6 +22,8 @@ export function MarketplacePage() {
 }
 function MarketplaceContent() {
   const { persona } = usePersona()
+  const { pillars } = useHub()
+  const search = pillars.find((p) => p.id === 'marketplace')?.search
   const [params, setParams] = useSearchParams()
   const [home, setHome] = useState<MarketplaceHome | null>(null)
   const [homeError, setHomeError] = useState<string | null>(null)
@@ -125,54 +129,21 @@ function MarketplaceContent() {
         <span>AI Marketplace</span>
       </nav>
 
-      <PageBand
-        compact
-        kicker="AI Marketplace"
-        title="Find the right agent for the job"
-        // Product copy, not prototype status. The catalogue size and the
-        // sample/enterprise distinction are stated where they matter: on each
-        // listing, and in the "All N agents" link below.
-        lead="Describe what you need in plain language and we'll find the agents that fit."
-      >
-        <form
-          className={`gsearch${searching ? ' is-busy' : ''}`}
-          onSubmit={(e) => {
-            e.preventDefault()
-            runSearch(query)
-          }}
-          role="search"
-        >
-          <Sparkles className="gsearch__icon" size={22} strokeWidth={2.2} />
-          <input
-            ref={inputRef}
-            className="gsearch__input"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="e.g. I need an agent that can review customer onboarding documents"
-            aria-label="Describe what you need"
-            autoComplete="off"
-          />
-          {query && (
-            <button type="button" className="gsearch__clear" aria-label="Clear search" onClick={clearSearch}>
-              <X size={18} strokeWidth={2.4} />
-            </button>
-          )}
-          <button type="submit" className="gsearch__go" disabled={searching || !query.trim()}>
-            {searching ? <Loader2 className="spin" size={20} strokeWidth={2.4} /> : <Search size={20} strokeWidth={2.4} />}
-            Find agents
-          </button>
-        </form>
-
-        {!urlQuery && home && (
-          <div className="examples">
-            <span className="examples__label">Try</span>
-            {home.example_queries.slice(0, 4).map((q) => (
-              <button key={q} type="button" className="examples__chip" onClick={() => runSearch(q)}>
-                {q}
-              </button>
-            ))}
-          </div>
-        )}
+      {/* No lead line: the placeholder already says what to type, and the
+          sentence under the title only repeated it. */}
+      <PageBand compact kicker="AI Marketplace" title="Find the right agent for the job">
+        <BandSearch
+          value={query}
+          onChange={setQuery}
+          onSearch={runSearch}
+          onClear={clearSearch}
+          placeholder={search?.placeholder ?? 'Describe what you need'}
+          label="Describe what you need"
+          action={search?.action ?? 'Find agents'}
+          examples={!urlQuery && home ? home.example_queries.slice(0, 4) : []}
+          busy={searching}
+          inputRef={inputRef}
+        />
       </PageBand>
 
       {searchError && (

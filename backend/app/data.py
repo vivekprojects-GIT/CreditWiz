@@ -1,6 +1,6 @@
 """Authored hub navigation and sample announcements. Catalogs live in backend/data."""
 
-from .models import Link, Notification, Pillar, Section
+from .models import Link, Notification, Pillar, Section, PillarSearch
 
 PILLARS = [
     Pillar(
@@ -23,6 +23,11 @@ PILLARS = [
         ],
         cta_label="Explore marketplace",
         cta_href="/marketplace",
+        search=PillarSearch(
+            placeholder='e.g. I need an agent that can review customer onboarding documents',
+            action='Find agents',
+            examples=[],
+        ),
         sections=[
             Section(
                 title="AI solutions",
@@ -51,6 +56,11 @@ PILLARS = [
         tone="blue",
         cta_label="Browse library",
         cta_href="/library",
+        search=PillarSearch(
+            placeholder='e.g. a prompt that summarises a policy document',
+            action='Find prompts',
+            examples=['Prompt patterns', 'Prompt engineering', 'Submit a prompt'],
+        ),
         sections=[
             Section(
                 title="Prompt library",
@@ -91,6 +101,11 @@ PILLARS = [
         ],
         cta_label="Explore learning",
         cta_href="/learning",
+        search=PillarSearch(
+            placeholder='e.g. sanctions screening, KYC, responsible AI',
+            action='Find learning',
+            examples=['Sanctions screening', 'KYC', 'Responsible AI'],
+        ),
         sections=[
             Section(
                 title="Learning catalog",
@@ -134,6 +149,11 @@ PILLARS = [
         tone="purple",
         cta_label="Start a request",
         cta_href="/intake/new",
+        search=PillarSearch(
+            placeholder='e.g. automate chasing clients for missing documents',
+            action='Search requests',
+            examples=['Use case request', 'Start a request', 'Review queue'],
+        ),
         sections=[
             Section(
                 title="Start a request",
@@ -162,6 +182,11 @@ PILLARS = [
         tone="teal",
         cta_label="View guidance",
         cta_href="/governance",
+        search=PillarSearch(
+            placeholder='e.g. can I use customer data with an external model?',
+            action='Search guidance',
+            examples=['Responsible AI', 'Model inventory', 'Data handling'],
+        ),
         sections=[
             Section(
                 title="Policies",
@@ -190,6 +215,11 @@ PILLARS = [
         tone="blue",
         cta_label="Explore knowledge",
         cta_href="/knowledge",
+        search=PillarSearch(
+            placeholder='e.g. where is beneficial ownership defined?',
+            action='Search knowledge',
+            examples=['Data glossary', 'Context packs', 'Runbook'],
+        ),
         sections=[
             Section(
                 title="Knowledge sources",
@@ -229,6 +259,11 @@ PILLARS = [
         ],
         cta_label="Open community",
         cta_href="/community",
+        search=PillarSearch(
+            placeholder='e.g. who is the expert on sanctions screening?',
+            action='Search community',
+            examples=['SME directory', 'FAQs', 'Success stories'],
+        ),
         sections=[
             Section(
                 title="Forums",
@@ -267,6 +302,11 @@ PILLARS = [
         tone="teal",
         cta_label="View insights",
         cta_href="/insights",
+        search=PillarSearch(
+            placeholder='e.g. which agents saved the most hours this quarter?',
+            action='Search insights',
+            examples=['Adoption', 'Hours saved', 'Quality and safety'],
+        ),
         sections=[
             Section(
                 title="Adoption dashboard",
@@ -295,6 +335,11 @@ PILLARS = [
         tone="purple",
         cta_label="Open platform",
         cta_href="/platform",
+        search=PillarSearch(
+            placeholder='e.g. how do I get API access to an agent?',
+            action='Search platform',
+            examples=['Access management', 'API keys', 'Integrations'],
+        ),
         admin_only=True,
         sections=[
             Section(

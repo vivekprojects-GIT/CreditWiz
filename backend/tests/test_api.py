@@ -105,3 +105,36 @@ def test_persona_mapping_rules():
 def test_marketplace_defaults_to_derived_persona():
     body = client.get("/api/marketplace/home").json()
     assert body["persona"] == "compliance_user"
+
+
+def test_every_pillar_has_a_search_bar_whose_examples_land():
+    """Each pillar opens with a search bar that says what it can be asked.
+
+    An example chip that returns nothing is worse than no chip -- it teaches the
+    person that the bar does not work. Learning examples must match catalog
+    items; a planned pillar's examples must match one of its own sections or
+    something in the live hub search, which is what that page shows.
+    """
+    from app.data import PILLARS
+
+    home = client.get("/api/home").json()
+    assert {p["id"] for p in home["pillars"]} == {p.id for p in PILLARS}
+    for p in home["pillars"]:
+        search = p["search"]
+        assert search and search["placeholder"] and search["action"], p["id"]
+
+    by_id = {p.id: p for p in PILLARS}
+    for example in by_id["learning"].search.examples:
+        items = client.get("/api/learning/items", params={"q": example}).json()
+        assert items, f"learning example {example!r} finds no items"
+
+    for p in PILLARS:
+        if p.id in {"marketplace", "learning"}:
+            continue
+        for example in p.search.examples:
+            terms = example.lower().split()
+            in_sections = any(
+                all(t in f"{s.title} {s.blurb}".lower() for t in terms) for s in p.sections
+            )
+            in_hub = client.get("/api/search", params={"q": example}).json()["results"]
+            assert in_sections or in_hub, f"{p.id} example {example!r} lands on nothing"

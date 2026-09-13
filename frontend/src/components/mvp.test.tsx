@@ -11,7 +11,9 @@ import { HubContext } from '../lib/hub'
 import type { HomeData, PersonaInfo } from '../lib/types'
 
 const persona = { id: 'business_user', label: 'Business user', rule: 'role', derived_from: 'role' } as PersonaInfo
-const hub = { user: { is_admin: false } } as HomeData
+// Mirrors what /api/home always returns. The pages read the pillar list for
+// their search bars; without it the fixture described a hub that cannot exist.
+const hub = { user: { is_admin: false }, pillars: [] } as unknown as HomeData
 function shell(ui: React.ReactNode, path = '/') {
   return render(
     <MemoryRouter initialEntries={[path]}>

@@ -3157,7 +3157,7 @@ button:disabled {
 /* The marketplace hero is a search box with a heading, not a landing page.
    Compact band, and the bar itself sized to match. */
 .mkt .band--compact .mkt__panel,
-.mkt .band--compact {
+.band--compact:has(.gsearch) {
   padding-bottom: var(--s-5);
 }
 
@@ -3166,15 +3166,33 @@ button:disabled {
   font-size: var(--t-base);
 }
 
-.mkt .gsearch {
+.band .gsearch {
   margin-top: var(--s-4);
   padding: 6px 6px 6px var(--s-4);
 }
 
-.mkt .gsearch__go {
+.band .gsearch__go {
   height: 40px;
   padding: 0 var(--s-4);
   font-size: var(--t-base);
+}
+
+/* Learning keeps its view tabs under the search bar. */
+.band .gsearch ~ .examples + .pathbar--onband,
+.band .gsearch + .pathbar--onband {
+  margin-top: var(--s-4);
+}
+
+/* A planned pillar's search: what it could answer, said plainly above it. */
+.pillar-results {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.pillar-results__note {
+  margin: 0;
+  font-size: var(--t-sm);
+  color: var(--ink-600);
 }
 
 /* ============================================================================

@@ -29,6 +29,13 @@ export interface Pillar {
   cta_href: string
   admin_only: boolean
   sections: Section[]
+  search: PillarSearch | null
+}
+
+export interface PillarSearch {
+  placeholder: string
+  action: string
+  examples: string[]
 }
 
 export interface PersonaInfo {

@@ -1,9 +1,11 @@
 import { ChevronRight, GraduationCap } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
 import { fetchItems, fetchLearningHome, itemHref, TYPE_LABEL, type Item, type LearningHome } from '../../lib/learning'
 import { usePersona } from '../../lib/personaContext'
+import { useHub } from '../../lib/hub'
+import { BandSearch } from '../BandSearch'
 import { PageBand } from '../PageBand'
 import { ItemCard } from './ItemCard'
 
@@ -25,6 +27,12 @@ export function LearningPage() {
           ? 'quick-reference'
           : (params.get('type') ?? '')
   const q = params.get('q') ?? ''
+  const navigate = useNavigate()
+  const { pillars } = useHub()
+  const search = pillars.find((p) => p.id === 'learning')?.search
+  // What is typed in the bar; the catalog only changes when it is submitted.
+  const [draft, setDraft] = useState(q)
+  useEffect(() => setDraft(q), [q])
   const status = params.get('status') ?? ''
   const key = [derived.id, pathId, mode, type, q, status, attempt].join('|')
   useEffect(() => {
@@ -68,6 +76,15 @@ export function LearningPage() {
     else next.delete(name)
     setParams(next, { replace: name === 'q' })
   }
+  // A search from "For you" or the paths overview lands on the catalog, which
+  // is where every item can be listed; inside a browse view it narrows that view.
+  function runSearch(value: string) {
+    const trimmed = value.trim()
+    if (!trimmed) return
+    setDraft(trimmed)
+    if (browse) filter('q', trimmed)
+    else navigate(`/learning/catalog?q=${encodeURIComponent(trimmed)}`)
+  }
   return (
     <div className="content">
       <nav className="crumbs" aria-label="Breadcrumb">
@@ -84,15 +101,28 @@ export function LearningPage() {
       <PageBand
         kicker={derived.label}
         title={title}
-        lead={
-          selectedPath?.blurb ?? 'Approved sample materials, selected by your role and explicit content rules. Completion is self-reported.'
-        }
+        // Only a selected path keeps a lead: it describes that path. The generic
+        // line under the title is gone now that the search bar says what to do.
+        lead={selectedPath?.blurb}
         aside={
           <Link to="/learning/me" className="band__action">
             <GraduationCap size={16} /> My learning
           </Link>
         }
       >
+        <BandSearch
+          value={draft}
+          onChange={setDraft}
+          onSearch={runSearch}
+          onClear={() => {
+            setDraft('')
+            if (q) filter('q', '')
+          }}
+          placeholder={search?.placeholder ?? 'Search learning'}
+          label="Search learning"
+          action={search?.action ?? 'Find learning'}
+          examples={q ? [] : (search?.examples ?? [])}
+        />
         <nav className="pathbar pathbar--onband" aria-label="Learning views">
           {[
             ['', 'For you'],
@@ -110,10 +140,6 @@ export function LearningPage() {
       </PageBand>
       {browse && (
         <div className="catalog-filters">
-          <label className="field">
-            Search learning
-            <input type="search" value={q} onChange={(e) => filter('q', e.target.value)} placeholder="Title, topic, or keyword" />
-          </label>
           {!pathId && mode === 'catalog' && (
             <label className="field">
               Content type
