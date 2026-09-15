@@ -983,6 +983,16 @@ a.plain {
   letter-spacing: -0.015em;
 }
 
+/* A second heading inside one card -- "Why it exists" under "What it does" --
+   so related text reads as one piece rather than two separate panels. */
+.panel__subtitle {
+  margin: var(--s-5) 0 var(--s-2);
+  font-size: var(--t-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink-900);
+}
+
 .panel__title svg {
   color: var(--red);
 }
@@ -1531,15 +1541,16 @@ a.plain {
   cursor: default;
 }
 
+/* Chips wrap onto a second line. They used to scroll sideways with the
+   scrollbar hidden, so the last chip was cut off mid-word at the edge. */
 .examples {
   position: relative;
   z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--s-2);
   margin-top: var(--s-4);
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
 .examples::-webkit-scrollbar {
@@ -1984,10 +1995,28 @@ a.plain {
 
 .carousel__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s-4);
+  gap: var(--s-3) var(--s-4);
   margin-bottom: var(--s-3);
+}
+
+/* The heading keeps its width. With the persona preview showing, the preview
+   bar used to sit in the same row and squeezed "Recommended for you" to one
+   word per line. It now takes its own row under the heading and arrows. */
+.carousel__titles {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.carousel__extra {
+  order: 3;
+  flex: 1 0 100%;
+}
+
+.carousel__extra .pbadge {
+  flex-wrap: wrap;
 }
 
 .carousel__titles {
@@ -2880,32 +2909,6 @@ a.plain {
   margin-top: var(--s-5);
 }
 
-.pathbar--onband {
-  position: relative;
-  z-index: 1;
-  margin: var(--s-5) 0 0;
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.pathbar--onband .pathbar__item {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.84);
-}
-
-.pathbar--onband .pathbar__item:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.34);
-  color: #fff;
-}
-
-.pathbar--onband .pathbar__item.is-active {
-  background: #fff;
-  border-color: #fff;
-  color: var(--ink-950);
-}
-
 /* ---------------------------------------------------------------- agent detail header on ink */
 
 .agent__head.band {
@@ -3177,10 +3180,64 @@ button:disabled {
   font-size: var(--t-base);
 }
 
-/* Learning keeps its view tabs under the search bar. */
-.band .gsearch ~ .examples + .pathbar--onband,
-.band .gsearch + .pathbar--onband {
-  margin-top: var(--s-4);
+/* Learning's views sit on the band as tabs along its bottom edge, so they read
+   as navigation rather than as more suggestion chips. The strip runs edge to
+   edge: it cancels the band's side padding and takes the place of its bottom
+   padding, and each label lines up with the title above it. learning.css
+   styles .pathbar for the page body and loads later, hence the band scope. */
+.band:has(> .pathbar--onband) {
+  padding-bottom: 0;
+}
+
+.band .pathbar--onband {
+  position: relative;
+  z-index: 1;
+  flex-wrap: nowrap;
+  gap: 0;
+  margin: var(--s-6) calc(var(--s-8) * -1) 0;
+  padding: 0 calc(var(--s-8) - var(--s-3));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.band .pathbar--onband::-webkit-scrollbar {
+  display: none;
+}
+
+.band .pathbar--onband .pathbar__item {
+  flex: none;
+  padding: var(--s-3) var(--s-3) calc(var(--s-3) - 2px);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.band .pathbar--onband .pathbar__item:hover {
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.28);
+}
+
+.band .pathbar--onband .pathbar__item.is-active {
+  color: #fff;
+  background: transparent;
+  border-bottom-color: var(--red);
+}
+
+.band .pathbar--onband .pathbar__item:focus-visible {
+  outline-offset: -3px;
+}
+
+@media (max-width: 960px) {
+  .band .pathbar--onband {
+    margin-inline: calc(var(--s-5) * -1);
+    padding-inline: calc(var(--s-5) - var(--s-3));
+  }
 }
 
 /* A planned pillar's search: what it could answer, said plainly above it. */
@@ -3196,178 +3253,32 @@ button:disabled {
 }
 
 /* ============================================================================
-   Home — one question, asked plainly
+   Home: one search for the whole hub
    The sidebar already lists every pillar, so the home page does not repeat
-   them as tiles. It asks what you need, offers starters that are known to
-   return a result, and keeps three short cards for what you were doing.
+   them as tiles. It opens with the same search band as every pillar, answers
+   in place across agents, learning and pillar pages, and otherwise keeps three
+   short cards for what you were doing.
    ========================================================================== */
 
-.home {
-  max-width: 980px;
-}
-
-.ask {
-  display: grid;
-  justify-items: center;
-  text-align: center;
-  gap: var(--s-4);
-  padding: clamp(var(--s-6), 6vw, 72px) 0 var(--s-8);
-}
-
-.ask__kicker {
-  margin: 0;
-  font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--red);
-}
-
-.ask__title {
-  margin: 0;
-  font-size: clamp(var(--t-2xl), 4vw, var(--t-4xl));
-  line-height: 1.12;
-  letter-spacing: -0.02em;
-  font-weight: 800;
-  color: var(--ink-950);
-  text-wrap: balance;
-}
-
-.ask__form {
-  width: min(100%, 660px);
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  background: var(--surface);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-lg, 12px);
-  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
-  box-shadow: 0 1px 2px rgba(13, 14, 17, 0.05);
-  transition:
-    border-color var(--fast),
-    box-shadow var(--fast);
-}
-
-.ask__form:focus-within {
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px var(--red-tint);
-}
-
-.ask__spark {
-  color: var(--red);
-  flex: none;
-}
-
-.ask__input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  outline: none;
-  background: transparent;
-  font: inherit;
-  font-size: var(--t-md);
-  color: var(--ink-900);
-  padding: var(--s-2) 0;
-}
-
-.ask__input::placeholder {
-  color: var(--ink-500);
-}
-
-.ask__lead {
-  margin: calc(var(--s-2) * -1) 0 0;
-  max-width: 56ch;
-  font-size: var(--t-md);
-  color: var(--ink-600);
-}
-
-/* A round send button, so the box reads as "ask" rather than as a filter. */
-.ask__go {
-  flex: none;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: var(--r-full);
-  background: var(--red);
-  color: #fff;
-  cursor: pointer;
-  transition:
-    background var(--fast),
-    opacity var(--fast);
-}
-
-.ask__go:hover:not(:disabled) {
-  background: var(--red-700);
-}
-
-.ask__go:disabled {
-  background: var(--ink-300);
-  cursor: not-allowed;
-}
-
-.ask__note {
-  margin: 0;
-  max-width: 62ch;
-  font-size: var(--t-xs);
-  color: var(--ink-500);
-}
-
-.starters {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--s-2);
-  max-width: 760px;
-}
-
-.starter {
+/* A pillar that is not built yet says so once, in its header. */
+.soon-badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--s-2);
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink-700);
-  font: inherit;
-  font-size: var(--t-sm);
-  padding: 6px 14px 6px 6px;
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: var(--r-full);
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    border-color var(--fast),
-    color var(--fast),
-    background var(--fast);
-}
-
-.starter:hover {
-  border-color: var(--ink-400);
-  color: var(--ink-900);
-  background: var(--ink-50);
-}
-
-/* Which pillar will answer this. Stated up front so the box does not read as
-   an agent-only search. */
-.starter__pillar {
-  font-size: var(--t-2xs);
+  font-size: var(--t-xs);
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-600);
-  background: var(--ink-100);
-  padding: 3px 9px;
-  border-radius: var(--r-full);
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.86);
+  white-space: nowrap;
 }
 
 .home-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--s-4);
-  align-items: start;
+  align-items: stretch;
 }
 
 .home-card {
@@ -3448,29 +3359,181 @@ button:disabled {
   margin: 0;
 }
 
-@media (max-width: 640px) {
-  .ask {
-    padding-top: var(--s-5);
-    text-align: left;
-    justify-items: stretch;
+/* Answers to a home search, grouped by where they live on the hub. */
+.home-results {
+  display: grid;
+  gap: var(--s-4);
+}
+
+.home-results__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+}
+
+.home-results__title {
+  margin: 0;
+  font-size: var(--t-lg);
+  font-weight: 700;
+  color: var(--ink-950);
+}
+
+.home-results__count {
+  margin: 4px 0 0;
+  font-size: var(--t-sm);
+  color: var(--ink-600);
+}
+
+.home-row__pillar {
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-600);
+}
+
+/* ============================================================================
+   Agent page: the decision fits the first screen
+   Facts and actions live in the hero; the body is an overview, then details,
+   then Get access last. Replaces a long single column plus a three-card
+   sidebar that put the request form almost two screens down.
+   ========================================================================== */
+
+/* The left column has to be allowed to shrink. Without min-width: 0 it could
+   not narrow below the five-fact strip, and at desktop width it pushed the
+   action buttons 42px out of the hero, clipping "Architecture". */
+.agent__head-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent__facts {
+  margin: var(--s-5) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--s-3) var(--s-5);
+  max-width: 860px;
+}
+
+.agent__facts dt {
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.agent__facts dd {
+  margin: 3px 0 0;
+  font-size: var(--t-sm);
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Buttons share the row equally, whether one or two are shown. */
+.agent__resources {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--s-2);
+}
+
+.agent__resources .btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.agent__note {
+  font-size: var(--t-xs);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.agent__body {
+  display: grid;
+  gap: var(--s-4);
+}
+
+.agent__body > .panel,
+.agent__overview > .panel {
+  margin: 0;
+}
+
+.agent__overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: stretch;
+}
+
+.techline {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s-3) var(--s-5);
+}
+
+.techline dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.techline dd {
+  margin: 3px 0 0;
+  font-size: var(--t-base);
+  color: var(--ink-800);
+}
+
+/* The jump from the hero lands the card just below the top bar. */
+#request-access {
+  scroll-margin-top: 84px;
+}
+
+.access-form {
+  margin-top: var(--s-4);
+}
+
+.access-form__note {
+  margin: 0 0 var(--s-3);
+  font-size: var(--t-sm);
+  color: var(--ink-600);
+}
+
+.agent__owner {
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  font-size: var(--t-sm);
+  color: var(--ink-700);
+}
+
+@media (max-width: 900px) {
+  .agent__head.band {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--s-6);
   }
 
-  .ask__form {
-    flex-wrap: wrap;
-  }
-
-  .ask__go {
+  .agent__actions {
+    min-width: 0;
     width: 100%;
-    justify-content: center;
   }
 
-  .starters {
-    justify-content: flex-start;
-  }
-
-  /* Stacked one per line, six starters push the cards off the screen. Three
-     is enough to show what the box is for. */
-  .starters > li:nth-child(n + 4) {
-    display: none;
+  .agent__overview {
+    grid-template-columns: 1fr;
   }
 }

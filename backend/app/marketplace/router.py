@@ -352,6 +352,7 @@ from pydantic import BaseModel as _BaseModel
 
 from ..learning.models import ItemWithProgress
 from ..learning.router import for_agent as learning_for_agent
+from .architecture import ArchitecturePage, build_architecture, page_status
 from .store import _DATA_DIR
 
 
@@ -362,6 +363,14 @@ class DocPage(_BaseModel):
     markdown: str
     source_url: str = ""
     source_kind: str = "sample"
+    # What a Confluence page carries in its byline and page properties.
+    status: str = "Draft"
+    owner: str = ""
+    team: str = ""
+    version: str = ""
+    updated: str = ""
+    labels: list[str] = []
+    read_minutes: int = 1
 
 
 def _read_md(path: _Path) -> str | None:
@@ -379,7 +388,11 @@ def agent_docs(agent_id: str) -> DocPage:
         raise HTTPException(status_code=404, detail="Agent not found")
     md = _read_md(_DATA_DIR / "docs" / f"{agent_id}.md")
     if md is None:
-        md = f"# {agent.name} documentation\n\nDocumentation has not been published for this agent yet. Contact **{agent.owner.team}**."
+        md = (
+            "## Overview\n\n"
+            f"Documentation for {agent.name} has not been published yet. "
+            f"The owning team is **{agent.owner.team}**."
+        )
     return DocPage(
         source_kind=agent.source_kind,
         agent_id=agent.id,
@@ -387,31 +400,23 @@ def agent_docs(agent_id: str) -> DocPage:
         title=f"{agent.name} documentation",
         markdown=md,
         source_url=agent.documentation_url if agent.source_kind == "enterprise" else "",
+        status=page_status(agent),
+        owner=agent.owner.name,
+        team=agent.owner.team,
+        version=agent.version,
+        updated=agent.updated_at,
+        labels=agent.tags[:8],
+        read_minutes=max(1, round(len(md.split()) / 200)),
     )
 
 
-@router.get("/agents/{agent_id}/architecture", response_model=DocPage)
-def agent_architecture(agent_id: str) -> DocPage:
+@router.get("/agents/{agent_id}/architecture", response_model=ArchitecturePage)
+def agent_architecture(agent_id: str) -> ArchitecturePage:
+    """Built from the agent's own record, so the diagram cannot drift from the catalogue."""
     agent = store.agent(agent_id)
     if agent is None:
         raise HTTPException(status_code=404, detail="Agent not found")
-    slug = agent.architecture_pattern.lower().replace(" ", "-")
-    md = _read_md(_DATA_DIR / "architecture" / f"{slug}.md") if slug else None
-    if md is None:
-        md = f"# Architecture\n\nNo architecture pattern has been linked for **{agent.name}** yet. Contact **{agent.owner.team}**."
-    title = (
-        f"{agent.architecture_pattern} pattern"
-        if agent.architecture_pattern
-        else "Architecture"
-    )
-    return DocPage(
-        source_kind=agent.source_kind,
-        agent_id=agent.id,
-        agent_name=agent.name,
-        title=title,
-        markdown=md,
-        source_url=agent.architecture_url if agent.source_kind == "enterprise" else "",
-    )
+    return build_architecture(agent, store.agents)
 
 
 @router.get(

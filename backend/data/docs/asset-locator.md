@@ -1,18 +1,15 @@
-# Asset Locator documentation
-
-_Version 0.9 · Owned by Recovery Operations · Status: Pilot_
-
 ## Overview
 
 Searches internal records and approved external data sources to locate assets, employment and current contact details linked to delinquent or charged-off accounts. Builds an evidence pack per account with source, confidence and date, so recovery teams can act on verified information rather than stale data.
 
-**Why it exists.** Recovery teams worked from stale contact and asset data, wasting outreach. This builds a verified, sourced evidence pack per account before anyone picks up the phone.
+> [!INFO] Why it exists
+> Recovery teams worked from stale contact and asset data, wasting outreach. This builds a verified, sourced evidence pack per account before anyone picks up the phone.
 
 ## Getting started
 
-1. Pilot limited to the Recovery Operations team. Contact the owner to join the pilot.
-2. Open the agent from the marketplace with **Launch agent**, or from Internal LangGraph service directly.
-3. Start with one of the example requests below, then adapt it to your case.
+1. Open to all employees. Sign in with your MUFG account.
+2. Find the agent in the AI Marketplace and start from its page.
+3. Start with one of the requests below, then adapt it to your case.
 
 ## What to give it and what you get back
 

@@ -1,18 +1,15 @@
-# Policy Q&A Agent documentation
-
-_Version 2.0 · Owned by Governance & Trust · Status: Production_
-
 ## Overview
 
 Grounded on the approved policy library (credit, AML, data handling, complaints, acceptable use). Answers plain-language questions, always cites the policy section it relied on, and says clearly when a question is outside the library rather than guessing. Used by front-line teams and compliance alike.
 
-**Why it exists.** Front-line staff could not find the right policy quickly and either guessed or escalated. This answers with a citation or says it does not know.
+> [!INFO] Why it exists
+> Front-line staff could not find the right policy quickly and either guessed or escalated. This answers with a citation or says it does not know.
 
 ## Getting started
 
 1. Open to all employees. Sign in with your MUFG account.
-2. Open the agent from the marketplace with **Launch agent**, or from Internal LangGraph service directly.
-3. Start with one of the example requests below, then adapt it to your case.
+2. Find the agent in the AI Marketplace and start from its page.
+3. Start with one of the requests below, then adapt it to your case.
 
 ## What to give it and what you get back
 

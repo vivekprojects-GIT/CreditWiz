@@ -1,18 +1,15 @@
-# Collections Outreach Agent documentation
-
-_Version 1.2 · Owned by Collections Technology · Status: Production_
-
 ## Overview
 
 Prepares outreach for early and late arrears: chooses the right channel and tone for the customer's circumstances, drafts the message using approved templates, checks it against vulnerability and conduct rules, and schedules it in the collections platform for agent approval. Never sends without a human in the loop.
 
-**Why it exists.** Collections messages varied in tone and sometimes breached conduct rules. This drafts compliant, personalised outreach with a human approving every send.
+> [!INFO] Why it exists
+> Collections messages varied in tone and sometimes breached conduct rules. This drafts compliant, personalised outreach with a human approving every send.
 
 ## Getting started
 
-1. Available to Collections agents and team leads. Request the Collections-Agent role through the access portal.
-2. Open the agent from the marketplace with **Launch agent**, or from Microsoft Agent 365 directly.
-3. Start with one of the example requests below, then adapt it to your case.
+1. Open to all employees. Sign in with your MUFG account.
+2. Find the agent in the AI Marketplace and start from its page.
+3. Start with one of the requests below, then adapt it to your case.
 
 ## What to give it and what you get back
 

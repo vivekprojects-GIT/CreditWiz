@@ -9,13 +9,12 @@ import {
   Layers,
   MessageSquare,
   Rocket,
-  Server,
   ShieldCheck,
-  Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
+import { formatDate } from '../../lib/format'
 import { fetchAgentLearning, type Item } from '../../lib/learning'
 import { track, type EventType } from '../../lib/context'
 import { ACCESS_LABEL, STATUS_LABEL, fetchAgent, fetchRelated, type Agent } from '../../lib/marketplace'
@@ -125,6 +124,18 @@ export function AgentDetailPage() {
     ? `mailto:${agent.owner.email}?subject=${encodeURIComponent(`Access to ${agent.name}`)}`
     : undefined
 
+  // One click to act. The hero's Request access button brings the Get access
+  // card into view and puts the cursor in the reason box, so the request is
+  // typed straight away rather than scrolled to and then clicked into.
+  function goToRequest(e: React.MouseEvent) {
+    const card = document.getElementById('request-access')
+    if (!card) return
+    e.preventDefault()
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    card.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    card.querySelector<HTMLTextAreaElement>('textarea')?.focus({ preventScroll: true })
+  }
+
   return (
     <div className="content agent">
       <nav className="crumbs" aria-label="Breadcrumb">
@@ -139,6 +150,9 @@ export function AgentDetailPage() {
         <BackButton fallback="/marketplace" label="Back to marketplace" />
       </div>
 
+      {/* The first screen holds the whole decision: what it is, who it is for,
+          who owns it, and every action -- each one click from here. It used to
+          take two and a half screens of cards and a sidebar to learn the same. */}
       <header className="agent__head band">
         <div className="agent__head-main">
           <div className="agent__badges">
@@ -149,12 +163,32 @@ export function AgentDetailPage() {
           </div>
           <h1 className="agent__name">{agent.name}</h1>
           <p className="agent__tagline">{agent.tagline}</p>
-          <p className="agent__meta">
-            <span>{agent.owner.team}</span>
-            {agent.platform && <span>{agent.platform}</span>}
-            <span>{ACCESS_LABEL[agent.access.type]}</span>
-            <span>Updated {agent.updated_at}</span>
-          </p>
+          <dl className="agent__facts">
+            <div>
+              <dt>Who it is for</dt>
+              <dd>{agent.personas.map((p) => PERSONA_LABEL[p] ?? p).join(', ') || 'Not listed'}</dd>
+            </div>
+            <div>
+              <dt>Business domains</dt>
+              <dd>{agent.business_domains.join(', ')}</dd>
+            </div>
+            <div>
+              <dt>Owner</dt>
+              {/* A first-pass listing may not have a confirmed owner yet. Say so
+                  here rather than carrying placeholder text in the data. */}
+              <dd>
+                {agent.owner.name || 'To be confirmed'} · {agent.owner.team}
+              </dd>
+            </div>
+            <div>
+              <dt>Platform</dt>
+              <dd>{agent.platform || 'Not listed'}</dd>
+            </div>
+            <div>
+              <dt>Updated</dt>
+              <dd>{formatDate(agent.updated_at)}</dd>
+            </div>
+          </dl>
         </div>
 
         <div className="agent__actions">
@@ -164,26 +198,23 @@ export function AgentDetailPage() {
                 <Rocket size={18} /> Launch agent
               </ExtLink>
             ) : (
-              <button
-                type="button"
-                className="btn btn--inline"
-                disabled
-                title="Open to all employees. This sample listing has no live destination yet."
-              >
-                <Rocket size={18} /> Open agent
-              </button>
+              // No live launch link yet, so the most useful single click is
+              // the documentation rather than a disabled button.
+              <Link to={`/marketplace/agents/${agent.id}/docs`} className="btn btn--inline">
+                <BookOpen size={18} strokeWidth={2.4} /> Read documentation
+              </Link>
             ))}
 
           {access === 'request' && (
             <>
+              <a className="btn btn--inline" href="#request-access" onClick={goToRequest}>
+                Request access
+              </a>
               {!isSample && agent.access.request_url && (
                 <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
                   Open enterprise access portal
                 </ExtLink>
               )}
-              <a className="btn btn--inline" href="#request-access">
-                Request access
-              </a>
             </>
           )}
 
@@ -193,26 +224,38 @@ export function AgentDetailPage() {
             </a>
           )}
 
-          {isSample && <span>Sample listing · Live launch is not configured.</span>}
+          <div className="agent__resources">
+            {(access !== 'open' || canLaunch) && (
+              <Link to={`/marketplace/agents/${agent.id}/docs`} className="btn-outline">
+                <BookOpen size={16} strokeWidth={2.4} /> Documentation
+              </Link>
+            )}
+            <Link to={`/marketplace/agents/${agent.id}/architecture`} className="btn-outline">
+              <Layers size={16} strokeWidth={2.4} /> Architecture
+            </Link>
+          </div>
+
+          {/* Only where launching is the action. On a request listing this
+              line talked about launching when the next step is asking. */}
+          {access === 'open' && !canLaunch && (
+            <span className="agent__note">Launch link coming soon</span>
+          )}
         </div>
       </header>
 
-      {/* A request form only makes sense where a request is the route in.
-          Open agents need none; restricted ones go through the owner. */}
-      {access === 'request' && <AccessRequestForm key={agent.id} agentId={agent.id} />}
-      <div className="agent__layout">
-        <div className="agent__main">
+      <div className="agent__body">
+        <div className="agent__overview">
+          {/* What it does and why it was built are read together, so they sit together. */}
           <section className="panel">
             <h2 className="panel__title">What it does</h2>
             <p className="panel__text">{agent.description}</p>
+            {agent.problem_solved && (
+              <>
+                <h3 className="panel__subtitle">Why it exists</h3>
+                <p className="panel__text">{agent.problem_solved}</p>
+              </>
+            )}
           </section>
-
-          {agent.problem_solved && (
-            <section className="panel">
-              <h2 className="panel__title">Why it exists</h2>
-              <p className="panel__text">{agent.problem_solved}</p>
-            </section>
-          )}
 
           <section className="panel">
             <h2 className="panel__title">What you can ask it to do</h2>
@@ -231,10 +274,7 @@ export function AgentDetailPage() {
                 ))}
               </div>
             )}
-          </section>
-
-          <section className="panel">
-            <h2 className="panel__title">Capabilities</h2>
+            <h3 className="panel__subtitle">Capabilities</h3>
             <div className="pills">
               {(agent.capabilities ?? []).map((c) => (
                 <span key={c} className="pill">
@@ -243,146 +283,123 @@ export function AgentDetailPage() {
               ))}
             </div>
           </section>
-
-          <section className="panel panel--access">
-            <h2 className="panel__title">
-              <ShieldCheck size={20} strokeWidth={2.4} /> How to get access
-            </h2>
-            <p className="panel__text">
-              <strong>{ACCESS_LABEL[agent.access.type]}.</strong> {agent.access.how}
-            </p>
-          </section>
-
-          {(videos?.length ?? 0) > 0 && (
-            <section className="panel">
-              <div className="section-head section-head--tight">
-                <div>
-                  <h2 className="panel__title" style={{ margin: 0 }}>
-                    Learning for this agent
-                  </h2>
-                  <p className="section-sub">
-                    Related material selected by Learning. Use your account's Learning page for progress and required steps.
-                  </p>
-                </div>
-                <Link to="/learning" className="textlink">
-                  All learning
-                </Link>
-              </div>
-              <div className="video-row">
-                {videos.map((v) => (
-                  <ItemCard key={v.id} item={v} fromAgentId={agent.id} compact />
-                ))}
-              </div>
-            </section>
-          )}
-
-          <FeedbackPrompt pillar="marketplace" context="agent" subjectId={agent.id} resetKey={agent.id} question="Was this page useful?" />
         </div>
 
-        <aside className="agent__side">
+        {(videos?.length ?? 0) > 0 && (
           <section className="panel">
-            <h2 className="panel__title">At a glance</h2>
-            <dl className="facts">
+            <div className="section-head section-head--tight">
+              <div>
+                <h2 className="panel__title" style={{ margin: 0 }}>
+                  Learning for this agent
+                </h2>
+                <p className="section-sub">
+                  Related material selected by Learning. Use your account's Learning page for progress and required steps.
+                </p>
+              </div>
+              <Link to="/learning" className="textlink">
+                All learning
+              </Link>
+            </div>
+            <div className="video-row">
+              {videos.map((v) => (
+                <ItemCard key={v.id} item={v} fromAgentId={agent.id} compact />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="panel">
+          <h2 className="panel__title">Technical details</h2>
+          <dl className="techline">
+            <div>
               <dt>
-                <Users size={16} strokeWidth={2.2} /> Who it is for
-              </dt>
-              <dd>{agent.personas.map((p) => PERSONA_LABEL[p] ?? p).join(', ')}</dd>
-              <dt>
-                <Layers size={16} strokeWidth={2.2} /> Business domains
-              </dt>
-              <dd>{agent.business_domains.join(', ')}</dd>
-              <dt>
-                <Server size={16} strokeWidth={2.2} /> Platform
-              </dt>
-              {/* Blank until the owning team confirms it. Say so, the way
-                  models and tools do, rather than leaving a label with
-                  nothing under it. */}
-              <dd>{agent.platform || 'Not listed'}</dd>
-              <dt>
-                <Cpu size={16} strokeWidth={2.2} /> Models
+                <Cpu size={14} strokeWidth={2.2} /> Models
               </dt>
               <dd>{agent.models.length ? agent.models.join(', ') : 'Not listed'}</dd>
+            </div>
+            <div>
               <dt>
-                <Boxes size={16} strokeWidth={2.2} /> Tools and services
+                <Boxes size={14} strokeWidth={2.2} /> Tools and services
               </dt>
               <dd>{agent.tools_services.length ? agent.tools_services.join(', ') : 'Not listed'}</dd>
-              {agent.architecture_pattern && (
-                <>
-                  <dt>
-                    <Layers size={16} strokeWidth={2.2} /> Architecture pattern
-                  </dt>
-                  <dd>{agent.architecture_pattern}</dd>
-                </>
-              )}
-              <dt>
-                <Calendar size={16} strokeWidth={2.2} /> Updated
-              </dt>
-              <dd>
-                {agent.updated_at} <span className="muted">(created {agent.created_at})</span>
-              </dd>
-            </dl>
-          </section>
-
-          <section className="panel">
-            <h2 className="panel__title">Owner</h2>
-            {/* A first-pass listing may not have a confirmed owner yet. Say so
-                here rather than carrying placeholder text in the data. */}
-            {agent.owner.name ? (
-              <p className="owner__name">{agent.owner.name}</p>
-            ) : (
-              <p className="owner__name">Owner to be confirmed</p>
+            </div>
+            {agent.architecture_pattern && (
+              <div>
+                <dt>
+                  <Layers size={14} strokeWidth={2.2} /> Architecture pattern
+                </dt>
+                <dd>{agent.architecture_pattern}</dd>
+              </div>
             )}
-            <p className="owner__team">{agent.owner.team}</p>
-            <div className="agent__links">
-              {agent.source_kind === 'enterprise' && !agent.owner.email ? (
-                <p className="muted">Contact details will appear once the owning team confirms the listing.</p>
-              ) : agent.source_kind === 'enterprise' ? (
-                <a
-                  className="linkbtn"
-                  href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`}
-                  onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id })}
-                >
-                  <MessageSquare size={16} /> Collaborate with the owner
-                </a>
-              ) : (
-                <details>
-                  <summary>Collaborate with the owner</summary>
-                  <p>Sample contact: {agent.owner.email}. Enterprise contact will be enabled when the listing is confirmed.</p>
-                </details>
-              )}
+            <div>
+              <dt>
+                <Calendar size={14} strokeWidth={2.2} /> Created
+              </dt>
+              <dd>{formatDate(agent.created_at)}</dd>
             </div>
-          </section>
+            {agent.source_kind === 'enterprise' && agent.documentation_url && (
+              <div>
+                <dt>
+                  <ExternalLink size={14} strokeWidth={2.2} /> Source documentation
+                </dt>
+                <dd>
+                  <ExtLink href={agent.documentation_url} event="documentation_click" agent={agent} className="linkbtn">
+                    Open
+                  </ExtLink>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </section>
 
-          <section className="panel">
-            <h2 className="panel__title">Resources</h2>
-            <div className="agent__links">
-              <Link to={`/marketplace/agents/${agent.id}/docs`} className="linkbtn">
-                <BookOpen size={16} strokeWidth={2.4} /> Documentation
-              </Link>
-              <Link to={`/marketplace/agents/${agent.id}/architecture`} className="linkbtn">
-                <Layers size={16} strokeWidth={2.4} /> Architecture pattern
-                {agent.architecture_pattern ? `: ${agent.architecture_pattern}` : ''}
-              </Link>
-              {agent.source_kind === 'enterprise' && agent.documentation_url && (
-                <ExtLink href={agent.documentation_url} event="documentation_click" agent={agent} className="linkbtn linkbtn--muted">
-                  Source documentation <ExternalLink size={13} strokeWidth={2.4} />
-                </ExtLink>
-              )}
-            </div>
-          </section>
-        </aside>
-      </div>
-
-      {related.length > 0 && (
-        <>
-          <h2 className="section-title">Related agents</h2>
-          <div className="agent-grid">
-            {related.map((a) => (
-              <AgentCard key={a.id} agent={a} source="related" compact />
-            ))}
+        {/* Getting access is the last thing about the agent: read first, then
+            act. The route, the request and the owner sit in one card, not three. */}
+        <section className="panel panel--access" id="request-access">
+          <h2 className="panel__title">
+            <ShieldCheck size={20} strokeWidth={2.4} /> Get access
+          </h2>
+          <p className="panel__text">
+            <strong>{ACCESS_LABEL[agent.access.type]}.</strong> {agent.access.how}
+          </p>
+          {/* A request form only makes sense where a request is the route in.
+              Open agents need none; restricted ones go through the owner. */}
+          {access === 'request' && <AccessRequestForm key={agent.id} agentId={agent.id} />}
+          <div className="agent__owner">
+            <span>
+              <strong>{agent.owner.name || 'Owner to be confirmed'}</strong> · {agent.owner.team}
+            </span>
+            {agent.source_kind === 'enterprise' && !agent.owner.email ? (
+              <span className="muted">Contact details will appear once the owning team confirms the listing.</span>
+            ) : agent.source_kind === 'enterprise' ? (
+              <a
+                className="linkbtn"
+                href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`}
+                onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id })}
+              >
+                <MessageSquare size={16} /> Collaborate with the owner
+              </a>
+            ) : (
+              <details>
+                <summary>Collaborate with the owner</summary>
+                <p>Sample contact: {agent.owner.email}. Enterprise contact will be enabled when the listing is confirmed.</p>
+              </details>
+            )}
           </div>
-        </>
-      )}
+        </section>
+
+        {related.length > 0 && (
+          <section>
+            <h2 className="section-title">Related agents</h2>
+            <div className="agent-grid">
+              {related.map((a) => (
+                <AgentCard key={a.id} agent={a} source="related" compact />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <FeedbackPrompt pillar="marketplace" context="agent" subjectId={agent.id} resetKey={agent.id} question="Was this page useful?" />
+      </div>
     </div>
   )
 }

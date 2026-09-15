@@ -304,12 +304,37 @@ def test_agent_docs_and_architecture_pages():
     docs = client.get("/api/marketplace/agents/contract-analyzer/docs").json()
     assert docs["title"].startswith("Contract Analyzer")
     assert "## Getting started" in docs["markdown"]
+    assert docs["status"] in {"Verified", "In review", "Draft"} and docs["team"]
+
     arch = client.get(
         "/api/marketplace/agents/contract-analyzer/architecture"
     ).json()
-    assert arch["title"] == "Document agent pattern"
-    assert "How it works" in arch["markdown"]
+    assert arch["title"] == "Contract Analyzer architecture"
+    assert arch["pattern"] == "Document agent"
+    nodes = [n for c in arch["columns"] for g in c["groups"] for n in g["nodes"]]
+    # The diagram is the agent's own: its models and systems, from the catalogue.
+    assert [n["label"] for n in nodes if n["highlight"]] == ["Contract Analyzer"]
+    assert {"GPT-5", "Claude Sonnet 5", "SharePoint"} <= {n["label"] for n in nodes}
+    ids = {n["id"] for n in nodes}
+    assert all(e["source"] in ids and e["target"] in ids for e in arch["edges"])
+    assert [s["number"] for s in arch["steps"]] == list(range(1, len(arch["steps"]) + 1))
     assert client.get("/api/marketplace/agents/nope/docs").status_code == 404
+
+
+def test_every_agent_is_open_with_documentation_and_architecture():
+    """Every listing opens without a request, and has a real documentation page
+    and an architecture page whose diagram highlights that agent."""
+    for agent in store.all_agents:
+        assert agent.access.type == "open", agent.id
+
+        docs = client.get(f"/api/marketplace/agents/{agent.id}/docs").json()
+        assert "has not been published" not in docs["markdown"], agent.id
+        assert not any(c in docs["markdown"] for c in "—–"), f"dash in {agent.id} docs"
+
+        arch = client.get(f"/api/marketplace/agents/{agent.id}/architecture").json()
+        nodes = [n for c in arch["columns"] for g in c["groups"] for n in g["nodes"]]
+        assert [n["label"] for n in nodes if n["highlight"]] == [agent.name], agent.id
+        assert len(arch["steps"]) >= 4 and arch["edges"], agent.id
 
 
 def test_learning_for_agent_is_persona_ordered():
@@ -425,7 +450,10 @@ def test_my_learning_reports_progress_and_coverage_not_proficiency():
     kyc = next(c for c in me["coverage"] if c["topic"] == "KYC")
     assert kyc["completed"] <= kyc["total"]  # factual counts, never a percentage
 
-    assert "agreed enterprise measure of proficiency" in me["proficiency_note"]
+    # The note must say proficiency is not measured until a measure is agreed.
+    # Checked by meaning, not wording, so the sentence can be edited as copy.
+    note = me["proficiency_note"].lower()
+    assert "proficiency" in note and "agreed" in note
     assert not any("proficiency" in k.lower() and k != "proficiency_note" for k in me)
 
 

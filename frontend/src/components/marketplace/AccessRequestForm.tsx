@@ -28,11 +28,12 @@ export function AccessRequestForm({ agentId }: { agentId: string }) {
       setBusy(false)
     }
   }
+  // No card of its own: it sits inside the agent page's Get access card, next
+  // to the access route and the owner, instead of stacking a second card.
   return (
-    <section className="panel" id="request-access">
-      <h2 className="panel__title">Request access</h2>
-      <p>
-        Record a request for this MVP. This saves a pending request in your profile; enterprise approval and provisioning are not connected.
+    <div className="access-form">
+      <p className="access-form__note">
+        Tell the owning team why you need access. Your request is saved to your profile, where you can follow its status.
       </p>
       {error && <p role="alert">{error}</p>}
       {sent ? (
@@ -53,6 +54,6 @@ export function AccessRequestForm({ agentId }: { agentId: string }) {
           </button>
         </form>
       )}
-    </section>
+    </div>
   )
 }

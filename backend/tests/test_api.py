@@ -54,6 +54,23 @@ def test_header_search_answers_a_sentence_not_just_a_substring():
     assert [r for r in generic if r["kind"] == "agent"]
 
 
+def test_hub_search_answers_a_sentence_about_learning():
+    """The home page's ask box invites sentences, so learning must match one.
+
+    The old match needed the whole typed string inside an item, so a sentence
+    found nothing even when every one of its subject words was there.
+    """
+    sentence = "how do I screen someone for sanctions"
+    results = client.get("/api/search", params={"q": sentence}).json()["results"]
+    learning = [r["title"] for r in results if r["kind"] == "learning"]
+    assert "Conduct Sanctions Screening with These Simple Steps" in learning
+
+    # A word every item on this hub carries is not a subject: asking about
+    # agents in general must not return the whole catalog.
+    generic = client.get("/api/search", params={"q": "what do agents do"}).json()["results"]
+    assert not [r for r in generic if r["kind"] == "learning"]
+
+
 def test_pillar_detail_and_404():
     body = client.get("/api/pillars/learning").json()
     assert body["title"] == "AI Learning and Enablement"

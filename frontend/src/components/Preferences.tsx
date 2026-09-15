@@ -79,7 +79,7 @@ export function Preferences() {
       </section>
       <section className="panel">
         <h2 className="panel__title">Your access requests</h2>
-        <p>Requests are recorded locally for MVP review. They do not grant access or notify an external system.</p>
+        <p>Your access requests and where each one stands.</p>
         {requests.length ? (
           requests.map((r) => (
             <div key={r.id}>

@@ -328,22 +328,80 @@ def _typeahead_agents(needle: str) -> list[SearchResult]:
     return [as_result(a) for a in ordered[:TYPEAHEAD_AGENTS]]
 
 
+# Words that carry no subject: "how do I start a path for my role" is about
+# paths and roles, and the rest would match every item in the catalog. "Agent"
+# is on the list because on this hub nearly everything mentions one.
+# Mirrored in frontend/src/lib/hubSearch.ts, which matches pillar pages.
+_STOP_WORDS = frozenset(
+    "a about against agent agents all also an and any are at be by can could do "
+    "does for from get give has have how i in into is it just like me my need new "
+    "of on or our out please should show some than that the their them then there "
+    "they this to use using want was were what when where which who why will "
+    "with would you your".split()
+)
+_SUFFIXES = ("ations", "ation", "ings", "ing", "ions", "ion", "ers", "er", "ed", "es", "ly", "al", "s", "e")
+
+
+def _stem(word: str) -> str:
+    """One suffix off, never below four letters: "approved" and "approval"
+    both become "approv", "screening" becomes "screen"."""
+    for suffix in _SUFFIXES:
+        if word.endswith(suffix) and len(word) - len(suffix) >= 4:
+            return word[: -len(suffix)]
+    return word
+
+
+def _subject_stems(text: str) -> list[str]:
+    """The words of a query worth matching, as stems."""
+    import re
+
+    words = re.findall(r"[a-z0-9]+", text.lower())
+    return list(
+        dict.fromkeys(_stem(w) for w in words if len(w) > 2 and w not in _STOP_WORDS)
+    )
+
+
+def _learning_hits(needle: str) -> list[SearchResult]:
+    """Learning items for a query, best first.
+
+    A title typed in part matches as it always has. A sentence, which the home
+    page's ask box invites, matches an item carrying at least half of its
+    subject words; the old whole-string match found nothing for one.
+    """
+    import re
+
+    from .learning.router import _load
+
+    _, items = _load()
+    stems = _subject_stems(needle)
+    # A stem counts only where a word starts: "check" and "list" are not a
+    # match for "checklist".
+    starts = [re.compile(rf"\b{re.escape(s)}") for s in stems]
+    needed = max(1, -(-len(stems) // 2))
+    scored = []
+    for i in items:
+        text = " ".join([i.title, i.description, *i.topics, *i.tags]).lower()
+        if needle == "learning" or needle in text:
+            score = len(stems) + 1
+        else:
+            score = sum(bool(p.search(text)) for p in starts)
+            if not stems or score < needed:
+                continue
+        scored.append((score, i))
+    scored.sort(key=lambda pair: -pair[0])
+    return [
+        SearchResult(kind="learning", title=i.title, href=f"/learning/items/{i.id}")
+        for _, i in scored
+    ]
+
+
 @app.get("/api/search", response_model=SearchResponse)
 def search(q: str = Query(default="", max_length=200)) -> SearchResponse:
     needle = q.strip().lower()
     if not needle:
         return SearchResponse(query=q, results=[])
     agent_hits = _typeahead_agents(needle)
-    from .learning.router import _load
-
-    _, items = _load()
-    learning_hits = [
-        SearchResult(kind="learning", title=i.title, href=f"/learning/items/{i.id}")
-        for i in items
-        if needle == "learning"
-        or needle in " ".join([i.title, i.description, *i.topics, *i.tags]).lower()
-    ]
-    return SearchResponse(query=q, results=(agent_hits + learning_hits)[:20])
+    return SearchResponse(query=q, results=(agent_hits + _learning_hits(needle))[:20])
 
 
 # --- built frontend ---------------------------------------------------------

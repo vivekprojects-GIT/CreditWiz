@@ -9,7 +9,7 @@
         "responsible-ai-fundamentals",
         "ai-hub-onboarding-checklist"
       ],
-      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "owner": "AI Learning team. Illustrative mapping; client owner to confirm.",
       "version": "1"
     },
     {
@@ -23,7 +23,7 @@
         "writing-agent-requests-guide",
         "contract-analyzer-in-5"
       ],
-      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "owner": "AI Learning team. Illustrative mapping; client owner to confirm.",
       "version": "1"
     },
     {
@@ -38,7 +38,7 @@
         "sanctions-screening-cheatsheet",
         "kyc-agent-runbook-confluence"
       ],
-      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "owner": "AI Learning team. Illustrative mapping; client owner to confirm.",
       "version": "1"
     },
     {
@@ -52,7 +52,7 @@
         "collections-outreach-demo",
         "disputes-triage-walkthrough"
       ],
-      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "owner": "AI Learning team. Illustrative mapping; client owner to confirm.",
       "version": "1"
     },
     {
@@ -65,7 +65,7 @@
         "grounding-agents-best-practice",
         "responsible-ai-certification"
       ],
-      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "owner": "AI Learning team. Illustrative mapping; client owner to confirm.",
       "version": "1"
     },
     {
@@ -80,7 +80,7 @@
         "agent-metadata-standard-doc",
         "code-review-assistant-for-engineers"
       ],
-      "owner": "AI Learning team — illustrative mapping; client owner to confirm",
+      "owner": "AI Learning team. Illustrative mapping; client owner to confirm.",
       "version": "1"
     }
   ],
@@ -164,7 +164,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -212,7 +212,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -258,7 +258,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -303,7 +303,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -357,7 +357,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -401,7 +401,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -446,7 +446,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -488,7 +488,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": [
         "collections-conduct-guide"
       ]
@@ -533,7 +533,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -580,7 +580,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -627,7 +627,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -658,7 +658,7 @@
       "poster_url": "",
       "source": "MUFG",
       "duration_seconds": 240,
-      "body": "# KYC document checklist\n\nUse alongside the CIP Agent. The agent produces the completeness report; this is what it is checking against.\n\n## Identity — one required\n- Passport, in date\n- National ID card, in date\n- Driving licence, in date, photocard only\n\n## Address — one required, issued in the last 3 months\n- Utility bill, not mobile phone\n- Bank or credit card statement\n- Council tax or government correspondence\n\n## Entities — additional\n- Certificate of incorporation\n- Register of beneficial owners\n- Board resolution or equivalent authority\n\n## Common failures\n1. Address document older than three months.\n2. Name on the address document does not match the application exactly.\n3. Photocard licence supplied without the paper counterpart where required.\n4. Scans that crop the machine-readable zone.\n\nAnything the agent marks low confidence needs a human read before sign-off.\n",
+      "body": "# KYC document checklist\n\nUse alongside the CIP Agent. The agent produces the completeness report; this is what it is checking against.\n\n## Identity: one required\n- Passport, in date\n- National ID card, in date\n- Driving licence, in date, photocard only\n\n## Address: one required, issued in the last 3 months\n- Utility bill, not mobile phone\n- Bank or credit card statement\n- Council tax or government correspondence\n\n## Entities: additional\n- Certificate of incorporation\n- Register of beneficial owners\n- Board resolution or equivalent authority\n\n## Common failures\n1. Address document older than three months.\n2. Name on the address document does not match the application exactly.\n3. Photocard licence supplied without the paper counterpart where required.\n4. Scans that crop the machine-readable zone.\n\nAnything the agent marks low confidence needs a human read before sign-off.\n",
       "id": "kyc-document-checklist",
       "title": "KYC document checklist",
       "type": "quick-reference",
@@ -672,7 +672,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -718,7 +718,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": [
         "sanctions-screening-basics"
       ]
@@ -765,7 +765,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -814,7 +814,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -860,7 +860,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -905,7 +905,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": [
         "how-to-build-a-kyc-agent"
       ]
@@ -947,7 +947,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -992,7 +992,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": [
         "kyc-document-checklist"
       ]
@@ -1023,7 +1023,7 @@
       "poster_url": "",
       "source": "MUFG AI Hub Learning",
       "duration_seconds": 5400,
-      "body": "# Responsible AI certification\n\nFour modules and a short assessment. Required before you can be named the owner or approver of an agent.\n\n## Modules\n1. **Principles** — fairness, transparency, accountability, safety.\n2. **Model risk at MUFG** — risk tiers, what each tier requires, who signs off.\n3. **Human in the loop** — where judgement must sit with a person.\n4. **Monitoring** — what to watch after release and when to pull an agent.\n\n## Assessment\nTwenty questions. You need 80% to pass. You may retake it.\n\n## Time\nAbout ninety minutes end to end. It does not have to be one sitting.\n\n\nThis is illustrative catalog content. The enterprise source and its owner must be confirmed before this resource is published for employees.",
+      "body": "# Responsible AI certification\n\nFour modules and a short assessment. Required before you can be named the owner or approver of an agent.\n\n## Modules\n1. **Principles:** fairness, transparency, accountability, safety.\n2. **Model risk at MUFG:** risk tiers, what each tier requires, who signs off.\n3. **Human in the loop:** where judgement must sit with a person.\n4. **Monitoring:** what to watch after release and when to pull an agent.\n\n## Assessment\nTwenty questions. You need 80% to pass. You may retake it.\n\n## Time\nAbout ninety minutes end to end. It does not have to be one sitting.\n\n\nThis is illustrative catalog content. The enterprise source and its owner must be confirmed before this resource is published for employees.",
       "id": "responsible-ai-certification",
       "title": "Responsible AI certification",
       "type": "course",
@@ -1037,7 +1037,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": [
         "responsible-ai-fundamentals"
       ]
@@ -1066,7 +1066,7 @@
       "poster_url": "",
       "source": "MUFG",
       "duration_seconds": 480,
-      "body": "# Writing a good AI use case request\n\nIntake assesses on value, feasibility and risk. Give reviewers those three things and your request moves quickly.\n\n## Structure\n1. **The task today.** Who does it, how often, how long it takes.\n2. **The problem.** What goes wrong or what it costs.\n3. **What good looks like.** How you would know it worked.\n4. **The data.** What the agent would need to read, and where it lives.\n5. **The decision.** What stays with a person.\n\n## Worked example — weak\n*We want AI for onboarding.*\n\n## Worked example — strong\n*Onboarding analysts spend roughly the first 20 minutes of every case checking whether the document pack is complete, about 60 cases a week. An agent that reads the pack and lists what is missing would let them start at judgement. It would read documents from the vault and the application record. The KYC decision stays with the analyst.*\n\nThe second one can be assessed. The first cannot.\n",
+      "body": "# Writing a good AI use case request\n\nIntake assesses on value, feasibility and risk. Give reviewers those three things and your request moves quickly.\n\n## Structure\n1. **The task today.** Who does it, how often, how long it takes.\n2. **The problem.** What goes wrong or what it costs.\n3. **What good looks like.** How you would know it worked.\n4. **The data.** What the agent would need to read, and where it lives.\n5. **The decision.** What stays with a person.\n\n## Worked example: weak\n*We want AI for onboarding.*\n\n## Worked example: strong\n*Onboarding analysts spend roughly the first 20 minutes of every case checking whether the document pack is complete, about 60 cases a week. An agent that reads the pack and lists what is missing would let them start at judgement. It would read documents from the vault and the application record. The KYC decision stays with the analyst.*\n\nThe second one can be assessed. The first cannot.\n",
       "id": "writing-agent-requests-guide",
       "title": "Writing a good AI use case request",
       "type": "guide",
@@ -1080,7 +1080,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     },
     {
@@ -1126,7 +1126,7 @@
       "review_status": "approved",
       "reviewed_at": "2026-09-08",
       "source_kind": "sample",
-      "owner": "AI Learning team (sample)",
+      "owner": "AI Learning team",
       "prerequisites": []
     }
   ]

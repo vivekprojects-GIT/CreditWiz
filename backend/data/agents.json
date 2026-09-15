@@ -43,7 +43,7 @@
     ],
     "access": {
       "type": "open",
-      "how": "Open to all employees. Sign in with your MUFG account.",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://agents.mufg.example/contract-analyzer",
       "request_url": ""
     },
@@ -113,8 +113,8 @@
       "Claude Opus 5"
     ],
     "access": {
-      "type": "restricted",
-      "how": "Pilot limited to the Recovery Operations team. Contact the owner to join the pilot.",
+      "type": "open",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://agents.mufg.example/asset-locator",
       "request_url": "https://access.mufg.example/request?role=Recovery-Pilot"
     },
@@ -184,8 +184,8 @@
       "GPT-5"
     ],
     "access": {
-      "type": "request",
-      "how": "Beta for onboarding teams. Request access via the Onboarding Experience team channel.",
+      "type": "open",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://agents.mufg.example/onboarding-assistant",
       "request_url": "https://access.mufg.example/request?role=Onboarding-Beta"
     },
@@ -256,8 +256,8 @@
       "Claude Sonnet 5"
     ],
     "access": {
-      "type": "request",
-      "how": "Available to Cards Operations. Request the Disputes-Agent role through the access portal.",
+      "type": "open",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://agents.mufg.example/disputes",
       "request_url": "https://access.mufg.example/request?role=Disputes-Agent"
     },
@@ -326,8 +326,8 @@
       "Claude Opus 5"
     ],
     "access": {
-      "type": "restricted",
-      "how": "Restricted to Fraud Operations and Fraud Analytics. Access managed by the Fraud platform lead.",
+      "type": "open",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://agents.mufg.example/fraud-summariser",
       "request_url": "https://access.mufg.example/request?role=Fraud-Agent"
     },
@@ -399,7 +399,7 @@
     ],
     "access": {
       "type": "open",
-      "how": "Open to all employees. Sign in with your MUFG account.",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://agents.mufg.example/policy-qa",
       "request_url": ""
     },
@@ -469,8 +469,8 @@
       "GPT-5"
     ],
     "access": {
-      "type": "request",
-      "how": "Available to Collections agents and team leads. Request the Collections-Agent role through the access portal.",
+      "type": "open",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://agents.mufg.example/collections-outreach",
       "request_url": "https://access.mufg.example/request?role=Collections-Agent"
     },
@@ -539,7 +539,7 @@
     ],
     "access": {
       "type": "open",
-      "how": "Enabled automatically on repositories in the approved GitHub organisation. Ask Developer Platform to onboard a repo.",
+      "how": "Sign in with your MUFG account.",
       "launch_url": "https://github.example/mufg",
       "request_url": "https://access.mufg.example/request?role=Repo-Onboarding"
     },
@@ -607,7 +607,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -616,7 +617,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-email-drafting-agent",
@@ -658,7 +660,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -667,7 +670,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-client-response-analyzer",
@@ -710,7 +714,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -719,7 +724,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-ownership-org-chart-agent",
@@ -761,7 +767,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -770,7 +777,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-cip-agent",
@@ -811,7 +819,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -820,7 +829,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-tax-agent",
@@ -864,7 +874,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -873,7 +884,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-fincen-bo-form-agent",
@@ -915,7 +927,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -924,7 +937,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-sanctions-review-agent",
@@ -966,7 +980,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -975,7 +990,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-adverse-media-agent",
@@ -1017,7 +1033,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -1026,7 +1043,8 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   },
   {
     "id": "kyc-completeness-agent",
@@ -1067,7 +1085,8 @@
     "status": "in_development",
     "platform": "",
     "access": {
-      "type": "request"
+      "type": "open",
+      "how": "Sign in with your MUFG account."
     },
     "created_at": "2026-09-09",
     "updated_at": "2026-09-09",
@@ -1076,6 +1095,7 @@
       "AI-Hub-Users"
     ],
     "review_status": "approved",
-    "active": true
+    "active": true,
+    "architecture_pattern": "KYC workflow"
   }
 ]

@@ -1,18 +1,15 @@
-# Code Review Assistant documentation
-
-_Version 4.2 · Owned by Developer Platform · Status: Production_
-
 ## Overview
 
 Runs on every pull request in approved repositories. Flags likely bugs, insecure patterns, missing tests and deviations from the engineering standards, and explains each finding with a suggested fix. Engineers can also ask it to explain unfamiliar code or draft the PR description.
 
-**Why it exists.** Review load on senior engineers slowed every release. This catches the routine defects and standards issues first so human review focuses on design.
+> [!INFO] Why it exists
+> Review load on senior engineers slowed every release. This catches the routine defects and standards issues first so human review focuses on design.
 
 ## Getting started
 
-1. Enabled automatically on repositories in the approved GitHub organisation. Ask Developer Platform to onboard a repo.
-2. Open the agent from the marketplace with **Launch agent**, or from GitHub Actions + Internal LangGraph service directly.
-3. Start with one of the example requests below, then adapt it to your case.
+1. Open to all employees. Sign in with your MUFG account.
+2. Find the agent in the AI Marketplace and start from its page.
+3. Start with one of the requests below, then adapt it to your case.
 
 ## What to give it and what you get back
 

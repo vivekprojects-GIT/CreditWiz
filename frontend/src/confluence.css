@@ -1,0 +1,632 @@
+/* ============================================================================
+   Agent documentation, laid out as Confluence pages
+   Space and page tree on the left, the page with its status lozenge, byline
+   and page properties in the middle, "On this page" on the right. Colours
+   follow Confluence's own so the pages read as documentation, not app UI.
+   ========================================================================== */
+
+.cf {
+  --cf-text: #172b4d;
+  --cf-subtle: #44546f;
+  --cf-subtlest: #626f86;
+  --cf-border: #dcdfe4;
+  --cf-link: #0c66e4;
+  --cf-hover: #f1f2f4;
+  --cf-selected: #e9f2ff;
+
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr) 200px;
+  gap: 28px;
+  align-items: start;
+  color: var(--cf-text);
+}
+
+.cf.is-collapsed {
+  grid-template-columns: 40px minmax(0, 1fr) 200px;
+}
+
+.cf.cf--no-toc {
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+
+.cf.cf--no-toc.is-collapsed {
+  grid-template-columns: 40px minmax(0, 1fr);
+}
+
+/* ---- space and page tree ---- */
+
+.cf-space {
+  position: sticky;
+  top: 76px;
+  padding: 16px 12px;
+  background: #fff;
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+}
+
+.cf-space__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px 14px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-space__icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #e60000;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.cf-space__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.cf-space__toggle,
+.cf-rail button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cf-subtlest);
+  cursor: pointer;
+}
+
+.cf-space__toggle {
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+.cf-space__toggle:hover,
+.cf-rail button:hover {
+  background: var(--cf-hover);
+  color: var(--cf-text);
+}
+
+.cf-space__toggle:focus-visible,
+.cf-rail button:focus-visible {
+  outline: 2px solid var(--cf-link);
+  outline-offset: 2px;
+}
+
+/* Collapsed page tree: a slim rail, as Confluence leaves when the sidebar is
+   closed, so the page can take the width. */
+.cf-rail {
+  position: sticky;
+  top: 76px;
+}
+
+.cf-rail button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.cf-rail__text {
+  display: none;
+}
+
+.cf-space__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cf-text);
+}
+
+.cf-space__kind {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--cf-subtlest);
+}
+
+.cf-tree__label {
+  margin: 0 4px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-subtlest);
+}
+
+.cf-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cf-tree a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--cf-subtle);
+  text-decoration: none;
+}
+
+.cf-tree a:hover {
+  background: var(--cf-hover);
+}
+
+.cf-tree a.is-active {
+  background: var(--cf-selected);
+  color: var(--cf-link);
+  font-weight: 600;
+}
+
+.cf-tree .cf-tree__root {
+  font-weight: 600;
+  color: var(--cf-text);
+}
+
+.cf-tree .cf-tree__children {
+  margin-top: 2px;
+  padding-left: 14px;
+}
+
+/* ---- the page ---- */
+
+.cf-page {
+  min-width: 0;
+  padding: 28px 40px 36px;
+  background: #fff;
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+}
+
+.cf-page a {
+  color: var(--cf-link);
+}
+
+.cf-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: var(--cf-subtlest);
+}
+
+.cf-crumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cf-crumbs a {
+  color: var(--cf-subtle);
+  text-decoration: none;
+}
+
+.cf-crumbs a:hover {
+  text-decoration: underline;
+}
+
+.cf-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.cf-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--cf-text);
+}
+
+.cf-lozenge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.cf-lozenge--verified {
+  background: #dcfff1;
+  color: #216e4e;
+}
+
+.cf-lozenge--in-review {
+  background: #e9f2ff;
+  color: #0055cc;
+}
+
+.cf-lozenge--draft {
+  background: #f1f2f4;
+  color: #44546f;
+}
+
+.cf-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--cf-subtlest);
+}
+
+.cf-byline strong {
+  color: var(--cf-subtle);
+}
+
+.cf-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0c66e4;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  margin-right: -8px;
+}
+
+.cf-props {
+  width: 100%;
+  margin: 24px 0 4px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.cf-props th,
+.cf-props td {
+  padding: 8px 12px;
+  border: 1px solid var(--cf-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.cf-props th {
+  width: 180px;
+  background: #f7f8f9;
+  color: var(--cf-subtle);
+  font-weight: 600;
+}
+
+.cf-body {
+  margin-top: 8px;
+}
+
+.cf-body .md h2 {
+  scroll-margin-top: 84px;
+  color: var(--cf-text);
+}
+
+.cf-body .md table {
+  width: 100%;
+}
+
+.cf-labels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 36px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cf-border);
+}
+
+.cf-labels__title {
+  margin-right: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-subtlest);
+}
+
+.cf-label {
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #f1f2f4;
+  font-size: 12px;
+  color: var(--cf-subtle);
+}
+
+/* ---- on this page ---- */
+
+.cf-toc {
+  position: sticky;
+  top: 76px;
+  padding-top: 4px;
+}
+
+.cf-toc__title {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-subtlest);
+}
+
+.cf-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 12px;
+  border-left: 2px solid var(--cf-border);
+  display: grid;
+  gap: 9px;
+}
+
+.cf-toc a {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--cf-subtle);
+  text-decoration: none;
+}
+
+.cf-toc a:hover {
+  color: var(--cf-link);
+}
+
+/* "On this page" inside a full width page, where Confluence puts the macro. */
+.cf-toc-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 20px;
+  margin: 20px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--cf-border);
+  border-radius: 6px;
+  background: #f7f8f9;
+  font-size: 13px;
+}
+
+.cf-toc-inline .cf-toc__title {
+  margin: 0;
+}
+
+.cf-page .cf-toc-inline a {
+  color: var(--cf-subtle);
+  text-decoration: none;
+}
+
+.cf-page .cf-toc-inline a:hover {
+  color: var(--cf-link);
+  text-decoration: underline;
+}
+
+/* ---- panels ---- */
+
+.cf-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cf-text);
+}
+
+.cf-panel__icon {
+  flex: none;
+  margin-top: 2px;
+}
+
+.cf-panel__body {
+  min-width: 0;
+}
+
+.cf-panel__title {
+  margin: 0 0 2px;
+  font-weight: 700;
+}
+
+.cf-panel__body p {
+  margin: 0;
+}
+
+.cf-panel--info {
+  background: #e9f2ff;
+}
+
+.cf-panel--info .cf-panel__icon {
+  color: #1d7afc;
+}
+
+.cf-panel--note {
+  background: #f3f0ff;
+}
+
+.cf-panel--note .cf-panel__icon {
+  color: #8270db;
+}
+
+.cf-panel--warning {
+  background: #fff7d6;
+}
+
+.cf-panel--warning .cf-panel__icon {
+  color: #b38600;
+}
+
+.cf-panel--success {
+  background: #dcfff1;
+}
+
+.cf-panel--success .cf-panel__icon {
+  color: #22a06b;
+}
+
+/* ---- architecture ---- */
+
+.cf-diagram {
+  margin: 12px 0 0;
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.cf-diagram__scroll {
+  overflow-x: auto;
+}
+
+.cf-diagram__svg {
+  display: block;
+  width: 100%;
+  min-width: 900px;
+  height: auto;
+  font-family: inherit;
+}
+
+.cf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--cf-border);
+  font-size: 12px;
+  color: var(--cf-subtle);
+}
+
+.cf-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cf-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.cf-legend__step {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #17181c;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.cf-steps {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.cf-steps li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border: 1px solid var(--cf-border);
+  border-radius: 6px;
+}
+
+.cf-step {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #17181c;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cf-steps strong {
+  display: block;
+  color: var(--cf-text);
+}
+
+.cf-steps p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--cf-subtle);
+}
+
+/* ---- smaller screens ---- */
+
+@media (max-width: 1280px) {
+  .cf,
+  .cf.cf--no-toc {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .cf.is-collapsed,
+  .cf.cf--no-toc.is-collapsed {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .cf-toc {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .cf,
+  .cf.cf--no-toc,
+  .cf.is-collapsed,
+  .cf.cf--no-toc.is-collapsed {
+    grid-template-columns: 1fr;
+  }
+
+  .cf-space,
+  .cf-rail {
+    position: static;
+  }
+
+  .cf-rail button {
+    width: auto;
+    gap: 8px;
+    padding: 0 14px;
+    grid-auto-flow: column;
+  }
+
+  .cf-rail__text {
+    display: inline;
+    font-size: 14px;
+  }
+
+  .cf-page {
+    padding: 20px;
+  }
+
+  .cf-props th {
+    width: 120px;
+  }
+}

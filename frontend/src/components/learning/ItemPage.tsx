@@ -173,7 +173,7 @@ function ItemContent() {
         </section>
       )}
       <p className="muted">
-        {item.source_kind === 'sample' ? 'Sample content · ' : ''}Owner: {item.owner}. Completion is self-reported; it does not certify
+        Owner: {item.owner}. Completion is self-reported; it does not certify
         proficiency.
       </p>
       <div className="video__layout">

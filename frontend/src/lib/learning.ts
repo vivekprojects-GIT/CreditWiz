@@ -98,6 +98,13 @@ export interface DocPage {
   title: string
   markdown: string
   source_url: string
+  status: string
+  owner: string
+  team: string
+  version: string
+  updated: string
+  labels: string[]
+  read_minutes: number
 }
 
 export const fetchLearningHome = (persona: string, signal?: AbortSignal) =>
@@ -131,9 +138,6 @@ export async function rateItem(item_id: string, stars: number | null) {
 
 export const fetchAgentDocs = (agentId: string, signal?: AbortSignal) =>
   getJson<DocPage>(`/api/marketplace/agents/${encodeURIComponent(agentId)}/docs`, signal)
-
-export const fetchAgentArchitecture = (agentId: string, signal?: AbortSignal) =>
-  getJson<DocPage>(`/api/marketplace/agents/${encodeURIComponent(agentId)}/architecture`, signal)
 
 /** Deep link to an item, remembering where the user came from so Back works. */
 export function itemHref(itemId: string, fromAgentId?: string) {

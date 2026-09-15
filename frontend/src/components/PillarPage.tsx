@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { isAbort, searchHub } from '../lib/api'
 import { useHub } from '../lib/hub'
+import { matchSections } from '../lib/hubSearch'
 import { pillarBasePath, type SearchResult } from '../lib/types'
 import { BandSearch } from './BandSearch'
 import { PageBand } from './PageBand'
@@ -37,10 +38,7 @@ export function PillarPage() {
   if (!pillar) return <NotFound />
 
   const current = pillar.sections.find((s) => s.href === pathname)
-  const terms = q.toLowerCase().split(/\s+/).filter(Boolean)
-  const sectionHits = terms.length
-    ? pillar.sections.filter((s) => terms.every((t) => `${s.title} ${s.blurb}`.toLowerCase().includes(t)))
-    : []
+  const sectionHits = matchSections([pillar], q).map((h) => h.section)
   const hubHits = hub?.q === q ? hub.results : null
 
   function runSearch(value: string) {
@@ -73,7 +71,12 @@ export function PillarPage() {
         )}
       </nav>
 
-      <PageBand kicker={current ? pillar.short_title : undefined} title={current ? current.title : pillar.short_title} compact>
+      <PageBand
+        kicker={current ? pillar.short_title : undefined}
+        title={current ? current.title : pillar.short_title}
+        aside={<span className="soon-badge">Coming soon</span>}
+        compact
+      >
         {pillar.search && (
           <BandSearch
             value={draft}
@@ -91,8 +94,8 @@ export function PillarPage() {
       {q && (
         <section className="pillar-results" aria-live="polite">
           <p className="pillar-results__note">
-            {pillar.short_title} search is not connected yet. Showing matching {pillar.short_title} sections, and results
-            for “{q}” from Discover and Learning.
+            {pillar.short_title} search is coming soon. Here are matching {pillar.short_title} sections and results from
+            Discover and Learning.
           </p>
           <div className="home-cards">
             <div className="panel home-card">
@@ -137,13 +140,11 @@ export function PillarPage() {
         </section>
       )}
 
-      <p className="state">Planned pillar · Outside the Marketplace + Learning MVP.</p>
       {current ? (
         <section className="panel">
           <h2 className="panel__title">{current.title}</h2>
           <p className="panel__text">
-            {current.blurb} This area is outside the Marketplace + Learning MVP. It shows the planned hub structure; its
-            workflows are not implemented.
+            {current.blurb} This area is coming soon.
           </p>
           <Link className="mcard__link" to={base}>
             Back to {pillar.short_title} <ArrowRight strokeWidth={2.4} />
@@ -151,7 +152,7 @@ export function PillarPage() {
         </section>
       ) : null}
 
-      <h2 className="section-title">{current ? `More in ${pillar.short_title}` : 'Planned capabilities'}</h2>
+      <h2 className="section-title">{current ? `More in ${pillar.short_title}` : 'What’s coming'}</h2>
       <section className="more-grid" aria-label={`${pillar.short_title} sections`}>
         {pillar.sections
           .filter((s) => s.href !== current?.href)

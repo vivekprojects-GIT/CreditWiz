@@ -1,18 +1,15 @@
-# Customer Onboarding Assistant documentation
-
-_Version 1.0 · Owned by Onboarding Experience · Status: Beta_
-
 ## Overview
 
 Reviews the full onboarding pack for a new customer, checks that every required document and data point is present, drafts the follow-up email for anything missing, and hands a decision-ready summary to the onboarding analyst. Works with the CIP Agent for identity checks.
 
-**Why it exists.** Applications bounced back and forth with customers over missing items. This catches gaps up front and drafts the request, cutting time-to-decision.
+> [!INFO] Why it exists
+> Applications bounced back and forth with customers over missing items. This catches gaps up front and drafts the request, cutting time-to-decision.
 
 ## Getting started
 
-1. Beta for onboarding teams. Request access via the Onboarding Experience team channel.
-2. Open the agent from the marketplace with **Launch agent**, or from Microsoft Agent 365 directly.
-3. Start with one of the example requests below, then adapt it to your case.
+1. Open to all employees. Sign in with your MUFG account.
+2. Find the agent in the AI Marketplace and start from its page.
+3. Start with one of the requests below, then adapt it to your case.
 
 ## What to give it and what you get back
 

@@ -71,7 +71,7 @@ function AgentsListContent() {
       <PageBand
         kicker="AI Marketplace"
         title="All agents"
-        lead="Authorized sample listings, with owner, status and access information."
+        lead="Every agent available to you, with its owner, status and how to get access."
         aside={agents ? <span className="band__count">{agents.length} shown</span> : undefined}
         compact
       />

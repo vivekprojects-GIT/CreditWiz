@@ -99,6 +99,7 @@ export function LearningPage() {
         )}
       </nav>
       <PageBand
+        compact
         kicker={derived.label}
         title={title}
         // Only a selected path keeps a lead: it describes that path. The generic
@@ -132,7 +133,12 @@ export function LearningPage() {
             ['docs', 'Product docs'],
             ['quick-reference', 'Quick references'],
           ].map(([p, label]) => (
-            <Link key={p} className={`pathbar__item${mode === p && !pathId ? ' is-active' : ''}`} to={`/learning${p ? '/' + p : ''}`}>
+            // A selected path lives under Role-based paths, so that tab stays lit.
+            <Link
+              key={p}
+              className={`pathbar__item${(pathId ? p === 'paths' : mode === p) ? ' is-active' : ''}`}
+              to={`/learning${p ? '/' + p : ''}`}
+            >
               {label}
             </Link>
           ))}

@@ -110,7 +110,7 @@ PILLARS = [
             Section(
                 title="Learning catalog",
                 href="/learning/catalog",
-                blurb="Sample courses, guides, videos and documentation.",
+                blurb="Courses, guides, videos and documentation.",
             ),
             Section(
                 title="Role-based paths",
@@ -364,15 +364,15 @@ PILLARS = [
 NOTIFICATIONS = [
     Notification(
         id="mvp-marketplace-v1",
-        title="Explore the sample marketplace",
-        body="Ten illustrative agent listings are available for MVP review.",
+        title="Explore the AI Marketplace",
+        body="Find agents for your work and request access in a couple of clicks.",
         href="/marketplace",
         created_at="2026-09-08T12:00:00Z",
     ),
     Notification(
         id="mvp-learning-v1",
         title="Follow your learning path",
-        body="Review sample materials and track your own completion.",
+        body="Work through your role's learning path and track your progress.",
         href="/learning/paths",
         created_at="2026-09-08T12:00:00Z",
     ),

@@ -33,8 +33,8 @@ _DATA_DIR = Path(
 )
 router = APIRouter(prefix="/api/learning", tags=["learning"])
 PROFICIENCY_NOTE = (
-    "For the MVP the hub displays learning progress and topic coverage. Proficiency will remain a "
-    "separate capability until the agreed enterprise measure of proficiency is defined."
+    "Progress and topic coverage come from the items you mark complete. Proficiency will be "
+    "measured separately once the enterprise measure is agreed."
 )
 _PATH_AFFINITY = (10.0, 6.0, 3.0)
 _AGENT_PATH_AFFINITY = (5.0, 3.0, 1.0)
