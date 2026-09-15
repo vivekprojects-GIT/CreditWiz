@@ -32,6 +32,9 @@ export interface InterestSignal {
   pillars: string[]
 }
 
+export type Maturity = 'beginner' | 'developing' | 'experienced'
+
+/** Who the person is, as the hub understands them. A profile, not a memory. */
 export interface UserContext {
   user_id: string
   display_name: string
@@ -41,7 +44,14 @@ export interface UserContext {
   persona: string
   persona_label: string
   persona_rule: string
+  function: string
+  role_interests: string[]
+  /** Observed from footprints; not used for ranking. */
   interests: InterestSignal[]
+  /** Inferred; `maturity_basis` says from what. */
+  maturity: Maturity
+  maturity_basis: string
+  entitlements: string[]
   event_count: number
   pillars_seen: string[]
 }

@@ -28,6 +28,14 @@ class LearningPath(BaseModel):
     next_item_id: str | None = None
 
 
+class Lesson(BaseModel):
+    """One part of a catalogue course, as its provider lists it."""
+
+    title: str
+    minutes: int = Field(ge=0)
+    kind: Literal["Video", "Lecture", "Chapter"] = "Video"
+
+
 class Item(BaseModel):
     """One piece of learning content, of any type."""
 
@@ -48,6 +56,15 @@ class Item(BaseModel):
     youtube_id: str = ""
     poster_url: str = ""
     source: str = ""
+    # Catalogue courses (Pluralsight, LinkedIn Learning, Udemy Business, MUFG
+    # Learning): the provider's own id for provenance, who teaches it, its
+    # lessons and what it teaches. Empty for hub-native content.
+    provider_ref: str = ""
+    instructor: str = ""
+    lessons: list[Lesson] = []
+    outcomes: list[str] = []
+    # False when MUFG holds no licence for it yet.
+    licensed: bool = True
     # in-app markdown for hub-native content; empty when the item links out
     body: str = ""
     audience_groups: list[str] = ["AI-Hub-Users"]

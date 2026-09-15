@@ -3,7 +3,7 @@ import type { Pillar, Section } from './types'
 // Words that carry no subject. "How do I get an agent approved" is about
 // approval; the rest would match every section on the hub, "agent" included,
 // since nearly everything here mentions one. Mirrors the backend's list in
-// app/main.py, which matches learning items the same way.
+// app/text.py, which matches learning items and journeys the same way.
 const STOP = new Set(
   (
     'a about against agent agents all also an and any are at be by can could do does for from get give has have how i ' +

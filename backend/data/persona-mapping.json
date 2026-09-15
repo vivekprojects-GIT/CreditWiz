@@ -9,6 +9,7 @@
     "Fraud Analyst": "Risk Analyst",
     "Risk Analyst": "Risk Analyst",
     "Credit Risk Manager": "Risk Analyst",
+    "Credit Analyst": "Risk Analyst",
     "Collections Agent": "Operations User",
     "Collections Team Lead": "Operations User",
     "Operations Analyst": "Operations User",
@@ -20,7 +21,7 @@
     "Platform Engineer": "Developer",
     "Business Analyst": "Business User",
     "Product Manager": "Business User",
-    "Relationship Manager": "Business User",
+    "Relationship Manager": "Relationship Manager",
     "Onboarding Specialist": "Business User"
   },
   "by_department": {

@@ -31,6 +31,13 @@ export interface Item {
   youtube_id: string
   poster_url: string
   source: string
+  /** Catalogue courses: the provider's own id, who teaches it, its lessons and outcomes. */
+  provider_ref?: string
+  instructor?: string
+  lessons?: { title: string; minutes: number; kind: 'Video' | 'Lecture' | 'Chapter' }[]
+  outcomes?: string[]
+  /** False when MUFG holds no licence for it yet. */
+  licensed?: boolean
   body: string
   source_kind: 'sample' | 'enterprise'
   owner: string

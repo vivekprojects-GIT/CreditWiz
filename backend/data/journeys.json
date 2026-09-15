@@ -1,0 +1,231 @@
+[
+  {
+    "persona": "relationship_manager",
+    "examples": [
+      "Prepare for a client meeting",
+      "Make my portfolio review faster",
+      "Who can help with a credit request?",
+      "Share a prompt I use for account plans"
+    ],
+    "journeys": [
+      {
+        "id": "coverage-planning",
+        "title": "Coverage planning",
+        "summary": "Decide which clients to focus on this quarter and what to bring to each.",
+        "objective": "Plan coverage for the quarter",
+        "needs": ["Which clients earn the most", "Where the gaps are", "An account plan for each priority client"],
+        "keywords": ["coverage", "plan", "planning", "account plan", "priorities", "prioritise", "target", "book", "quarter"],
+        "steps": [
+          { "title": "Review the book", "detail": "Clients, recent activity and what each relationship earns." },
+          { "title": "Set priorities", "detail": "Which clients to focus on, and which products to bring." },
+          { "title": "Write account plans", "detail": "Objectives, contacts and next steps for each priority client." },
+          { "title": "Agree the plan", "detail": "Review it with your team lead." }
+        ],
+        "systems": [
+          { "system": "Salesforce", "does": "Holds the client list, activity and pipeline." },
+          { "system": "Customer 360", "does": "The relationship view across products." },
+          { "system": "Client profitability", "does": "Revenue and returns by client." }
+        ],
+        "assets": [
+          { "ref": "asset:salesforce", "intent": "find", "why": "Your client list, activity and pipeline." },
+          { "ref": "asset:client-profitability", "intent": "find", "why": "Shows which relationships earn the most, and where returns are thin." },
+          { "ref": "asset:account-plan-prompt", "intent": "improve", "why": "Drafts the account plan from your notes." },
+          { "ref": "learning:prompt-patterns-one-pager", "intent": "learn", "why": "Patterns that get better drafts from a prompt." },
+          { "ref": "asset:coverage-lead-expert", "intent": "ask", "why": "Check priorities with someone who knows the sector." },
+          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share the account plan approach that works for you." }
+        ]
+      },
+      {
+        "id": "wallet-share",
+        "title": "Wallet-share analysis",
+        "summary": "Estimate how much of a client's banking business MUFG wins, and where the gaps are.",
+        "objective": "Estimate the client's wallet and MUFG's share of it",
+        "needs": ["What the client does with MUFG today", "The client's total banking spend", "Gaps by product"],
+        "keywords": ["wallet", "wallet share", "share of wallet", "gap", "competitor", "spend"],
+        "steps": [
+          { "title": "See what the client does with MUFG", "detail": "Revenue and products held today." },
+          { "title": "Estimate the total wallet", "detail": "From market and peer data." },
+          { "title": "Find the gaps", "detail": "Product by product, where others win the business." },
+          { "title": "Turn gaps into a plan", "detail": "Feed the priorities into coverage planning." }
+        ],
+        "systems": [
+          { "system": "Client profitability", "does": "Revenue by client and product." },
+          { "system": "Market intelligence", "does": "Market and peer data." },
+          { "system": "Salesforce", "does": "Where the resulting plan is recorded." }
+        ],
+        "assets": [
+          { "ref": "asset:client-profitability", "intent": "find", "why": "What the client does with MUFG today, by product." },
+          { "ref": "asset:market-intelligence", "intent": "find", "why": "Market and peer data to estimate the total wallet." },
+          { "ref": "asset:wallet-share-prompt", "intent": "improve", "why": "Turns both into a gap summary by product." },
+          { "ref": "learning:prompting-for-analysts", "intent": "learn", "why": "Get more reliable analysis from a prompt." },
+          { "ref": "asset:coverage-lead-expert", "intent": "ask", "why": "Sense-check the estimate with the sector lead." },
+          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share how you estimate wallet share." }
+        ]
+      },
+      {
+        "id": "meeting-prep",
+        "title": "Client meeting preparation",
+        "summary": "Walk into every client meeting knowing the relationship, the latest news and what to ask.",
+        "objective": "Prepare for a client meeting",
+        "needs": ["Existing products and relationship", "Recent news and events", "Cross-sell opportunities"],
+        "keywords": ["meeting", "prep", "prepare", "preparation", "brief", "briefing", "call", "visit", "agenda"],
+        "steps": [
+          { "title": "Check the relationship", "detail": "Products, contacts and open issues." },
+          { "title": "Catch up on news", "detail": "The client, its sector and its competitors." },
+          { "title": "Draft the brief and agenda", "detail": "One page, with the questions you want answered." },
+          { "title": "Log the meeting", "detail": "Notes and next steps, straight after." }
+        ],
+        "systems": [
+          { "system": "Customer 360", "does": "Client profile, products and relationship history." },
+          { "system": "Market intelligence", "does": "Company and sector news." },
+          { "system": "Salesforce", "does": "Where the meeting and next steps are logged." }
+        ],
+        "assets": [
+          { "ref": "asset:customer-360", "intent": "find", "why": "The client's products, contacts and open issues in one view." },
+          { "ref": "asset:market-intelligence", "intent": "find", "why": "Recent news on the client and its sector." },
+          { "ref": "asset:meeting-brief-prompt", "intent": "improve", "why": "Builds the one-page brief and agenda." },
+          { "ref": "learning:human-in-the-loop-best-practice", "intent": "learn", "why": "Check anything drafted by AI before it reaches a client." },
+          { "ref": "asset:coverage-lead-expert", "intent": "ask", "why": "Get context on the client's sector before you go." },
+          { "ref": "asset:meeting-prep-use-case", "intent": "contribute", "why": "Add your input to the meeting preparation use case." }
+        ]
+      },
+      {
+        "id": "deal-origination",
+        "title": "Deal origination",
+        "summary": "Spot a financing need and shape it into a proposal the client and credit can act on.",
+        "objective": "Shape a financing proposal",
+        "needs": ["A signal of need", "A pitch structure", "Terms reviewed against the standard"],
+        "keywords": ["deal", "origination", "originate", "pitch", "proposal", "opportunity", "financing", "term sheet", "mandate"],
+        "steps": [
+          { "title": "Spot the need", "detail": "An event, a plan or a gap that calls for financing." },
+          { "title": "Build the pitch", "detail": "The problem, the structure and why MUFG." },
+          { "title": "Review terms and documents", "detail": "Term sheets and agreements against the standard." },
+          { "title": "Record the opportunity", "detail": "So the team and credit can see it." }
+        ],
+        "systems": [
+          { "system": "Market intelligence", "does": "Signals and research." },
+          { "system": "Salesforce", "does": "The opportunity and its stage." },
+          { "system": "Credit system", "does": "Where the request goes once credit is needed." }
+        ],
+        "assets": [
+          { "ref": "asset:market-intelligence", "intent": "find", "why": "Events and news that signal a financing need." },
+          { "ref": "asset:salesforce", "intent": "find", "why": "Record the opportunity once it is real." },
+          { "ref": "asset:pitch-outline-prompt", "intent": "improve", "why": "Shapes the need into a pitch outline." },
+          { "ref": "agent:contract-analyzer", "intent": "improve", "why": "Reviews term sheets and agreements against the standard playbook." },
+          { "ref": "learning:contract-analyzer-in-5", "intent": "learn", "why": "See AI document review in practice." },
+          { "ref": "asset:product-specialist-expert", "intent": "ask", "why": "Check the structure with a product specialist." },
+          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share a pitch that landed." }
+        ]
+      },
+      {
+        "id": "client-onboarding",
+        "title": "Client onboarding",
+        "summary": "Bring a new client on board: documents, KYC review and accounts.",
+        "objective": "Onboard a new client",
+        "needs": ["The documents required", "Where the KYC review stands", "Follow-ups for the client"],
+        "keywords": ["onboard", "onboarding", "new client", "kyc", "documents", "account opening"],
+        "steps": [
+          { "title": "Collect documents", "detail": "What the client must provide for KYC." },
+          { "title": "KYC review", "detail": "Identity, ownership, tax, sanctions and adverse media." },
+          { "title": "Resolve follow-ups", "detail": "Anything missing goes back to the client." },
+          { "title": "Open accounts", "detail": "Once the review is complete." }
+        ],
+        "systems": [
+          { "system": "Konect", "does": "The KYC record and where its review stands." },
+          { "system": "Customer 360", "does": "The client profile once onboarded." },
+          { "system": "Salesforce", "does": "Onboarding tracked against the relationship." }
+        ],
+        "assets": [
+          { "ref": "asset:konect", "intent": "find", "why": "Where the KYC record lives." },
+          { "ref": "agent:kyc-supervisor-agent", "intent": "find", "why": "Runs the KYC review across the specialist agents." },
+          { "ref": "agent:onboarding-pack-assistant", "intent": "improve", "why": "Prepares the onboarding pack and tracks what is missing." },
+          { "ref": "learning:kyc-document-checklist", "intent": "learn", "why": "Which documents the client needs to provide." },
+          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask about documents, timings and follow-ups." },
+          { "ref": "learning:writing-agent-requests-guide", "intent": "contribute", "why": "Write a good request if onboarding needs something new." }
+        ]
+      },
+      {
+        "id": "credit-request",
+        "title": "Credit requests",
+        "summary": "Put a credit request together and take it through approval.",
+        "objective": "Take a credit request through approval",
+        "needs": ["Financials and returns", "A drafted business case", "What credit will ask"],
+        "keywords": ["credit", "credit request", "loan", "facility", "limit", "approval", "lending", "memo"],
+        "steps": [
+          { "title": "Gather the numbers", "detail": "Financials, exposure and returns." },
+          { "title": "Draft the request", "detail": "The business case and the structure." },
+          { "title": "Answer credit's questions", "detail": "Follow-ups from the credit team." },
+          { "title": "Track the decision", "detail": "Through to approval and conditions." }
+        ],
+        "systems": [
+          { "system": "Credit system", "does": "The request, approval and decision." },
+          { "system": "Client profitability", "does": "Returns used in the business case." },
+          { "system": "Customer 360", "does": "Existing products and exposure." }
+        ],
+        "assets": [
+          { "ref": "asset:credit-system", "intent": "find", "why": "Where the request is raised, approved and tracked." },
+          { "ref": "asset:client-profitability", "intent": "find", "why": "Returns on the relationship, for the business case." },
+          { "ref": "asset:credit-request-prompt", "intent": "improve", "why": "Drafts the business case section." },
+          { "ref": "learning:responsible-ai-fundamentals", "intent": "learn", "why": "Where AI may help a decision and where it may not." },
+          { "ref": "agent:policy-qa-agent", "intent": "ask", "why": "Answers lending policy questions with citations to the source." },
+          { "ref": "asset:credit-partner-expert", "intent": "ask", "why": "Ask what credit will look for before you submit." },
+          { "ref": "asset:credit-request-use-case", "intent": "contribute", "why": "Add your input to the credit request drafting use case." }
+        ]
+      },
+      {
+        "id": "cross-sell",
+        "title": "Cross-sell",
+        "summary": "Find the next product that genuinely fits a client and open the conversation.",
+        "objective": "Find the next product for a client",
+        "needs": ["Products the client already holds", "Where returns are thin", "A suitable next product"],
+        "keywords": ["cross sell", "cross-sell", "next product", "upsell", "fx", "cash management", "trade", "product"],
+        "steps": [
+          { "title": "See what the client has", "detail": "Products held and how they are used." },
+          { "title": "Compare with similar clients", "detail": "What clients like this one also use." },
+          { "title": "Pick one fit", "detail": "Checked against suitability." },
+          { "title": "Open the conversation", "detail": "And record the opportunity." }
+        ],
+        "systems": [
+          { "system": "Customer 360", "does": "Products held and relationship history." },
+          { "system": "Client profitability", "does": "Returns by product." },
+          { "system": "Salesforce", "does": "Where the opportunity is recorded." }
+        ],
+        "assets": [
+          { "ref": "asset:customer-360", "intent": "find", "why": "Products the client already holds." },
+          { "ref": "asset:client-profitability", "intent": "find", "why": "Where returns are thin and a product could help." },
+          { "ref": "asset:next-product-prompt", "intent": "improve", "why": "Suggests the next product and how to open the conversation." },
+          { "ref": "learning:human-in-the-loop-best-practice", "intent": "learn", "why": "Keep a person in charge of anything said to a client." },
+          { "ref": "asset:product-specialist-expert", "intent": "ask", "why": "Check product fit before you raise it." },
+          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share what opened a good conversation." }
+        ]
+      },
+      {
+        "id": "portfolio-review",
+        "title": "Portfolio reviews",
+        "summary": "Review the whole book regularly: returns, risk, renewals and follow-ups.",
+        "objective": "Review the book",
+        "needs": ["Returns across the book", "Limits and renewals due", "Actions to agree"],
+        "keywords": ["portfolio", "review", "annual review", "renewal", "renewals", "returns", "exposure"],
+        "steps": [
+          { "title": "Pull the book", "detail": "Every client, with returns and limits." },
+          { "title": "Check returns and exposure", "detail": "Where the book earns and where it is stretched." },
+          { "title": "Flag renewals and risks", "detail": "What is due and what needs attention." },
+          { "title": "Agree actions", "detail": "And record them against each client." }
+        ],
+        "systems": [
+          { "system": "Client profitability", "does": "Returns by client and product." },
+          { "system": "Credit system", "does": "Limits, renewals and risk ratings." },
+          { "system": "Salesforce", "does": "Actions agreed at the review." }
+        ],
+        "assets": [
+          { "ref": "asset:client-profitability", "intent": "find", "why": "Returns across your book." },
+          { "ref": "asset:credit-system", "intent": "find", "why": "Limits and upcoming renewals." },
+          { "ref": "asset:portfolio-review-prompt", "intent": "improve", "why": "Summarises returns, limits, renewals and follow-ups." },
+          { "ref": "learning:prompting-for-analysts", "intent": "learn", "why": "Get more reliable summaries from a prompt." },
+          { "ref": "asset:credit-partner-expert", "intent": "ask", "why": "Talk through renewals and risk flags." },
+          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share your review template." }
+        ]
+      }
+    ]
+  }
+]

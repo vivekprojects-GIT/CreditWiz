@@ -82,6 +82,73 @@
       ],
       "owner": "AI Learning team. Illustrative mapping; client owner to confirm.",
       "version": "1"
+    },
+    {
+      "id": "credit-and-lending",
+      "title": "Credit & Lending",
+      "blurb": "Courses on credit analysis, financial statements, ifrs 9 and more, from every catalogue MUFG licenses.",
+      "owner": "Learning team (sample mapping)",
+      "steps": [
+        "credit-risk-fundamentals-at-mufg",
+        "financial-statement-analysis-deep-dive",
+        "credit-committee-how-decisions-are-made",
+        "python-for-financial-analysis",
+        "ifrs-9-expected-credit-loss-in-practice",
+        "project-finance-modelling-masterclass"
+      ]
+    },
+    {
+      "id": "risk-and-regulation",
+      "title": "Risk & Regulation",
+      "blurb": "Courses on basel iii/iv, market risk, value at risk and more, from every catalogue MUFG licenses.",
+      "owner": "Learning team (sample mapping)",
+      "steps": [
+        "basel-iii-to-iv-what-changes-for-us",
+        "model-risk-management-essentials",
+        "financial-crime-and-aml-analytics",
+        "market-risk-and-value-at-risk",
+        "stress-testing-cycle-debrief-2026"
+      ]
+    },
+    {
+      "id": "markets-and-products",
+      "title": "Markets & Products",
+      "blurb": "Courses on derivatives, hedging, transaction banking and more, from every catalogue MUFG licenses.",
+      "owner": "Learning team (sample mapping)",
+      "steps": [
+        "mufg-transaction-banking-product-suite",
+        "sustainable-finance-and-esg-linked-loans",
+        "derivatives-and-hedging-explained"
+      ]
+    },
+    {
+      "id": "client-and-advisory",
+      "title": "Client & Advisory",
+      "blurb": "Courses on client advisory, negotiation, storytelling and more, from every catalogue MUFG licenses.",
+      "owner": "Learning team (sample mapping)",
+      "steps": [
+        "becoming-a-trusted-client-advisor",
+        "data-visualisation-for-executives",
+        "negotiation-skills-for-deal-teams"
+      ]
+    },
+    {
+      "id": "data-and-technology",
+      "title": "Data & Technology",
+      "blurb": "Courses on python, sql, power bi and more, from every catalogue MUFG licenses.",
+      "owner": "Learning team (sample mapping)",
+      "steps": [
+        "apache-kafka-getting-started",
+        "apache-kafka-for-beginners",
+        "terraform-from-zero-to-production",
+        "terraform-essentials",
+        "cloud-security-fundamentals",
+        "sql-for-analysts",
+        "power-bi-for-finance-teams",
+        "prompting-the-mufg-secure-llm",
+        "kafka-streams-in-90-minutes",
+        "cloud-security-engineer"
+      ]
     }
   ],
   "persona_paths": {
@@ -97,6 +164,8 @@
       "business"
     ],
     "risk_analyst": [
+      "risk-and-regulation",
+      "credit-and-lending",
       "compliance",
       "operations",
       "governance"
@@ -105,6 +174,14 @@
       "operations",
       "business",
       "getting-started"
+    ],
+    "relationship_manager": [
+      "client-and-advisory",
+      "markets-and-products",
+      "credit-and-lending",
+      "business",
+      "getting-started",
+      "governance"
     ],
     "developer": [
       "builders",
@@ -1128,6 +1205,1713 @@
       "source_kind": "sample",
       "owner": "AI Learning team",
       "prerequisites": []
+    },
+    {
+      "id": "credit-risk-fundamentals-at-mufg",
+      "title": "Credit risk fundamentals at MUFG",
+      "type": "course",
+      "description": "How MUFG assesses corporate borrowers, from first screen to credit committee. An internal grounding in the credit process: how obligors are rated, what a credit application must evidence, and where coverage and credit split responsibility. Uses MUFG templates throughout.",
+      "topics": [
+        "Credit analysis",
+        "Underwriting"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst",
+        "relationship_manager"
+      ],
+      "required_for": [],
+      "path": "credit-and-lending",
+      "level": "Beginner",
+      "duration_seconds": 5700,
+      "tags": [
+        "Credit application template",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "MUFG Learning",
+      "provider_ref": "MUFG-LRN-2211",
+      "instructor": "Karen Whitfield",
+      "lessons": [
+        {
+          "title": "Why we lend, and when we do not",
+          "minutes": 14,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Reading an obligor rating",
+          "minutes": 22,
+          "kind": "Video"
+        },
+        {
+          "title": "Anatomy of a credit application",
+          "minutes": 31,
+          "kind": "Lecture"
+        },
+        {
+          "title": "Inside credit committee",
+          "minutes": 28,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Explain how MUFG rates an obligor and why the rating drives everything downstream",
+        "Assemble a credit application that evidences its own conclusions",
+        "Anticipate the three questions credit committee asks of every paper",
+        "Recognise when a deal should be declined early rather than worked"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-06-12",
+      "owner": "MUFG Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "financial-statement-analysis-deep-dive",
+      "title": "Financial statement analysis deep dive",
+      "type": "course",
+      "description": "Rebuilding and interrogating three-statement financials from published accounts. Covers accrual quality, working capital diagnostics and cash conversion, with worked examples on manufacturing and services filings. Strong on separating reported from adjusted figures.",
+      "topics": [
+        "Financial statements",
+        "Credit analysis"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "credit-and-lending",
+      "level": "Intermediate",
+      "duration_seconds": 14400,
+      "tags": [
+        "Excel",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-c-9f21a",
+      "instructor": "Douglas Reed",
+      "lessons": [
+        {
+          "title": "The three statements as one system",
+          "minutes": 36,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Revenue quality and one-offs",
+          "minutes": 44,
+          "kind": "Video"
+        },
+        {
+          "title": "Working capital and cash conversion",
+          "minutes": 52,
+          "kind": "Video"
+        },
+        {
+          "title": "Leverage and coverage definitions",
+          "minutes": 48,
+          "kind": "Video"
+        },
+        {
+          "title": "Case: a margin contraction",
+          "minutes": 60,
+          "kind": "Lecture"
+        }
+      ],
+      "outcomes": [
+        "Rebuild a three-statement view from published accounts alone",
+        "Separate reported from adjusted figures, and say which you are using",
+        "Diagnose whether cash generation is improving on a like-for-like basis",
+        "State the definition behind every ratio you quote"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-04-03",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "ifrs-9-expected-credit-loss-in-practice",
+      "title": "IFRS 9 expected credit loss in practice",
+      "type": "course",
+      "description": "Staging, PD/LGD inputs and the judgement calls that drive provisioning. Practical treatment of ECL modelling: stage transfer criteria, forward-looking scenarios and the disclosure expectations auditors focus on. Assumes familiarity with impairment basics.",
+      "topics": [
+        "IFRS 9",
+        "Credit analysis"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "credit-and-lending",
+      "level": "Advanced",
+      "duration_seconds": 9000,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-4471",
+      "instructor": "Marilyn Hayes",
+      "lessons": [
+        {
+          "title": "Staging criteria and transfers",
+          "minutes": 34,
+          "kind": "Chapter"
+        },
+        {
+          "title": "PD, LGD and EAD inputs",
+          "minutes": 40,
+          "kind": "Video"
+        },
+        {
+          "title": "Forward-looking scenarios",
+          "minutes": 38,
+          "kind": "Video"
+        },
+        {
+          "title": "Disclosure and audit focus",
+          "minutes": 38,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Apply stage transfer criteria consistently across a portfolio",
+        "Trace an ECL number back to its PD, LGD and EAD inputs",
+        "Build forward-looking scenarios that survive audit challenge",
+        "Meet the disclosure expectations auditors focus on first"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-02-21",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "project-finance-modelling-masterclass",
+      "title": "Project finance modelling masterclass",
+      "type": "course",
+      "description": "Build a bankable project model from term sheet to DSCR sculpting. End-to-end construction of a project finance model including debt sizing, sculpting to a target DSCR, and downside scenario switches. Heavy Excel content; expect to build alongside.",
+      "topics": [
+        "Project finance",
+        "Financial statements"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "credit-and-lending",
+      "level": "Advanced",
+      "duration_seconds": 25200,
+      "tags": [
+        "Excel",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Udemy Business",
+      "provider_ref": "UB-2214887",
+      "instructor": "Vincent Cole",
+      "lessons": [
+        {
+          "title": "Model architecture and conventions",
+          "minutes": 54,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Construction and drawdown",
+          "minutes": 66,
+          "kind": "Video"
+        },
+        {
+          "title": "Debt sizing and sculpting",
+          "minutes": 78,
+          "kind": "Video"
+        },
+        {
+          "title": "DSCR and lender ratios",
+          "minutes": 72,
+          "kind": "Video"
+        },
+        {
+          "title": "Downside switches",
+          "minutes": 60,
+          "kind": "Video"
+        },
+        {
+          "title": "Outputs for credit committee",
+          "minutes": 90,
+          "kind": "Lecture"
+        }
+      ],
+      "outcomes": [
+        "Structure a project finance model that others can audit",
+        "Size and sculpt debt to a target DSCR",
+        "Build downside switches that do not break the model",
+        "Produce the output pack credit committee actually reads"
+      ],
+      "licensed": false,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-01-09",
+      "owner": "Udemy Business",
+      "source_kind": "sample"
+    },
+    {
+      "id": "credit-committee-how-decisions-are-made",
+      "title": "Credit committee: how decisions are made",
+      "type": "course",
+      "description": "A recorded committee walkthrough with the Head of Credit, APAC. Recording of an internal session showing how papers are challenged in committee, which questions recur, and what causes a deferral. Names and figures are anonymised.",
+      "topics": [
+        "Underwriting",
+        "Credit analysis"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst",
+        "relationship_manager"
+      ],
+      "required_for": [],
+      "path": "credit-and-lending",
+      "level": "Intermediate",
+      "duration_seconds": 3300,
+      "tags": [
+        "Recording"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "MUFG Learning",
+      "provider_ref": "MUFG-REC-0884",
+      "instructor": "Karen Whitfield",
+      "lessons": [
+        {
+          "title": "Opening the paper",
+          "minutes": 12,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Where challenges come from",
+          "minutes": 24,
+          "kind": "Video"
+        },
+        {
+          "title": "Deferral and what follows",
+          "minutes": 19,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Read a committee paper the way the committee reads it",
+        "Predict which sections will be challenged",
+        "Understand what causes a deferral rather than a decline"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-07-04",
+      "owner": "MUFG Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "becoming-a-trusted-client-advisor",
+      "title": "Becoming a trusted client advisor",
+      "type": "course",
+      "description": "A curated sequence on advisory conversations, listening and executive presence. Vendor-curated path of five courses moving from discovery questioning to handling objections at CFO level. Best taken in order; the middle two courses carry the practical content.",
+      "topics": [
+        "Client advisory",
+        "Executive communication"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager"
+      ],
+      "required_for": [],
+      "path": "client-and-advisory",
+      "level": "Beginner",
+      "duration_seconds": 19200,
+      "tags": [
+        "Path"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-path-2290",
+      "instructor": "Bethany Shaw",
+      "lessons": [
+        {
+          "title": "Discovery questioning",
+          "minutes": 62,
+          "kind": "Lecture"
+        },
+        {
+          "title": "Listening for the real need",
+          "minutes": 58,
+          "kind": "Video"
+        },
+        {
+          "title": "Framing a recommendation",
+          "minutes": 70,
+          "kind": "Video"
+        },
+        {
+          "title": "Handling objections",
+          "minutes": 66,
+          "kind": "Video"
+        },
+        {
+          "title": "Executive presence",
+          "minutes": 64,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Open a client conversation with questions that surface the real need",
+        "Frame a recommendation around the client’s stated objective",
+        "Handle the four objections that recur at CFO level",
+        "Hold presence in a room where you are the most junior person"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-05-18",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "negotiation-skills-for-deal-teams",
+      "title": "Negotiation skills for deal teams",
+      "type": "course",
+      "description": "Pricing conversations, concession planning and walking away well. Structured negotiation preparation: interests versus positions, concession ladders and how to hold a price without losing a relationship. Financial services examples throughout.",
+      "topics": [
+        "Negotiation",
+        "Client advisory"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager"
+      ],
+      "required_for": [],
+      "path": "client-and-advisory",
+      "level": "Intermediate",
+      "duration_seconds": 10800,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-c-71bb4",
+      "instructor": "Gregory Nash",
+      "lessons": [
+        {
+          "title": "Preparation and BATNA",
+          "minutes": 42,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Concession ladders",
+          "minutes": 46,
+          "kind": "Video"
+        },
+        {
+          "title": "Pricing conversations",
+          "minutes": 48,
+          "kind": "Video"
+        },
+        {
+          "title": "Closing and follow-through",
+          "minutes": 44,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Prepare a negotiation around interests rather than positions",
+        "Plan a concession ladder before the conversation starts",
+        "Hold a price without damaging the relationship",
+        "Recognise when walking away is the right outcome"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-03-27",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "mufg-transaction-banking-product-suite",
+      "title": "MUFG transaction banking product suite",
+      "type": "course",
+      "description": "What we can actually sell: cash, liquidity, trade and payments. Product-by-product internal training covering eligibility, pricing levers and the jurisdictions where each structure is restricted. Required before pitching pooling structures.",
+      "topics": [
+        "Transaction banking",
+        "Trade finance",
+        "Liquidity"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager"
+      ],
+      "required_for": [],
+      "path": "markets-and-products",
+      "level": "Beginner",
+      "duration_seconds": 7200,
+      "tags": [
+        "Training"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "MUFG Learning",
+      "provider_ref": "MUFG-LRN-3390",
+      "instructor": "Alan Prescott",
+      "lessons": [
+        {
+          "title": "Cash and liquidity",
+          "minutes": 30,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Trade finance instruments",
+          "minutes": 34,
+          "kind": "Video"
+        },
+        {
+          "title": "Cross-border payments",
+          "minutes": 28,
+          "kind": "Video"
+        },
+        {
+          "title": "Where structures are restricted",
+          "minutes": 28,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Match a client need to the right transaction banking product",
+        "Explain the pricing levers on each structure",
+        "Identify the jurisdictions where a structure is restricted",
+        "Know what must be confirmed with Product before you pitch"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-07-30",
+      "owner": "MUFG Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "sustainable-finance-and-esg-linked-loans",
+      "title": "Sustainable finance and ESG-linked loans",
+      "type": "course",
+      "description": "KPI selection, ratchet mechanics and second-party opinion expectations. How sustainability-linked structures are built and what makes a KPI credible to a reviewer. Includes worked examples of targets that were rejected and why.",
+      "topics": [
+        "ESG finance"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager",
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "markets-and-products",
+      "level": "Intermediate",
+      "duration_seconds": 8100,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-6612",
+      "instructor": "Bethany Shaw",
+      "lessons": [
+        {
+          "title": "Market and framework overview",
+          "minutes": 30,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Choosing material KPIs",
+          "minutes": 38,
+          "kind": "Video"
+        },
+        {
+          "title": "Ratchet mechanics",
+          "minutes": 34,
+          "kind": "Video"
+        },
+        {
+          "title": "Second-party opinions",
+          "minutes": 33,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Choose sustainability KPIs that are material to the borrower",
+        "Set a baseline that a second-party opinion will accept",
+        "Explain ratchet mechanics in plain language",
+        "Spot a target that is business as usual dressed as ambition"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-06-11",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "derivatives-and-hedging-explained",
+      "title": "Derivatives and hedging explained",
+      "type": "course",
+      "description": "Swaps, forwards and options without the mathematics. Plain-language treatment of the instruments corporates actually use, what each one costs and the accounting consequences. Suitable for non-Markets staff.",
+      "topics": [
+        "Derivatives",
+        "Hedging"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager",
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "markets-and-products",
+      "level": "Intermediate",
+      "duration_seconds": 12600,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-c-33ee9",
+      "instructor": "Douglas Reed",
+      "lessons": [
+        {
+          "title": "Forwards and futures",
+          "minutes": 48,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Interest rate swaps",
+          "minutes": 54,
+          "kind": "Video"
+        },
+        {
+          "title": "Options and collars",
+          "minutes": 52,
+          "kind": "Video"
+        },
+        {
+          "title": "Hedge accounting basics",
+          "minutes": 56,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Describe forwards, swaps, options and collars without the mathematics",
+        "Explain what each instrument costs the client",
+        "Understand the accounting consequence of a hedge",
+        "Know when to bring in a Markets specialist"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-05-02",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "basel-iii-to-iv-what-changes-for-us",
+      "title": "Basel III to IV: what changes for us",
+      "type": "course",
+      "description": "The revised framework read through MUFG portfolios. Internal course mapping the revised standards onto our own capital calculations, with the output floor and operational risk changes covered in most depth.",
+      "topics": [
+        "Basel III/IV"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "risk-and-regulation",
+      "level": "Intermediate",
+      "duration_seconds": 8400,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "MUFG Learning",
+      "provider_ref": "MUFG-LRN-4102",
+      "instructor": "Alan Prescott",
+      "lessons": [
+        {
+          "title": "What actually changed",
+          "minutes": 32,
+          "kind": "Chapter"
+        },
+        {
+          "title": "The output floor",
+          "minutes": 36,
+          "kind": "Video"
+        },
+        {
+          "title": "Operational risk capital",
+          "minutes": 38,
+          "kind": "Video"
+        },
+        {
+          "title": "Our implementation timeline",
+          "minutes": 34,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Identify what actually changed between Basel III and IV",
+        "Explain the output floor and its effect on our capital",
+        "Trace the operational risk capital changes to our own portfolios",
+        "Follow the MUFG implementation timeline and its milestones"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-07-22",
+      "owner": "MUFG Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "market-risk-and-value-at-risk",
+      "title": "Market risk and Value at Risk",
+      "type": "course",
+      "description": "VaR methodologies, backtesting and the limits of each approach. Compares historical simulation, parametric and Monte Carlo VaR, then covers backtesting, exception classification and where each method misleads.",
+      "topics": [
+        "Market risk",
+        "Value at Risk"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "risk-and-regulation",
+      "level": "Advanced",
+      "duration_seconds": 9900,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-8830",
+      "instructor": "Marilyn Hayes",
+      "lessons": [
+        {
+          "title": "Three ways to compute VaR",
+          "minutes": 40,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Backtesting and exceptions",
+          "minutes": 44,
+          "kind": "Video"
+        },
+        {
+          "title": "Where VaR breaks down",
+          "minutes": 38,
+          "kind": "Video"
+        },
+        {
+          "title": "Beyond VaR: ES and stress",
+          "minutes": 43,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Compare historical, parametric and Monte Carlo VaR",
+        "Run a backtest and classify the exceptions",
+        "Explain where each VaR method misleads",
+        "Move beyond VaR to expected shortfall and stress"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-04-14",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "model-risk-management-essentials",
+      "title": "Model risk management essentials",
+      "type": "course",
+      "description": "Validation, findings and the model lifecycle under SR 11-7 style regimes. Covers the model inventory, independent validation, finding severity and how model owners and validators divide responsibility. Useful before any validation cycle.",
+      "topics": [
+        "Model risk"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "risk-and-regulation",
+      "level": "Intermediate",
+      "duration_seconds": 11400,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-c-51aa7",
+      "instructor": "Vincent Cole",
+      "lessons": [
+        {
+          "title": "Model inventory and tiering",
+          "minutes": 44,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Independent validation",
+          "minutes": 50,
+          "kind": "Video"
+        },
+        {
+          "title": "Findings and remediation",
+          "minutes": 48,
+          "kind": "Video"
+        },
+        {
+          "title": "Ongoing monitoring",
+          "minutes": 48,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Tier a model inventory by materiality",
+        "Understand what independent validation is and is not",
+        "Grade findings and track remediation credibly",
+        "Separate model owner from validator responsibilities"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-02-08",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "financial-crime-and-aml-analytics",
+      "title": "Financial crime and AML analytics",
+      "type": "course",
+      "description": "Typologies, screening logic and reducing false positives. Builds from typology recognition to rule design, with a strong section on measuring and reducing alert volume without losing coverage.",
+      "topics": [
+        "Financial crime",
+        "AML"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst",
+        "relationship_manager"
+      ],
+      "required_for": [],
+      "path": "risk-and-regulation",
+      "level": "Intermediate",
+      "duration_seconds": 15600,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Udemy Business",
+      "provider_ref": "UB-1998341",
+      "instructor": "Wendy Colton",
+      "lessons": [
+        {
+          "title": "Typologies that recur",
+          "minutes": 56,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Screening rule design",
+          "minutes": 62,
+          "kind": "Video"
+        },
+        {
+          "title": "False positives and alert load",
+          "minutes": 70,
+          "kind": "Video"
+        },
+        {
+          "title": "Case studies",
+          "minutes": 72,
+          "kind": "Lecture"
+        }
+      ],
+      "outcomes": [
+        "Recognise the trade finance typologies that recur",
+        "Translate a typology into testable screening logic",
+        "Estimate the alert volume a new rule will create",
+        "Reduce false positives without losing coverage"
+      ],
+      "licensed": false,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-03-19",
+      "owner": "Udemy Business",
+      "source_kind": "sample"
+    },
+    {
+      "id": "stress-testing-cycle-debrief-2026",
+      "title": "Stress testing cycle debrief 2026",
+      "type": "course",
+      "description": "What the last cycle taught us, from the Head of Portfolio Risk. Internal debrief covering where the 2026 submission was challenged, the methodology changes that drove the deterioration, and priorities for next cycle.",
+      "topics": [
+        "Stress testing",
+        "Basel III/IV"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "risk-and-regulation",
+      "level": "Advanced",
+      "duration_seconds": 2880,
+      "tags": [
+        "Recording"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "MUFG Learning",
+      "provider_ref": "MUFG-REC-0912",
+      "instructor": "Karen Whitfield",
+      "lessons": [
+        {
+          "title": "Where we were challenged",
+          "minutes": 18,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Methodology versus portfolio",
+          "minutes": 16,
+          "kind": "Video"
+        },
+        {
+          "title": "Priorities for next cycle",
+          "minutes": 14,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Understand where the 2026 submission was challenged",
+        "Separate portfolio effects from methodology changes",
+        "Prepare for the priorities set for the next cycle"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-08-06",
+      "owner": "MUFG Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "apache-kafka-getting-started",
+      "title": "Apache Kafka: getting started",
+      "type": "course",
+      "description": "Topics, producers, consumers and when event streaming is the right answer. A hands-on introduction to Kafka concepts and the CLI, ending with a working producer and consumer. Assumes basic command line familiarity, no prior streaming knowledge.",
+      "topics": [
+        "Apache Kafka"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 9900,
+      "tags": [
+        "Kafka CLI",
+        "Docker",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-c-88fd2",
+      "instructor": "Ross Lambert",
+      "lessons": [
+        {
+          "title": "Why event streaming",
+          "minutes": 26,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Topics and partitions",
+          "minutes": 38,
+          "kind": "Video"
+        },
+        {
+          "title": "Producers",
+          "minutes": 34,
+          "kind": "Lecture"
+        },
+        {
+          "title": "Consumers and groups",
+          "minutes": 36,
+          "kind": "Video"
+        },
+        {
+          "title": "Running a first pipeline",
+          "minutes": 31,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Explain what event streaming solves that a database does not",
+        "Describe topics, partitions and consumer groups accurately",
+        "Write a working producer and consumer",
+        "Run a first pipeline end to end"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-06-16",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "apache-kafka-for-beginners",
+      "title": "Apache Kafka for beginners",
+      "type": "course",
+      "description": "Introductory Kafka course covering the same core concepts at a slower pace. Broad introduction to Kafka with extended setup coverage. Substantially overlaps the Pluralsight introduction; the additional time is mostly environment configuration.",
+      "topics": [
+        "Apache Kafka"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 12600,
+      "tags": [
+        "Kafka CLI",
+        "Docker",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Udemy Business",
+      "provider_ref": "UB-1120774",
+      "instructor": "Neil Baxter",
+      "lessons": [
+        {
+          "title": "Setup and environment",
+          "minutes": 58,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Core concepts",
+          "minutes": 52,
+          "kind": "Video"
+        },
+        {
+          "title": "Producers and consumers",
+          "minutes": 54,
+          "kind": "Video"
+        },
+        {
+          "title": "Wrap up",
+          "minutes": 46,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Set up a local Kafka environment from scratch",
+        "Understand the core Kafka concepts at an introductory pace",
+        "Produce and consume your first messages"
+      ],
+      "licensed": false,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-02-02",
+      "owner": "Udemy Business",
+      "source_kind": "sample"
+    },
+    {
+      "id": "kafka-streams-in-90-minutes",
+      "title": "Kafka Streams in 90 minutes",
+      "type": "course",
+      "description": "Stream processing, joins and stateful operations on top of Kafka. Focused follow-on for people who already understand topics and consumers. Covers KStream and KTable, windowing and exactly-once semantics.",
+      "topics": [
+        "Kafka Streams",
+        "Apache Kafka"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Intermediate",
+      "duration_seconds": 5400,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-9921",
+      "instructor": "Ross Lambert",
+      "lessons": [
+        {
+          "title": "KStream and KTable",
+          "minutes": 24,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Joins and windowing",
+          "minutes": 34,
+          "kind": "Video"
+        },
+        {
+          "title": "Exactly-once semantics",
+          "minutes": 32,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Choose between a KStream and a KTable for a given problem",
+        "Join and window streaming data correctly",
+        "Reason about exactly-once semantics and when they matter"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-05-28",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "terraform-from-zero-to-production",
+      "title": "Terraform: from zero to production",
+      "type": "course",
+      "description": "A curated path from first configuration to modules, state and CI. Vendor-curated sequence of four courses. The first two cover language and providers; the last two are the ones that matter for production use — state management and pipeline integration.",
+      "topics": [
+        "Terraform",
+        "Cloud security"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 22800,
+      "tags": [
+        "Terraform",
+        "HCL",
+        "Path"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-path-4417",
+      "instructor": "Trevor Quinn",
+      "lessons": [
+        {
+          "title": "HCL and first resources",
+          "minutes": 82,
+          "kind": "Lecture"
+        },
+        {
+          "title": "Providers and modules",
+          "minutes": 96,
+          "kind": "Video"
+        },
+        {
+          "title": "State and workspaces",
+          "minutes": 104,
+          "kind": "Video"
+        },
+        {
+          "title": "Terraform in CI",
+          "minutes": 98,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Write readable HCL and structure it into modules",
+        "Manage state safely, including remote backends and locking",
+        "Run Terraform inside a CI pipeline rather than from a laptop",
+        "Review someone else’s configuration with confidence"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-07-04",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "terraform-essentials",
+      "title": "Terraform essentials",
+      "type": "course",
+      "description": "A two-hour introduction to infrastructure as code with Terraform. Compact introduction to Terraform syntax, providers and plan/apply. Enough to read and review a configuration, not enough to run production state.",
+      "topics": [
+        "Terraform"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 7200,
+      "tags": [
+        "Terraform",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-3345",
+      "instructor": "Neil Baxter",
+      "lessons": [
+        {
+          "title": "Infrastructure as code",
+          "minutes": 28,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Syntax and providers",
+          "minutes": 32,
+          "kind": "Video"
+        },
+        {
+          "title": "Plan and apply",
+          "minutes": 30,
+          "kind": "Video"
+        },
+        {
+          "title": "Reviewing a configuration",
+          "minutes": 30,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Read and review a Terraform configuration",
+        "Understand providers, plan and apply",
+        "Know the limits of what this course prepares you to run"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-03-09",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "cloud-security-engineer",
+      "title": "Cloud security engineer",
+      "type": "course",
+      "description": "Full role path: identity, network security, workload protection and detection. The complete role-based path. Long, but the identity and detection modules can be taken independently if the whole sequence is not realistic.",
+      "topics": [
+        "Cloud security",
+        "Terraform"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Intermediate",
+      "duration_seconds": 54000,
+      "tags": [
+        "Path"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-path-9902",
+      "instructor": "Trevor Quinn",
+      "lessons": [
+        {
+          "title": "Identity and access",
+          "minutes": 120,
+          "kind": "Lecture"
+        },
+        {
+          "title": "Network security",
+          "minutes": 140,
+          "kind": "Video"
+        },
+        {
+          "title": "Workload protection",
+          "minutes": 160,
+          "kind": "Video"
+        },
+        {
+          "title": "Detection and response",
+          "minutes": 150,
+          "kind": "Video"
+        },
+        {
+          "title": "Compliance automation",
+          "minutes": 130,
+          "kind": "Video"
+        },
+        {
+          "title": "Capstone",
+          "minutes": 200,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Design identity and access controls for a cloud estate",
+        "Secure network boundaries and workloads",
+        "Build detection and response for cloud-native attacks",
+        "Automate compliance evidence rather than collecting it manually"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-07-12",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "cloud-security-fundamentals",
+      "title": "Cloud security fundamentals",
+      "type": "course",
+      "description": "Shared responsibility, identity basics and common misconfigurations. Entry point for the cloud security role path. Covers the shared responsibility model and the misconfigurations behind most incidents.",
+      "topics": [
+        "Cloud security"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 10800,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-5540",
+      "instructor": "Wendy Colton",
+      "lessons": [
+        {
+          "title": "Shared responsibility",
+          "minutes": 40,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Identity and least privilege",
+          "minutes": 48,
+          "kind": "Video"
+        },
+        {
+          "title": "Common misconfigurations",
+          "minutes": 46,
+          "kind": "Video"
+        },
+        {
+          "title": "Monitoring basics",
+          "minutes": 46,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Explain the shared responsibility model to a non-technical audience",
+        "Apply least privilege in practice",
+        "Recognise the misconfigurations behind most cloud incidents"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-04-23",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "python-for-financial-analysis",
+      "title": "Python for financial analysis",
+      "type": "course",
+      "description": "pandas, financial data handling and automating recurring analysis. Applied Python for finance: loading and cleaning financial data, ratio calculation and automating a recurring analysis into a repeatable script.",
+      "topics": [
+        "Python",
+        "Financial statements"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "credit-and-lending",
+      "level": "Intermediate",
+      "duration_seconds": 19800,
+      "tags": [
+        "pandas",
+        "Jupyter",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Udemy Business",
+      "provider_ref": "UB-2001554",
+      "instructor": "Douglas Reed",
+      "lessons": [
+        {
+          "title": "Python refresher",
+          "minutes": 60,
+          "kind": "Chapter"
+        },
+        {
+          "title": "pandas for financial data",
+          "minutes": 78,
+          "kind": "Video"
+        },
+        {
+          "title": "Ratio and trend analysis",
+          "minutes": 72,
+          "kind": "Video"
+        },
+        {
+          "title": "Automating a recurring report",
+          "minutes": 60,
+          "kind": "Video"
+        },
+        {
+          "title": "Charting results",
+          "minutes": 60,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Load and clean financial data with pandas",
+        "Calculate ratios and trends programmatically",
+        "Automate a recurring analysis into a repeatable script",
+        "Chart results in a form that belongs in a memo"
+      ],
+      "licensed": false,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-01-30",
+      "owner": "Udemy Business",
+      "source_kind": "sample"
+    },
+    {
+      "id": "sql-for-analysts",
+      "title": "SQL for analysts",
+      "type": "course",
+      "description": "Querying, joins and aggregation against a reporting database. Practical SQL for people who read data rather than build systems. Ends with window functions, which is where most analyst queries become possible.",
+      "topics": [
+        "SQL"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 8400,
+      "tags": [
+        "SQL",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-c-27cc1",
+      "instructor": "Ross Lambert",
+      "lessons": [
+        {
+          "title": "Select, filter, sort",
+          "minutes": 30,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Joins that make sense",
+          "minutes": 38,
+          "kind": "Video"
+        },
+        {
+          "title": "Aggregation and grouping",
+          "minutes": 34,
+          "kind": "Video"
+        },
+        {
+          "title": "Window functions",
+          "minutes": 38,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Write queries that answer real portfolio questions",
+        "Join tables without silently losing rows",
+        "Aggregate and group data correctly",
+        "Use window functions for running totals and rankings"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-05-17",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "power-bi-for-finance-teams",
+      "title": "Power BI for finance teams",
+      "type": "course",
+      "description": "Building a reporting dashboard from finance data, without IT. Covers data modelling, DAX basics and dashboard design specifically for finance reporting. Light on administration, heavy on building something usable.",
+      "topics": [
+        "Power BI",
+        "Data visualisation"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager",
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 9600,
+      "tags": [
+        "Power BI",
+        "DAX",
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-2214",
+      "instructor": "Bethany Shaw",
+      "lessons": [
+        {
+          "title": "Modelling finance data",
+          "minutes": 38,
+          "kind": "Chapter"
+        },
+        {
+          "title": "DAX you actually need",
+          "minutes": 44,
+          "kind": "Video"
+        },
+        {
+          "title": "Designing the dashboard",
+          "minutes": 40,
+          "kind": "Video"
+        },
+        {
+          "title": "Sharing and refresh",
+          "minutes": 38,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Model finance data for reporting rather than for storage",
+        "Write the DAX you actually need, and no more",
+        "Design a dashboard someone will use twice",
+        "Share and refresh a report without involving IT"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-04-06",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "prompting-the-mufg-secure-llm",
+      "title": "Prompting the MUFG Secure LLM",
+      "type": "course",
+      "description": "How to write, test and submit a prompt that passes validation. Internal training on prompt construction, the constraints that get prompts through the Data Privacy Office, and how to test one properly before submitting it.",
+      "topics": [
+        "Prompt engineering"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager",
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "data-and-technology",
+      "level": "Beginner",
+      "duration_seconds": 2700,
+      "tags": [
+        "Training"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "MUFG Learning",
+      "provider_ref": "MUFG-LRN-5001",
+      "instructor": "Alan Prescott",
+      "lessons": [
+        {
+          "title": "What makes a prompt reusable",
+          "minutes": 12,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Constraints that pass review",
+          "minutes": 16,
+          "kind": "Video"
+        },
+        {
+          "title": "Testing before you submit",
+          "minutes": 17,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Write a prompt that another banker can reuse unchanged",
+        "Apply the constraints that get prompts through validation",
+        "Test a prompt properly before submitting it",
+        "Know what must never be pasted into a model"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-08-02",
+      "owner": "MUFG Learning",
+      "source_kind": "sample"
+    },
+    {
+      "id": "data-visualisation-for-executives",
+      "title": "Data visualisation for executives",
+      "type": "course",
+      "description": "Charts that survive a board room, and the ones that do not. Focused on decision-oriented charting: choosing the right form, removing noise and writing the takeaway into the title. Short and immediately applicable.",
+      "topics": [
+        "Data visualisation",
+        "Storytelling"
+      ],
+      "capabilities": [],
+      "personas": [
+        "relationship_manager"
+      ],
+      "required_for": [],
+      "path": "client-and-advisory",
+      "level": "Beginner",
+      "duration_seconds": 6600,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "Pluralsight",
+      "provider_ref": "PS-c-64ba3",
+      "instructor": "Gregory Nash",
+      "lessons": [
+        {
+          "title": "Choosing the chart form",
+          "minutes": 26,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Removing noise",
+          "minutes": 28,
+          "kind": "Video"
+        },
+        {
+          "title": "Titles that carry the message",
+          "minutes": 26,
+          "kind": "Video"
+        },
+        {
+          "title": "Board room examples",
+          "minutes": 30,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Choose the chart form that fits the decision",
+        "Remove the noise that hides your message",
+        "Write titles that carry the takeaway",
+        "Present a number to a board without being questioned on the axis"
+      ],
+      "licensed": true,
+      "active": true,
+      "review_status": "approved",
+      "reviewed_at": "2026-02-28",
+      "owner": "Pluralsight",
+      "source_kind": "sample"
+    },
+    {
+      "id": "excel-modelling-for-bankers-2023-edition",
+      "title": "Excel modelling for bankers (2023 edition)",
+      "type": "course",
+      "description": "Superseded modelling course retained for reference only. Older modelling course withdrawn by the vendor. Retained in the catalogue for provenance; the 2026 edition is the supported replacement.",
+      "topics": [
+        "Excel modelling",
+        "Financial statements"
+      ],
+      "capabilities": [],
+      "personas": [
+        "risk_analyst"
+      ],
+      "required_for": [],
+      "path": "credit-and-lending",
+      "level": "Beginner",
+      "duration_seconds": 12000,
+      "tags": [
+        "Course"
+      ],
+      "related_agents": [],
+      "url": "",
+      "source": "LinkedIn Learning",
+      "provider_ref": "LI-urn-lyn-1102",
+      "instructor": "Marilyn Hayes",
+      "lessons": [
+        {
+          "title": "Model structure",
+          "minutes": 52,
+          "kind": "Chapter"
+        },
+        {
+          "title": "Forecast drivers",
+          "minutes": 50,
+          "kind": "Video"
+        },
+        {
+          "title": "Scenario switches",
+          "minutes": 48,
+          "kind": "Video"
+        },
+        {
+          "title": "Presentation",
+          "minutes": 50,
+          "kind": "Video"
+        }
+      ],
+      "outcomes": [
+        "Structure a financial model that others can follow",
+        "Build forecast drivers and scenario switches",
+        "Present model output clearly"
+      ],
+      "licensed": true,
+      "active": false,
+      "review_status": "retired",
+      "reviewed_at": "2023-09-14",
+      "owner": "LinkedIn Learning",
+      "source_kind": "sample"
     }
   ]
 }

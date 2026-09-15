@@ -215,6 +215,17 @@ function ItemContent() {
                 )}
               </p>
             )}
+            {item.instructor && (
+              <p className="video__source">
+                Taught by <strong>{item.instructor}</strong>
+                {item.provider_ref && <> · Catalogue reference {item.provider_ref}</>}
+              </p>
+            )}
+            {item.licensed === false && (
+              <p className="course__licence" role="note">
+                Licence needed: MUFG does not hold a licence for this course yet.
+              </p>
+            )}
             {status === 'in_progress' && progress > 0 && (
               <div className="item__progress" aria-label={`${progress}% complete`}>
                 <span style={{ width: `${progress}%` }} />
@@ -227,6 +238,39 @@ function ItemContent() {
             <article className="doc__page doc__page--inline">
               <Markdown source={item.body} />
             </article>
+          )}
+
+          {item.outcomes && item.outcomes.length > 0 && (
+            <section className="panel">
+              <h2 className="panel__title">What you&rsquo;ll learn</h2>
+              <ul className="course__outcomes">
+                {item.outcomes.map((o) => (
+                  <li key={o}>
+                    <Check size={16} strokeWidth={2.6} aria-hidden="true" /> {o}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {item.lessons && item.lessons.length > 0 && (
+            <section className="panel">
+              <h2 className="panel__title">
+                {item.lessons.length} lessons
+                {item.source && <span className="course__where"> · opens in {item.source}</span>}
+              </h2>
+              <ol className="course__lessons">
+                {item.lessons.map((l) => (
+                  <li key={l.title}>
+                    <span>{l.title}</span>
+                    <span className="course__lesson-meta">
+                      {l.kind} · {l.minutes} min
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              {!item.url && <p className="muted">The launch link is to be confirmed by the catalogue owner.</p>}
+            </section>
           )}
 
           {item.url.startsWith('/') && !item.url.startsWith('//') && (

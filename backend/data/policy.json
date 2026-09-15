@@ -1,0 +1,10 @@
+{
+  "$comment": "Data handling policy for the home assistant: what the approved model may receive for a request of each sensitivity. as_typed: the request as the person wrote it. masked: client and deal names, account numbers and emails replaced by placeholders. none: no model call; rules plan and answer. Searches and usage logs always get the masked form. PROTOTYPE DEFAULTS: nothing here states MUFG policy. confirmed_by stays blank until MUFG's data policy owner confirms or replaces these values.",
+  "model_access": {
+    "public": "as_typed",
+    "internal": "as_typed",
+    "client_confidential": "masked",
+    "confidential": "none"
+  },
+  "confirmed_by": ""
+}

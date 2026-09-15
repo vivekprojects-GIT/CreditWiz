@@ -56,6 +56,34 @@ CREATE TABLE IF NOT EXISTS access_requests (
  reason TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL,
  UNIQUE(user_id, agent_id)
 );
+CREATE TABLE IF NOT EXISTS saved_prompts (
+ user_id TEXT NOT NULL REFERENCES users(id), prompt_id TEXT NOT NULL, saved_at TEXT NOT NULL,
+ PRIMARY KEY(user_id, prompt_id)
+);
+-- What people submit through Create. Who may find it once approved is fixed at
+-- submission from the author's desk and department (prompts/contributions.py).
+CREATE TABLE IF NOT EXISTS contributions (
+ id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),
+ kind TEXT NOT NULL CHECK(kind IN ('prompt','video','agent')),
+ status TEXT NOT NULL DEFAULT 'in_review' CHECK(status IN ('in_review','live','returned')),
+ title TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL,
+ desk TEXT NOT NULL DEFAULT '', department TEXT NOT NULL DEFAULT '',
+ audience TEXT NOT NULL DEFAULT 'team' CHECK(audience IN ('team','department','everyone'))
+);
+CREATE INDEX IF NOT EXISTS contributions_user ON contributions(user_id, created_at);
+-- One row per question the home assistant answered. Ids and measures only: no
+-- question text and no client or deal, which live in the browser session alone.
+-- (Named hub_sessions because `sessions` holds sign-in tokens.)
+CREATE TABLE IF NOT EXISTS hub_sessions (
+ id TEXT PRIMARY KEY, session_id TEXT NOT NULL, user_id TEXT NOT NULL REFERENCES users(id),
+ intents TEXT NOT NULL, activity TEXT, selected_pillars TEXT NOT NULL,
+ recommended_asset_ids TEXT NOT NULL, selected_asset_ids TEXT NOT NULL DEFAULT '[]',
+ feedback TEXT CHECK(feedback IN ('helpful','not_helpful')),
+ sensitivity TEXT NOT NULL, plan_source TEXT NOT NULL, reply_source TEXT NOT NULL,
+ latency_ms INTEGER NOT NULL, created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS hub_sessions_user ON hub_sessions(user_id, created_at);
+CREATE INDEX IF NOT EXISTS hub_sessions_session ON hub_sessions(session_id);
 """
 
 
@@ -161,8 +189,29 @@ def _ensure_ready(conn: sqlite3.Connection, path: str) -> None:
         if path in _ready:
             return
         conn.executescript(SCHEMA)
+        _add_columns(conn)
         _migrate(conn)
         _ready.add(path)
+
+
+# Columns a table gained after it was first created. CREATE TABLE IF NOT EXISTS
+# leaves an existing table as it is, so each is added here when missing.
+_ADDED_COLUMNS = {
+    "contributions": (
+        ("desk", "TEXT NOT NULL DEFAULT ''"),
+        ("department", "TEXT NOT NULL DEFAULT ''"),
+        # The narrowest audience for rows from before audiences existed.
+        ("audience", "TEXT NOT NULL DEFAULT 'team' CHECK(audience IN ('team','department','everyone'))"),
+    ),
+}
+
+
+def _add_columns(conn: sqlite3.Connection) -> None:
+    for table, columns in _ADDED_COLUMNS.items():
+        have = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        for name, declaration in columns:
+            if name not in have:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {declaration}")
 
 
 @contextmanager

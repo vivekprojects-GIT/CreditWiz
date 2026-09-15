@@ -28,6 +28,12 @@ def semantic_index(tmp_path_factory):
 def isolated_state(tmp_path, monkeypatch, request):
     monkeypatch.setenv("CREDITWIZ_ENV", "development")
     monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "1")
+    # A test that switches the model on to stand in for the planner must not
+    # send the agents' reranks to the real API; one that tests reranking
+    # sets its own.
+    from app.hub import llm
+
+    monkeypatch.setattr(llm, "rerank", lambda *args, **kwargs: None)
     monkeypatch.setattr(database, "VAR_DIR", tmp_path)
     database._ready.discard(str((tmp_path / "hub.db").resolve()))
     learning_store.invalidate()

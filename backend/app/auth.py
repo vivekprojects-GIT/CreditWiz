@@ -82,11 +82,30 @@ def seed_users() -> None:
                     raise RuntimeError(
                         "Bootstrap account conflicts with existing data. Use app.manage user to provision an account."
                     )
-        elif not conn.execute("SELECT 1 FROM users").fetchone():
+        else:
+            # Demo accounts are added when missing rather than only into an
+            # empty database, so a new demo persona appears on an existing local
+            # database, and a demo profile follows the code when it changes. The
+            # directory account from user.json is left exactly as it is.
             base = _read("user.json")
             profiles = [base]
             for uid, name, role, dept, groups in (
                 ("demo-business", "Alex Morgan", "Business Analyst", "Business", []),
+                # The three desks of the design reference's demo data.
+                (
+                    "demo-rm",
+                    "Rachel Donovan",
+                    "Relationship Manager",
+                    "Global Corporate Banking",
+                    [],
+                ),
+                (
+                    "demo-credit",
+                    "Michael Barrett",
+                    "Credit Analyst",
+                    "Credit Underwriting, APAC",
+                    [],
+                ),
                 (
                     "demo-compliance",
                     "Priya Shah",
@@ -101,7 +120,13 @@ def seed_users() -> None:
                     "Operations",
                     [],
                 ),
-                ("demo-risk", "Sam Rivera", "Risk Analyst", "Risk", []),
+                (
+                    "demo-risk",
+                    "Laura Whitman",
+                    "Risk Analyst",
+                    "Portfolio & Regulatory Risk",
+                    [],
+                ),
                 (
                     "demo-developer",
                     "Taylor Chen",
@@ -124,7 +149,9 @@ def seed_users() -> None:
                 )
             for profile in profiles:
                 conn.execute(
-                    "INSERT INTO users(id,email,profile) VALUES (?,?,?)",
+                    "INSERT INTO users(id,email,profile) VALUES (?,?,?) "
+                    "ON CONFLICT(id) DO UPDATE SET profile=excluded.profile "
+                    "WHERE users.id LIKE 'demo-%'",
                     (profile["id"], profile["email"].lower(), json.dumps(profile)),
                 )
 

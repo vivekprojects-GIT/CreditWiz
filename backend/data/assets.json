@@ -1,0 +1,277 @@
+[
+  {
+    "id": "customer-360",
+    "kind": "system",
+    "title": "Customer 360",
+    "summary": "One view of each client: profile, products held, contacts and relationship history.",
+    "provided_by": "Customer 360",
+    "action_label": "Open Customer 360",
+    "trust": { "purpose": "The client relationship view the RM works from." },
+    "source_kind": "enterprise"
+  },
+  {
+    "id": "salesforce",
+    "kind": "system",
+    "title": "Salesforce",
+    "summary": "Client coverage, meetings, opportunities and pipeline.",
+    "provided_by": "Salesforce",
+    "action_label": "Open Salesforce",
+    "trust": { "purpose": "Where coverage, meetings and opportunities are recorded." },
+    "source_kind": "enterprise"
+  },
+  {
+    "id": "konect",
+    "kind": "system",
+    "title": "Konect",
+    "summary": "The KYC record for each client and where its review stands.",
+    "provided_by": "Konect",
+    "action_label": "Open Konect",
+    "trust": { "purpose": "The KYC system of record used by the KYC review." },
+    "source_kind": "enterprise"
+  },
+  {
+    "id": "credit-system",
+    "kind": "system",
+    "title": "Credit system",
+    "summary": "Where credit requests are raised, approved and tracked, with limits and renewals.",
+    "provided_by": "Credit system",
+    "action_label": "Open the credit system",
+    "trust": { "purpose": "Credit requests, decisions, limits and renewals." },
+    "source_kind": "enterprise"
+  },
+  {
+    "id": "client-profitability",
+    "kind": "data_product",
+    "title": "Client profitability",
+    "summary": "Revenue and returns by client and by product.",
+    "action_label": "Open data product",
+    "trust": { "purpose": "Shows what each relationship earns and where returns are thin." },
+    "source_kind": "enterprise"
+  },
+  {
+    "id": "market-intelligence",
+    "kind": "data_product",
+    "title": "Market intelligence",
+    "summary": "Company news, sector research and market data on your clients.",
+    "action_label": "Open data product",
+    "trust": { "purpose": "Outside view of clients, sectors and competitors." },
+    "source_kind": "enterprise"
+  },
+  {
+    "id": "account-plan-prompt",
+    "kind": "prompt",
+    "title": "Account plan outline",
+    "summary": "Turns your notes on a client into a first draft account plan: objectives, products, contacts and next steps.",
+    "action_label": "Open prompt",
+    "action_url": "/prompts",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "A faster first draft of an account plan.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Open it in Prompts & Skills.",
+      "guardrails": ["Check every draft before it is used.", "Use only data you are allowed to see in the source system."],
+      "feedback": "Recorded by the AI Hub. Routing to the owning team is to be confirmed."
+    }
+  },
+  {
+    "id": "wallet-share-prompt",
+    "kind": "prompt",
+    "title": "Wallet share summary",
+    "summary": "Sets what a client does with MUFG against what market data suggests they spend, product by product.",
+    "action_label": "Open prompt",
+    "action_url": "/prompts",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "A gap summary to plan coverage from.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Open it in Prompts & Skills.",
+      "guardrails": ["Estimates are a starting point, not a figure to quote to a client.", "Use only data you are allowed to see in the source system."],
+      "feedback": "Recorded by the AI Hub. Routing to the owning team is to be confirmed."
+    }
+  },
+  {
+    "id": "meeting-brief-prompt",
+    "kind": "prompt",
+    "title": "Client meeting brief",
+    "summary": "Builds a one-page brief from the client's Customer 360 view and open opportunities: where things stand, recent news, three questions to ask.",
+    "action_label": "Open prompt",
+    "action_url": "/prompts",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "Walk into a meeting prepared, from one page.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Open it in Prompts & Skills.",
+      "guardrails": ["Check every draft before it reaches a client.", "Use only data you are allowed to see in the source system."],
+      "feedback": "Recorded by the AI Hub. Routing to the owning team is to be confirmed."
+    }
+  },
+  {
+    "id": "pitch-outline-prompt",
+    "kind": "prompt",
+    "title": "Financing pitch outline",
+    "summary": "Shapes a client's need into a pitch outline: the problem, the proposed structure and why MUFG.",
+    "action_label": "Open prompt",
+    "action_url": "/prompts",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "A first structure for a pitch.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Open it in Prompts & Skills.",
+      "guardrails": ["Terms and pricing come from the product and credit teams, not the draft.", "Check every draft before it reaches a client."],
+      "feedback": "Recorded by the AI Hub. Routing to the owning team is to be confirmed."
+    }
+  },
+  {
+    "id": "credit-request-prompt",
+    "kind": "prompt",
+    "title": "Credit request summary",
+    "summary": "Drafts the business case section of a credit request from the client's financials and relationship history.",
+    "action_label": "Open prompt",
+    "action_url": "/prompts",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "A faster first draft of the business case.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Open it in Prompts & Skills.",
+      "guardrails": ["It does not recommend or make credit decisions.", "Check every figure against the credit system."],
+      "feedback": "Recorded by the AI Hub. Routing to the owning team is to be confirmed."
+    }
+  },
+  {
+    "id": "next-product-prompt",
+    "kind": "prompt",
+    "title": "Next product conversation",
+    "summary": "Suggests the next product to discuss with a client and a way to open the conversation.",
+    "action_label": "Open prompt",
+    "action_url": "/prompts",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "Ideas for a relevant next conversation.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Open it in Prompts & Skills.",
+      "guardrails": ["Check every suggestion against product suitability rules before raising it.", "Use only data you are allowed to see in the source system."],
+      "feedback": "Recorded by the AI Hub. Routing to the owning team is to be confirmed."
+    }
+  },
+  {
+    "id": "portfolio-review-prompt",
+    "kind": "prompt",
+    "title": "Portfolio review summary",
+    "summary": "Summarises returns, limits, renewals and open follow-ups across your book.",
+    "action_label": "Open prompt",
+    "action_url": "/prompts",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "One summary to run the review from.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Open it in Prompts & Skills.",
+      "guardrails": ["Check every figure against the source system.", "Use only data you are allowed to see in the source system."],
+      "feedback": "Recorded by the AI Hub. Routing to the owning team is to be confirmed."
+    }
+  },
+  {
+    "id": "coverage-lead-expert",
+    "kind": "expert",
+    "title": "Sector coverage lead",
+    "summary": "Knows the clients and competitors in a sector. Ask about priorities and wallet.",
+    "action_label": "Find in SME directory",
+    "action_url": "/community/experts",
+    "trust": {
+      "owner_team": "Community team",
+      "purpose": "Sector knowledge from someone who covers it.",
+      "who_can_use": "Any employee",
+      "how_to_access": "Find them in the SME directory.",
+      "guardrails": ["Experts advise. Decisions stay with the accountable approver."]
+    }
+  },
+  {
+    "id": "product-specialist-expert",
+    "kind": "expert",
+    "title": "Product specialist",
+    "summary": "Knows a product family in depth, such as cash management, trade or FX. Ask about fit and structure.",
+    "action_label": "Find in SME directory",
+    "action_url": "/community/experts",
+    "trust": {
+      "owner_team": "Community team",
+      "purpose": "Product fit and structure from a specialist.",
+      "who_can_use": "Any employee",
+      "how_to_access": "Find them in the SME directory.",
+      "guardrails": ["Experts advise. Decisions stay with the accountable approver."]
+    }
+  },
+  {
+    "id": "credit-partner-expert",
+    "kind": "expert",
+    "title": "Credit risk partner",
+    "summary": "Works with RMs on credit requests. Ask what credit will look for before you submit.",
+    "action_label": "Find in SME directory",
+    "action_url": "/community/experts",
+    "trust": {
+      "owner_team": "Community team",
+      "purpose": "An early read from credit before a request goes in.",
+      "who_can_use": "Any employee",
+      "how_to_access": "Find them in the SME directory.",
+      "guardrails": ["Experts advise. Decisions stay with the accountable approver."]
+    }
+  },
+  {
+    "id": "kyc-lead-expert",
+    "kind": "expert",
+    "title": "KYC operations lead",
+    "summary": "Knows the KYC review. Ask about documents, timings and follow-ups.",
+    "action_label": "Find in SME directory",
+    "action_url": "/community/experts",
+    "trust": {
+      "owner_team": "Community team",
+      "purpose": "Answers on the KYC review from the team that runs it.",
+      "who_can_use": "Any employee",
+      "how_to_access": "Find them in the SME directory.",
+      "guardrails": ["Experts advise. Decisions stay with the accountable approver."]
+    }
+  },
+  {
+    "id": "rm-champions",
+    "kind": "community",
+    "title": "RM AI champions",
+    "summary": "Relationship managers sharing prompts and ways of working with AI. Post what works and ask about what does not.",
+    "action_label": "Open forum",
+    "action_url": "/community/forums",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "Where RMs share and improve what works.",
+      "who_can_use": "Relationship managers",
+      "how_to_access": "Join from Community forums.",
+      "guardrails": ["No client data in posts."]
+    }
+  },
+  {
+    "id": "meeting-prep-use-case",
+    "kind": "use_case",
+    "title": "Faster client meeting preparation",
+    "summary": "A proposed use case: prepare a client meeting from one brief instead of several systems.",
+    "action_label": "Follow in AI Requests",
+    "action_url": "/intake",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "Collects the need, the data involved and the people who want it.",
+      "who_can_use": "Any employee",
+      "how_to_access": "Follow it in AI Requests.",
+      "guardrails": ["Reviewed through MUFG's workflow tool before any build starts. Which tool is to be confirmed."]
+    }
+  },
+  {
+    "id": "credit-request-use-case",
+    "kind": "use_case",
+    "title": "Credit request drafting",
+    "summary": "A proposed use case: draft the business case section of a credit request from data already in the credit system.",
+    "action_label": "Follow in AI Requests",
+    "action_url": "/intake",
+    "trust": {
+      "owner_team": "Corporate Banking AI champions",
+      "purpose": "Collects the need, the data involved and the people who want it.",
+      "who_can_use": "Any employee",
+      "how_to_access": "Follow it in AI Requests.",
+      "guardrails": ["Reviewed through MUFG's workflow tool before any build starts. Which tool is to be confirmed."]
+    }
+  }
+]

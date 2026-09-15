@@ -61,7 +61,22 @@ def validate():
     for item in items:
         if any(a not in agent_ids for a in item.related_agents):
             raise ValueError(f"Unknown related agent in {item.id}")
-    return {"agents": len(agents), "learning_items": len(items), "paths": len(paths)}
+    from .journeys.store import store as journey_store, validate_refs
+    from .prompts.store import store as prompt_store
+
+    problems = validate_refs()
+    if problems:
+        raise ValueError("; ".join(problems))
+    library = prompt_store.library
+    return {
+        "agents": len(agents),
+        "learning_items": len(items),
+        "paths": len(paths),
+        "journeys": len(journey_store.all_journeys),
+        "assets": len(journey_store.all_assets),
+        "prompts": len(library.prompts),
+        "templates": len(library.templates),
+    }
 
 
 def main():

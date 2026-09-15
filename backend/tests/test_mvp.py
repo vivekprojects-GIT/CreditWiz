@@ -405,7 +405,15 @@ def test_account_provisioning_revokes_old_sessions():
         "new-local-password-123",
     )
     assert c.get("/api/me").status_code == 401
-    assert validate() == {"agents": 18, "learning_items": 22, "paths": 6}
+    assert validate() == {
+        "agents": 18,
+        "learning_items": 50,
+        "paths": 11,
+        "journeys": 8,
+        "prompts": 60,
+        "templates": 4,
+        "assets": 20,
+    }
 
 
 def test_single_origin_deployment_serves_the_spa_and_keeps_api_404s_json(

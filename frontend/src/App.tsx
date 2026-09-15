@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { CreateProvider } from './components/create/CreateProvider'
 import { HomePage } from './components/HomePage'
+import { JourneyPage } from './components/journeys/JourneyPage'
+import { JourneysPage } from './components/journeys/JourneysPage'
+import { LibraryPage } from './components/library/LibraryPage'
+import { MyLibraryPage } from './components/library/MyLibraryPage'
+import { PromptPage } from './components/library/PromptPage'
+import { TemplatesPage } from './components/library/TemplatesPage'
 import { LearningPage } from './components/learning/LearningPage'
 import { ItemPage } from './components/learning/ItemPage'
 import { MyLearningPage } from './components/learning/MyLearningPage'
@@ -17,6 +24,7 @@ import { ApiError, fetchHome, isAbort } from './lib/api'
 import { HubContext } from './lib/hub'
 import { PersonaProvider } from './lib/persona'
 import type { HomeData } from './lib/types'
+import './library.css'
 
 type LoadState =
   { status: 'loading' } | { status: 'signed-out' } | { status: 'error'; message: string } | { status: 'ready'; data: HomeData }
@@ -82,6 +90,7 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
           {state.status === 'ready' && (
             <HubContext.Provider value={state.data}>
               <PersonaProvider key={state.data.user.id} derived={state.data.user.persona}>
+                <CreateProvider>
                 <TopBar user={state.data.user} onMenu={() => setNavOpen(true)} />
                 <Routes>
                   <Route path="/" element={<HomePage />} />
@@ -103,9 +112,17 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
                   <Route path="/learning/me" element={<MyLearningPage />} />
                   <Route path="/learning/items/:id" element={<ItemPage />} />
                   <Route path="/learning/videos/:id" element={<ItemPage />} />
+                  <Route path="/journeys" element={<JourneysPage />} />
+                  <Route path="/journeys/:id" element={<JourneyPage />} />
+                  <Route path="/library" element={<LibraryPage />} />
+                  <Route path="/library/prompts" element={<LibraryPage />} />
+                  <Route path="/library/prompts/:id" element={<PromptPage />} />
+                  <Route path="/library/templates" element={<TemplatesPage />} />
+                  <Route path="/library/mine" element={<MyLibraryPage />} />
                   <Route path="/:base/*" element={<PillarPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </CreateProvider>
               </PersonaProvider>
             </HubContext.Provider>
           )}

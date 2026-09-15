@@ -1,0 +1,500 @@
+/* ============================================================================
+   Journeys: the jobs a persona does, and what helps at each one
+   Journey cards on home and "Your work", the intent pill, asset rows and cards
+   with their trust details, and the journey page.
+   ========================================================================== */
+
+/* ---- journey cards ---- */
+
+.home-work {
+  display: grid;
+  gap: var(--s-3);
+  margin-bottom: var(--s-6);
+}
+
+.home-work__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-1) var(--s-4);
+}
+
+.home-work__title {
+  margin: 0;
+  font-size: var(--t-lg);
+  font-weight: 700;
+  color: var(--ink-950);
+}
+
+.home-work__lead {
+  margin: 0;
+  font-size: var(--t-sm);
+  color: var(--ink-600);
+}
+
+.jgrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--s-3);
+}
+
+.jcard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--fast),
+    box-shadow var(--fast);
+}
+
+.jcard:hover {
+  border-color: var(--ink-300);
+  box-shadow: var(--e-2);
+}
+
+.jcard:hover .jcard__title {
+  color: var(--red-700);
+}
+
+.jcard__title {
+  font-size: var(--t-base);
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.jcard__summary {
+  flex: 1;
+  font-size: var(--t-sm);
+  line-height: 1.5;
+  color: var(--ink-600);
+}
+
+.jcard__systems {
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+}
+
+.jcard__count {
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--line);
+  font-size: var(--t-xs);
+  font-weight: 650;
+  color: var(--ink-700);
+}
+
+/* ---- the intent a request was read as ---- */
+
+.intent {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--r-full);
+  background: var(--red-tint);
+  color: var(--red-700);
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Cards: each asset set apart with its kind's icon, for the home conversation. */
+.assets--cards {
+  gap: var(--s-2);
+}
+
+.assets.assets--cards > li + li {
+  border-top: 0;
+}
+
+.assets--cards .asset {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  padding: var(--s-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  transition:
+    border-color var(--fast),
+    box-shadow var(--fast);
+}
+
+.assets--cards .asset:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--e-1);
+}
+
+.assets--cards .asset__trust {
+  grid-column: 2 / -1;
+}
+
+.asset__icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  background: var(--red-tint);
+  color: var(--red-600);
+}
+
+.asset__icon--system {
+  background: var(--info-bg);
+  color: var(--info-fg);
+}
+
+/* ---- assets and their trust cards ---- */
+
+.assets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.assets > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.asset {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-4) 0;
+}
+
+.asset__main {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.asset__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.asset__kind {
+  padding: 3px 8px;
+  border-radius: var(--r-full);
+  background: var(--ink-100);
+  color: var(--ink-600);
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The one distinction the page is built on: where the work really happens. */
+.asset__kind--system {
+  background: var(--info-bg);
+  color: var(--info-fg);
+}
+
+.asset__status {
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+}
+
+.asset__sample {
+  font-size: var(--t-xs);
+  font-weight: 650;
+  color: var(--warn-fg);
+}
+
+.asset__title {
+  margin: 0;
+  font-size: var(--t-md);
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.asset__why {
+  margin: 0;
+  font-size: var(--t-sm);
+  color: var(--ink-700);
+}
+
+.asset__facts {
+  margin: 2px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--s-4);
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+}
+
+.asset__facts strong {
+  font-weight: 650;
+  color: var(--ink-700);
+}
+
+.asset__action {
+  align-self: start;
+}
+
+.asset__action .btn-outline {
+  white-space: nowrap;
+}
+
+.asset__pending {
+  display: inline-block;
+  padding-top: 8px;
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+  white-space: nowrap;
+}
+
+.asset__trust {
+  grid-column: 1 / -1;
+}
+
+.asset__trust > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--t-sm);
+  font-weight: 650;
+  color: var(--ink-700);
+}
+
+.asset__trust > summary::-webkit-details-marker {
+  display: none;
+}
+
+.asset__trust > summary:hover {
+  color: var(--ink-950);
+}
+
+.asset__chev {
+  color: var(--ink-500);
+  transition: transform var(--fast);
+}
+
+.asset__trust[open] .asset__chev {
+  transform: rotate(90deg);
+}
+
+.trust {
+  margin: var(--s-3) 0 0;
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  font-size: var(--t-sm);
+}
+
+.trust dt,
+.trust dd {
+  margin: 0;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.trust dt:first-of-type,
+.trust dd:first-of-type {
+  border-top: 0;
+}
+
+.trust dt {
+  background: var(--ink-50);
+  color: var(--ink-600);
+  font-weight: 600;
+}
+
+.trust dd {
+  color: var(--ink-900);
+}
+
+.trust ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.is-tbc {
+  color: var(--ink-500);
+}
+
+/* ---- journey page ---- */
+
+.journey__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--s-6);
+  align-items: start;
+}
+
+.journey__main {
+  min-width: 0;
+  display: grid;
+  gap: var(--s-4);
+}
+
+.journey__group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-3);
+}
+
+.journey__group-title {
+  margin: 0;
+  font-size: var(--t-lg);
+  font-weight: 700;
+  color: var(--ink-950);
+}
+
+.journey__hint {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+}
+
+.journey__side {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: var(--s-4);
+}
+
+.journey__note {
+  margin: 0;
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--info-bg);
+  color: var(--ink-800);
+  font-size: var(--t-sm);
+  line-height: 1.55;
+}
+
+.journey__note strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--info-fg);
+}
+
+/* The steps are a real sequence, so they are numbered. */
+.jsteps {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+  counter-reset: step;
+}
+
+.jsteps li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--s-3);
+  counter-increment: step;
+}
+
+.jsteps li::before {
+  content: counter(step);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ink-900);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: var(--t-xs);
+  font-weight: 700;
+}
+
+.jsteps strong {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--ink-900);
+}
+
+.jsteps p {
+  margin: 2px 0 0;
+  font-size: var(--t-sm);
+  color: var(--ink-600);
+}
+
+.roles {
+  display: grid;
+  gap: var(--s-4);
+  margin-top: var(--s-3);
+}
+
+.roles h3 {
+  margin: 0 0 4px;
+  font-size: var(--t-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.roles p {
+  margin: 0;
+  font-size: var(--t-sm);
+  line-height: 1.55;
+  color: var(--ink-700);
+}
+
+.roles ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-sm);
+  color: var(--ink-700);
+}
+
+.roles li strong {
+  color: var(--ink-900);
+}
+
+@media (max-width: 1100px) {
+  .journey__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .journey__side {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .asset {
+    grid-template-columns: 1fr;
+  }
+
+  .assets--cards .asset {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .assets--cards .asset__action,
+  .assets--cards .asset__trust {
+    grid-column: 2;
+  }
+
+  .trust {
+    grid-template-columns: 1fr;
+  }
+
+  .trust dd {
+    border-top: 0;
+    padding-top: 0;
+  }
+}

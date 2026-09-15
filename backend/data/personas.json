@@ -10,6 +10,16 @@
     }
   },
   {
+    "id": "relationship_manager",
+    "label": "Relationship Manager",
+    "description": "Covers corporate clients: plans coverage, prepares meetings, originates deals and takes credit requests through approval.",
+    "interests": {
+      "domains": ["Onboarding", "Lending", "Legal", "Compliance"],
+      "capabilities": ["Summarisation", "Document extraction", "Customer communication", "Policy lookup"],
+      "tags": ["client", "meeting", "credit", "onboarding", "contract", "kyc"]
+    }
+  },
+  {
     "id": "compliance_user",
     "label": "Compliance user",
     "description": "Owns KYC, AML, policy and regulatory obligations.",

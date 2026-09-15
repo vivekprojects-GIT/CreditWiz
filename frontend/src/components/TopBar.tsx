@@ -1,7 +1,8 @@
-import { Bell, LogOut, Menu, Search, Settings, User } from 'lucide-react'
+import { Bell, LogOut, Menu, Plus, Search, Settings, User } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fetchNotifications, isAbort, searchHub, postJson, announceSessionChange } from '../lib/api'
+import { useCreate } from '../lib/create'
 import type { CurrentUser, Notification, SearchResult } from '../lib/types'
 import { useClickOutside } from '../lib/useClickOutside'
 
@@ -22,6 +23,7 @@ function timeAgo(iso: string): string {
 
 export function TopBar({ user, onMenu }: Props) {
   const navigate = useNavigate()
+  const create = useCreate()
 
   // ---- search
   const [query, setQuery] = useState('')
@@ -218,6 +220,10 @@ export function TopBar({ user, onMenu }: Props) {
             {actionError}
           </span>
         )}
+        <button type="button" className="btn btn--inline btn--create" onClick={() => create.open({ kind: 'choose' })}>
+          <Plus size={18} strokeWidth={2.4} aria-hidden="true" />
+          <span>Create new</span>
+        </button>
         <div className="menu-anchor" ref={notesRef}>
           <button
             type="button"

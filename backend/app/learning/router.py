@@ -12,6 +12,8 @@ from ..context import store as context_store
 from ..identity import derive_persona, load_profile
 from ..marketplace.store import store as marketplace_store
 from ..permissions import resolve_persona, visible
+from ..retrieval.ask import ask
+from ..retrieval.models import AgentAnswer, AgentSearch
 from . import progress as progress_store
 from . import ratings as ratings_store
 from .models import (
@@ -361,6 +363,21 @@ def list_items(
         for i in out:
             i.sequence = ordered.index(i.id) + 1
     return [i for i in out if not status or i.status == status]
+
+
+@router.post("/search", response_model=AgentAnswer)
+def ask_agent(body: AgentSearch) -> AgentAnswer:
+    """The Learning agent, over the items this person may see and the skill
+    videos they may see."""
+    from .agent import find
+
+    _, items = _load()
+    persona_id = _derived_persona_id()
+    return ask(
+        "learning",
+        body.query,
+        lambda searched, model_reads: find([searched], items, persona_id=persona_id, rerank_query=model_reads),
+    )
 
 
 @router.get("/items/{item_id}", response_model=ItemDetail)

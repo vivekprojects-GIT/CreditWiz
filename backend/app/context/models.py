@@ -79,8 +79,15 @@ class InterestSignal(BaseModel):
     pillars: list[str]
 
 
+Maturity = Literal["beginner", "developing", "experienced"]
+
+
 class UserContext(BaseModel):
-    """What the hub knows about a user, assembled from profile + footprints.
+    """Who the person is, as the hub understands them: stable across a session.
+
+    Role (the persona), function, interests, an inferred maturity and the
+    entitlements that decide what they may see. A profile, not a memory: what
+    they are doing right now is TaskContext, built per request.
 
     `interests` is derived from collected events and is NOT used for ranking in the
     MVP. It exists to show the seam a future personalisation service reads from.
@@ -94,7 +101,16 @@ class UserContext(BaseModel):
     persona: str
     persona_label: str
     persona_rule: str
+    # Department and business unit, as the directory states them.
+    function: str = ""
+    # What the role is interested in, from personas.json.
+    role_interests: list[str] = []
     interests: list[InterestSignal]
+    maturity: Maturity = "beginner"
+    # Always says the level is inferred, and from what.
+    maturity_basis: str = ""
+    # The directory groups that decide what is visible.
+    entitlements: list[str] = []
     event_count: int
     pillars_seen: list[str]
 

@@ -10,9 +10,12 @@ from fastapi.responses import FileResponse, JSONResponse
 from . import auth, data, identity
 from .account import router as account_router
 from .context.router import router as context_router
+from .journeys.router import router as journeys_router
 from .learning.router import router as learning_router
 from .marketplace.router import router as marketplace_router
 from .marketplace.store import store as marketplace_store
+from .hub.router import router as hub_router
+from .prompts.router import router as prompts_router
 from .models import (
     CurrentUser,
     Domain,
@@ -36,15 +39,27 @@ async def lifespan(app):
     from .marketplace.semantic import index as semantic_index
     from .marketplace.store import store as agent_store
 
+    import logging
+
     keyword_index.sync(agent_store.all_agents)
     counts = semantic_index.sync(agent_store.all_agents)
     if any(counts.values()):
-        import logging
-
         logging.getLogger("mufg.semantic").info("Semantic index synced: %s", counts)
-    # Build the ONNX session now, not on the first user's search. Costs
-    # nothing if the index is unavailable.
+    # The Prompts & Skills and Learning agents: their catalogues, then what
+    # people contributed through Create, rebuilt from the contributions table.
+    from .learning import agent as learning_agent
+    from .prompts import agent as prompts_agent
+    from .prompts.contributions import reindex
+
+    synced = {"prompts": prompts_agent.sync(), "learning": learning_agent.sync()}
+    synced.update({f"{name} contributions": c for name, c in reindex().items()})
+    for name, c in synced.items():
+        if c and (c["added"] or c["updated"] or c["removed"]):
+            logging.getLogger("mufg.retrieval").info("%s index synced: %s", name, c)
+    # Build the ONNX sessions now, not on the first user's search: Discover's,
+    # and the one the agents share. Costs nothing if an index is unavailable.
     semantic_index.search("warm up the embedding session", limit=1)
+    prompts_agent.agent.semantic.search("warm up the embedding session", frozenset({"-"}), limit=1)
     yield
 
 
@@ -56,6 +71,9 @@ app.include_router(account_router)
 app.include_router(marketplace_router)
 app.include_router(learning_router)
 app.include_router(context_router)
+app.include_router(journeys_router)
+app.include_router(prompts_router)
+app.include_router(hub_router)
 
 
 def allowed_origins() -> list[str]:
@@ -328,39 +346,6 @@ def _typeahead_agents(needle: str) -> list[SearchResult]:
     return [as_result(a) for a in ordered[:TYPEAHEAD_AGENTS]]
 
 
-# Words that carry no subject: "how do I start a path for my role" is about
-# paths and roles, and the rest would match every item in the catalog. "Agent"
-# is on the list because on this hub nearly everything mentions one.
-# Mirrored in frontend/src/lib/hubSearch.ts, which matches pillar pages.
-_STOP_WORDS = frozenset(
-    "a about against agent agents all also an and any are at be by can could do "
-    "does for from get give has have how i in into is it just like me my need new "
-    "of on or our out please should show some than that the their them then there "
-    "they this to use using want was were what when where which who why will "
-    "with would you your".split()
-)
-_SUFFIXES = ("ations", "ation", "ings", "ing", "ions", "ion", "ers", "er", "ed", "es", "ly", "al", "s", "e")
-
-
-def _stem(word: str) -> str:
-    """One suffix off, never below four letters: "approved" and "approval"
-    both become "approv", "screening" becomes "screen"."""
-    for suffix in _SUFFIXES:
-        if word.endswith(suffix) and len(word) - len(suffix) >= 4:
-            return word[: -len(suffix)]
-    return word
-
-
-def _subject_stems(text: str) -> list[str]:
-    """The words of a query worth matching, as stems."""
-    import re
-
-    words = re.findall(r"[a-z0-9]+", text.lower())
-    return list(
-        dict.fromkeys(_stem(w) for w in words if len(w) > 2 and w not in _STOP_WORDS)
-    )
-
-
 def _learning_hits(needle: str) -> list[SearchResult]:
     """Learning items for a query, best first.
 
@@ -368,30 +353,27 @@ def _learning_hits(needle: str) -> list[SearchResult]:
     page's ask box invites, matches an item carrying at least half of its
     subject words; the old whole-string match found nothing for one.
     """
-    import re
-
     from .learning.router import _load
+    from .learning.search import score_items
 
     _, items = _load()
-    stems = _subject_stems(needle)
-    # A stem counts only where a word starts: "check" and "list" are not a
-    # match for "checklist".
-    starts = [re.compile(rf"\b{re.escape(s)}") for s in stems]
-    needed = max(1, -(-len(stems) // 2))
-    scored = []
-    for i in items:
-        text = " ".join([i.title, i.description, *i.topics, *i.tags]).lower()
-        if needle == "learning" or needle in text:
-            score = len(stems) + 1
-        else:
-            score = sum(bool(p.search(text)) for p in starts)
-            if not stems or score < needed:
-                continue
-        scored.append((score, i))
-    scored.sort(key=lambda pair: -pair[0])
     return [
         SearchResult(kind="learning", title=i.title, href=f"/learning/items/{i.id}")
-        for _, i in scored
+        for _, i in score_items(needle, items)
+    ]
+
+
+TYPEAHEAD_PROMPTS = 5
+
+
+def _prompt_hits(needle: str) -> list[SearchResult]:
+    """Validated prompts for a query, with the prompt library's own matching."""
+    from .prompts.store import search as search_prompts
+    from .prompts.store import store as prompt_store
+
+    return [
+        SearchResult(kind="prompt", title=p.title, href=f"/library/prompts/{p.id}")
+        for _, p in search_prompts(needle, prompt_store.library.prompts)[:TYPEAHEAD_PROMPTS]
     ]
 
 
@@ -401,7 +383,9 @@ def search(q: str = Query(default="", max_length=200)) -> SearchResponse:
     if not needle:
         return SearchResponse(query=q, results=[])
     agent_hits = _typeahead_agents(needle)
-    return SearchResponse(query=q, results=(agent_hits + _learning_hits(needle))[:20])
+    return SearchResponse(
+        query=q, results=(agent_hits + _prompt_hits(needle) + _learning_hits(needle))[:20]
+    )
 
 
 # --- built frontend ---------------------------------------------------------

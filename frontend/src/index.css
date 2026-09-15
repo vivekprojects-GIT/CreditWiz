@@ -5,19 +5,19 @@
    ============================================================================ */
 
 :root {
-  /* brand */
-  --red: #e60000;
-  --red-600: #cc0000;
-  --red-700: #a80000;
-  --red-tint: #fdecec;
-  --red-tint-2: #fbdcdc;
+  /* brand: MUFG red and pink, from the client's AI Hub design reference */
+  --red: #da2127;
+  --red-600: #c41c22;
+  --red-700: #b31a1f;
+  --red-tint: #fff0f0;
+  --red-tint-2: #ffbabb;
 
   /* ink — warm neutral ramp */
   --ink-950: #0d0e11;
-  --ink-900: #17181c;
+  --ink-900: #191919;
   --ink-800: #24262c;
   --ink-700: #3d404a;
-  --ink-600: #5a5e6b;
+  --ink-600: #5a5a5a;
   --ink-500: #767b88;
   --ink-400: #9a9ea9;
   --ink-300: #c3c6ce;
@@ -80,7 +80,7 @@
   --out: 240ms cubic-bezier(0.16, 1, 0.3, 1);
 
   --sidebar-w: 252px;
-  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color-scheme: light;
 }
 
@@ -357,7 +357,7 @@ h3 {
   padding: var(--s-3) var(--s-8);
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: saturate(180%) blur(12px);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 3px solid var(--red);
   position: sticky;
   top: 0;
   z-index: 40;
@@ -3192,6 +3192,7 @@ button:disabled {
 .band .pathbar--onband {
   position: relative;
   z-index: 1;
+  display: flex;
   flex-wrap: nowrap;
   gap: 0;
   margin: var(--s-6) calc(var(--s-8) * -1) 0;
@@ -3359,40 +3360,6 @@ button:disabled {
   margin: 0;
 }
 
-/* Answers to a home search, grouped by where they live on the hub. */
-.home-results {
-  display: grid;
-  gap: var(--s-4);
-}
-
-.home-results__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s-2) var(--s-4);
-}
-
-.home-results__title {
-  margin: 0;
-  font-size: var(--t-lg);
-  font-weight: 700;
-  color: var(--ink-950);
-}
-
-.home-results__count {
-  margin: 4px 0 0;
-  font-size: var(--t-sm);
-  color: var(--ink-600);
-}
-
-.home-row__pillar {
-  font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-600);
-}
 
 /* ============================================================================
    Agent page: the decision fits the first screen

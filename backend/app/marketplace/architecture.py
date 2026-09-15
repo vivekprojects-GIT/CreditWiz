@@ -118,6 +118,7 @@ KIND_LABEL = {
 PERSON_LABEL = {
     "compliance_user": "Compliance analyst",
     "business_user": "Business user",
+    "relationship_manager": "Relationship manager",
     "risk_analyst": "Risk analyst",
     "operations_user": "Operations analyst",
     "developer": "Engineer",

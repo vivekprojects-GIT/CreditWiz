@@ -18,6 +18,8 @@ _DATA_DIR = Path(os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().p
 _ALIASES = {
     "business user": "business_user",
     "business": "business_user",
+    "relationship manager": "relationship_manager",
+    "rm": "relationship_manager",
     "compliance user": "compliance_user",
     "compliance": "compliance_user",
     "risk analyst": "risk_analyst",

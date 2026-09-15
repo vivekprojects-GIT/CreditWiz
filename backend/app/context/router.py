@@ -19,6 +19,7 @@ from .models import (
     InterestSignal,
     UserContext,
 )
+from .user import build_user_context
 
 router = APIRouter(prefix="/api/context", tags=["user context"])
 
@@ -45,28 +46,13 @@ def post_feedback(fb: FeedbackIn) -> Ack:
 
 @router.get("/me", response_model=UserContext)
 def me() -> UserContext:
-    """Profile, derived persona and derived interests in one place.
+    """Who the person is, as the hub understands them: profile, role, function,
+    interests, inferred maturity and entitlements. Built in user.py.
 
     Interests come from footprints across every pillar. The MVP does not rank on
     them; they show what a cross-pillar personalisation service would consume.
     """
-    profile = load_profile()
-    persona = derive_persona(profile)
-    interests = store.derive_interests()
-    evs = store.events()
-    return UserContext(
-        user_id=profile.id,
-        display_name=profile.name,
-        job_title=profile.job_title,
-        department=profile.department,
-        business_unit=profile.business_unit,
-        persona=persona.id,
-        persona_label=persona.label,
-        persona_rule=persona.rule,
-        interests=[InterestSignal(**i) for i in interests],
-        event_count=len(evs),
-        pillars_seen=sorted({e.get("pillar", "hub") for e in evs}),
-    )
+    return build_user_context()
 
 
 @router.get("/interests", response_model=list[InterestSignal])
