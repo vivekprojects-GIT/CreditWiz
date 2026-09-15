@@ -34,6 +34,11 @@ log = logging.getLogger("mufg.retrieval")
 
 # What each retriever proposes to fusion, as on Discover.
 CANDIDATES = 6
+# Records embedded per call. The model's working memory grows to the largest
+# batch it has run and keeps that size, so a whole catalogue at once cost
+# about 230MB on a fresh boot; eight at a time keeps startup within Render's
+# 512MB.
+EMBED_BATCH = 8
 # Standard BM25 parameters: term-frequency saturation, length normalisation.
 K1 = 1.5
 B = 0.75
@@ -67,12 +72,19 @@ def fingerprint(doc: Doc) -> str:
 
 @lru_cache(maxsize=1)
 def _embedder():
-    """One embedding model for every agent's collection: the MiniLM Discover
-    embeds with, so a vector means the same thing in every index. Discover's
-    own index keeps its own instance."""
-    from ..marketplace.semantic import _embedding_function
+    """The embedding model every agent's collection uses: the very instance
+    Discover's open index holds, so the process runs one ONNX session and a
+    vector means the same thing in every index.
 
-    return _embedding_function()
+    A second session cost about 370MB on a fresh boot and took the service
+    over Render's 512MB. Discover's code is left as it is: this reads the
+    instance its collection already holds, and builds a separate one only
+    when Discover's index could not open."""
+    from ..marketplace import semantic
+
+    collection = semantic.index._open()
+    shared = getattr(collection, "_embedding_function", None) if collection is not None else None
+    return shared if shared is not None else semantic._embedding_function()
 
 
 class SemanticIndex:
@@ -111,21 +123,23 @@ class SemanticIndex:
 
     @staticmethod
     def _store(handle, docs: list[Doc]) -> None:
-        handle.upsert(
-            ids=[d.id for d in docs],
-            documents=[d.text for d in docs],
-            metadatas=[
-                {
-                    "fingerprint": fingerprint(d),
-                    "source": d.source,
-                    # The id again, as metadata: Chroma filters on metadata,
-                    # and a request's permitted set is matched on this.
-                    "rid": d.id,
-                    **({"owner": d.owner} if d.owner else {}),
-                }
-                for d in docs
-            ],
-        )
+        for start in range(0, len(docs), EMBED_BATCH):
+            batch = docs[start : start + EMBED_BATCH]
+            handle.upsert(
+                ids=[d.id for d in batch],
+                documents=[d.text for d in batch],
+                metadatas=[
+                    {
+                        "fingerprint": fingerprint(d),
+                        "source": d.source,
+                        # The id again, as metadata: Chroma filters on
+                        # metadata, and a request's permitted set is matched on this.
+                        "rid": d.id,
+                        **({"owner": d.owner} if d.owner else {}),
+                    }
+                    for d in batch
+                ],
+            )
 
     def sync(self, source: Source, docs: list[Doc]) -> dict[str, int]:
         """Bring one source in line: new records embedded, changed ones
