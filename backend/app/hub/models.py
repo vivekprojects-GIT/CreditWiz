@@ -46,7 +46,7 @@ class PillarHit(BaseModel):
     why: str = ""
     # How the pillar's agent judged it against the request: "strong" or
     # "partial" (the closest thing, or part of what was asked). None when the
-    # model was not asked (one result, or the data policy).
+    # model was not asked (the data policy) or its call failed.
     fit: Literal["strong", "partial"] | None = None
     # A line of facts: rating and uses, provider and length, status.
     meta: str = ""

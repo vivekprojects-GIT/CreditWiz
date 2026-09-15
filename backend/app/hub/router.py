@@ -137,13 +137,7 @@ def _events(node: str, update: dict) -> list[dict]:
                 "governance": g.notes,
             }
         ]
-    if node == "route" and update.get("toolkit"):
-        return [
-            {
-                "type": "toolkit",
-                "recommended": [c.model_dump(mode="json") for c in update["toolkit"][:RECOMMENDED]],
-            }
-        ]
+    # The job's toolkit is sent by synthesize, once the agents have searched.
     if node in PILLAR_NODES:
         return [{"type": "pillar_result", "group": update["pillar_results"][node].model_dump(mode="json")}]
     if node == "respond":

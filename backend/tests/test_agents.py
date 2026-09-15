@@ -126,6 +126,22 @@ def test_the_model_orders_the_shortlist_and_loses_nothing(monkeypatch):
     assert _refs(answer) == [shown["ids"][-1], *shown["ids"][:-1]]
 
 
+def test_even_a_single_result_is_judged_and_dropped_when_it_does_not_fit(monkeypatch):
+    from app.retrieval import agent as engine
+
+    asked = []
+
+    def rerank(what, request, candidates):
+        asked.append(candidates)
+        return [(candidates[0][0], "none")]
+
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "rerank", rerank)
+    judged = engine.rerank("AI agents", "make my portfolio review faster", [("agent:x", "Code Review Assistant.")])
+    assert len(asked) == 1
+    assert engine.judged_order(["agent:x"], judged) == []
+
+
 def test_the_model_grades_every_candidate_and_what_does_not_fit_is_dropped(monkeypatch):
     shown = {}
 

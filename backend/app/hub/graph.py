@@ -343,6 +343,12 @@ def _community(state: HubState, queries: list[str]) -> pillars.Run:
 def synthesize(state: HubState) -> dict:
     fan_in = round((perf_counter() - state["fanned_out"]) * 1000)
     plan, guard, g = state["plan"], state["guard"], state["gate"]
+    # The job's own toolkit is shown now, once the agents have searched and
+    # beside the reply written from both. It comes from the job map, not a
+    # search, so sent when the plan chose the job it appeared seconds before
+    # anything had been found.
+    if state["toolkit"]:
+        _writer()({"type": "toolkit", "recommended": [c.model_dump(mode="json") for c in state["toolkit"][:RECOMMENDED]]})
     results = state.get("pillar_results", {})
     groups = [results[p] for p in state["selected_pillars"] if p in results]
     capabilities: list[Capability] = []

@@ -129,6 +129,14 @@ def test_without_a_model_there_is_no_first_reading_to_replace():
     assert not any(e.get("provisional") for e in events)
 
 
+def test_the_jobs_toolkit_arrives_only_after_the_agents_have_searched():
+    events = _events("make my portfolio review faster")
+    types = [e["type"] for e in events]
+    assert "toolkit" in types and "pillar_result" in types
+    assert types.index("toolkit") > max(i for i, t in enumerate(types) if t == "pillar_result")
+    assert types.index("toolkit") < types.index("response")
+
+
 def test_small_talk_completes_at_once_with_nothing_planned():
     events = _events("Hello!")
     assert [e["type"] for e in events] == ["accepted", "response", "complete"]

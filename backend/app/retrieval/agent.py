@@ -13,9 +13,9 @@ reads to the reranker, and hands it the records the person may see.
                 half of the words typed)
     rerank      the model judges every candidate against the request, strong,
                 partial or no fit: strong comes before partial, and what does
-                not fit is dropped. Skipped below two candidates, when policy
-                keeps the request from the model, and on any failure, which
-                keeps the fused order
+                not fit is dropped, even when it is the only one. Skipped when
+                policy keeps the request from the model, and on any failure,
+                which keeps the fused order
     context     the caller reads each id's record from its source
 
 Permission first and again after: the permitted set filters inside both
@@ -57,7 +57,7 @@ class Candidate:
     similarity: float | None
     keyword: float | None
     # The model's judgement against the request: "strong" or "partial". None
-    # when it was not asked (one candidate, or the data policy).
+    # when it was not asked (the data policy) or its call failed.
     fit: str | None = None
 
 
@@ -235,11 +235,15 @@ def rerank(what: str, query: str, candidates: list[tuple[str, str]]) -> list[tup
     omit, it emptied answers retrieval had right ("credit memo" lost every
     memo prompt); asked to grade, it has "partial" for the closest thing.
 
+    A single candidate is judged too: with nothing to order, the question is
+    only whether it fits, and an unrelated lone match ("Code Review Assistant"
+    for a portfolio review) is exactly what should not be shown.
+
     Not cached: every request is read by the model, even one asked before.
     """
     from ..hub import llm
 
-    if len(candidates) < 2 or not llm.available():
+    if not candidates or not llm.available():
         return None
     return llm.rerank(what, query, candidates)
 
