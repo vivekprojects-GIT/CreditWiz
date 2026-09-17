@@ -46,8 +46,7 @@ Learning item filters: `path`, `type` (or `docs` for documentation/guide/Conflue
 | `GET /api/learning/for-agent/{id}?persona=` | Content that teaches an agent, persona-ordered (Learning-owned) |
 | `GET /api/learning/curation` | Per-component learning curation score (explainable) |
 | `GET /api/marketplace/metadata-template` | The agent metadata template to hand to agent owners |
-| `GET /api/marketplace/agents/{id}/docs` | In-app documentation page (markdown from `backend/data/docs`) |
-| `GET /api/marketplace/agents/{id}/architecture` | Architecture pattern page (markdown from `backend/data/architecture`) |
+| `GET /api/knowledge/sources` | The document types and systems that feed the hub; an agent's `documents` link to its documents by these types |
 | `GET /api/marketplace/agents/{id}/learning` | Recommended videos for the agent |
 | `GET /api/learning?persona=` | Role-based learning landing sections |
 | `GET /api/learning/items` | Learning items of any type, filterable |

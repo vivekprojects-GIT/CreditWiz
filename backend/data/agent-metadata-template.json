@@ -56,6 +56,14 @@
   "_RESOURCES": "---------------------------------------------------------------",
   "documentation_url": "optional. User guide / runbook",
   "architecture_url": "optional. Architecture pattern or design doc",
+  "documents": [
+    {
+      "type": "optional. A document type from data/knowledge-sources.json: brd, asd, hld or lld",
+      "system": "optional. Where it lives, from the same file: confluence, sharepoint, jira, servicenow or documents",
+      "url": "optional. A link to the document where it lives. The hub links to it and keeps no copy",
+      "description": "optional. What this document covers, so a reader knows what they will open. Up to 300 characters"
+    }
+  ],
   "_LIFECYCLE": "---------------------------------------------------------------",
   "created_at": "required. ISO date, e.g. 2026-03-14",
   "updated_at": "required. ISO date, e.g. 2026-08-29",

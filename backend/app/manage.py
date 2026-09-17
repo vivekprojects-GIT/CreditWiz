@@ -62,12 +62,21 @@ def validate():
         if any(a not in agent_ids for a in item.related_agents):
             raise ValueError(f"Unknown related agent in {item.id}")
     from .journeys.store import store as journey_store, validate_refs
+    from .knowledge.store import load as load_knowledge
     from .prompts.store import store as prompt_store
 
     problems = validate_refs()
     if problems:
         raise ValueError("; ".join(problems))
     library = prompt_store.library
+    knowledge = load_knowledge()
+    # An agent's documents name only listed document types and systems.
+    document_types = {d.id for d in knowledge.document_types}
+    systems = {s.id for s in knowledge.systems}
+    for agent in agents:
+        for doc in agent.documents:
+            if doc.type not in document_types or (doc.system and doc.system not in systems):
+                raise ValueError(f"Unknown document type or system in {agent.id}")
     return {
         "agents": len(agents),
         "learning_items": len(items),
@@ -76,6 +85,8 @@ def validate():
         "assets": len(journey_store.all_assets),
         "prompts": len(library.prompts),
         "templates": len(library.templates),
+        "knowledge_systems": len(knowledge.systems),
+        "document_types": len(knowledge.document_types),
     }
 
 

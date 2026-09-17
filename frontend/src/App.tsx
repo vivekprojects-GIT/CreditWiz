@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { CreateProvider } from './components/create/CreateProvider'
 import { HomePage } from './components/HomePage'
 import { JourneyPage } from './components/journeys/JourneyPage'
 import { JourneysPage } from './components/journeys/JourneysPage'
+import { KnowledgeSourcesPage } from './components/knowledge/KnowledgeSourcesPage'
 import { LibraryPage } from './components/library/LibraryPage'
 import { MyLibraryPage } from './components/library/MyLibraryPage'
 import { PromptPage } from './components/library/PromptPage'
@@ -12,7 +13,6 @@ import { LearningPage } from './components/learning/LearningPage'
 import { ItemPage } from './components/learning/ItemPage'
 import { MyLearningPage } from './components/learning/MyLearningPage'
 import { AgentDetailPage } from './components/marketplace/AgentDetailPage'
-import { AgentDocPage } from './components/marketplace/AgentDocPage'
 import { AgentsListPage } from './components/marketplace/AgentsListPage'
 import { MarketplacePage } from './components/marketplace/MarketplacePage'
 import { PillarPage } from './components/PillarPage'
@@ -35,6 +35,12 @@ function ScrollToTop() {
     window.scrollTo({ top: 0 })
   }, [pathname])
   return null
+}
+
+/** Old documentation and architecture links land on the agent's page, where its documents are linked. */
+function ToAgent() {
+  const { id = '' } = useParams()
+  return <Navigate to={`/marketplace/agents/${encodeURIComponent(id)}`} replace />
 }
 
 function Skeleton() {
@@ -101,8 +107,8 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
                   <Route path="/marketplace/solutions" element={<AgentsListPage />} />
                   <Route path="/marketplace/capabilities" element={<AgentsListPage />} />
                   <Route path="/marketplace/agents/:id" element={<AgentDetailPage />} />
-                  <Route path="/marketplace/agents/:id/docs" element={<AgentDocPage kind="docs" />} />
-                  <Route path="/marketplace/agents/:id/architecture" element={<AgentDocPage kind="architecture" />} />
+                  <Route path="/marketplace/agents/:id/docs" element={<ToAgent />} />
+                  <Route path="/marketplace/agents/:id/architecture" element={<ToAgent />} />
                   <Route path="/learning" element={<LearningPage />} />
                   <Route path="/learning/catalog" element={<LearningPage />} />
                   <Route path="/learning/paths" element={<LearningPage />} />
@@ -119,6 +125,7 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
                   <Route path="/library/prompts/:id" element={<PromptPage />} />
                   <Route path="/library/templates" element={<TemplatesPage />} />
                   <Route path="/library/mine" element={<MyLibraryPage />} />
+                  <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
                   <Route path="/:base/*" element={<PillarPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

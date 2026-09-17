@@ -1,4 +1,4 @@
-import { ArrowRight, Lock, Sparkles, Unlock, UserCheck } from 'lucide-react'
+import { ArrowRight, Lock, Unlock, UserCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { track } from '../../lib/context'
 import { STATUS_LABEL, type Agent } from '../../lib/marketplace'
@@ -45,7 +45,7 @@ export function AgentCard({ agent, why, reasons, source, compact, hideForYou }: 
         </span>
         {forYou && (
           <span className="acard__foryou" title="Built for your persona">
-            <Sparkles size={13} strokeWidth={2.4} /> For you
+            For you
           </span>
         )}
       </div>

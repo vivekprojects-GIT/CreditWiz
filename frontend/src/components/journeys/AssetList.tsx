@@ -167,9 +167,10 @@ function AssetRow({
                 ))}
               </ul>
             ) : agentId ? (
-              <Link to={`/marketplace/agents/${agentId}/docs#limitations-and-guardrails`}>
-                Limitations and guardrails in its documentation
-              </Link>
+              <>
+                <span className="is-tbc">{TBC}</span> ·{' '}
+                <Link to={`/marketplace/agents/${agentId}`}>its documents are linked from its listing</Link>
+              </>
             ) : (
               <span className="is-tbc">{TBC}</span>
             )}

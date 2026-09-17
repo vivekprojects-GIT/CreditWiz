@@ -190,6 +190,7 @@ def normalize_agent(raw: dict) -> dict:
         "documentation_url": r.get("documentation_url")
         or r.get("documentationUrl", ""),
         "architecture_url": r.get("architecture_url") or r.get("architectureUrl", ""),
+        "documents": r.get("documents", []),
         "created_at": r.get("created_at") or r.get("createdDate", ""),
         "updated_at": r.get("updated_at")
         or r.get("updatedDate")

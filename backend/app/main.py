@@ -11,6 +11,7 @@ from . import auth, data, identity
 from .account import router as account_router
 from .context.router import router as context_router
 from .journeys.router import router as journeys_router
+from .knowledge.router import router as knowledge_router
 from .learning.router import router as learning_router
 from .marketplace.router import router as marketplace_router
 from .marketplace.store import store as marketplace_store
@@ -72,6 +73,7 @@ app.include_router(marketplace_router)
 app.include_router(learning_router)
 app.include_router(context_router)
 app.include_router(journeys_router)
+app.include_router(knowledge_router)
 app.include_router(prompts_router)
 app.include_router(hub_router)
 

@@ -218,6 +218,7 @@ def test_metadata_template_lists_required_fields():
         "access",
         "documentation_url",
         "architecture_url",
+        "documents",
         "created_at",
         "updated_at",
     ):
@@ -300,41 +301,48 @@ def test_event_types_follow_agreed_names():
     )
 
 
-def test_agent_docs_and_architecture_pages():
-    docs = client.get("/api/marketplace/agents/contract-analyzer/docs").json()
-    assert docs["title"].startswith("Contract Analyzer")
-    assert "## Getting started" in docs["markdown"]
-    assert docs["status"] in {"Verified", "In review", "Draft"} and docs["team"]
-
-    arch = client.get(
-        "/api/marketplace/agents/contract-analyzer/architecture"
-    ).json()
-    assert arch["title"] == "Contract Analyzer architecture"
-    assert arch["pattern"] == "Document agent"
-    nodes = [n for c in arch["columns"] for g in c["groups"] for n in g["nodes"]]
-    # The diagram is the agent's own: its models and systems, from the catalogue.
-    assert [n["label"] for n in nodes if n["highlight"]] == ["Contract Analyzer"]
-    assert {"GPT-5", "Claude Sonnet 5", "SharePoint"} <= {n["label"] for n in nodes}
-    ids = {n["id"] for n in nodes}
-    assert all(e["source"] in ids and e["target"] in ids for e in arch["edges"])
-    assert [s["number"] for s in arch["steps"]] == list(range(1, len(arch["steps"]) + 1))
-    assert client.get("/api/marketplace/agents/nope/docs").status_code == 404
+def test_documents_are_links_to_where_they_live_not_copies():
+    # The hub serves no documentation or architecture pages of its own.
+    assert client.get("/api/marketplace/agents/contract-analyzer/docs").status_code == 404
+    assert client.get("/api/marketplace/agents/contract-analyzer/architecture").status_code == 404
+    agent = client.get("/api/marketplace/agents/contract-analyzer").json()
+    # No link has been given yet, and none is invented.
+    assert agent["documents"] == []
 
 
-def test_every_agent_is_open_with_documentation_and_architecture():
-    """Every listing opens without a request, and has a real documentation page
-    and an architecture page whose diagram highlights that agent."""
+def test_every_agent_is_open_and_names_only_listed_document_types_and_systems():
+    from app.knowledge.store import load
+
+    sources = load()
+    types = {d.id for d in sources.document_types}
+    systems = {s.id for s in sources.systems}
     for agent in store.all_agents:
         assert agent.access.type == "open", agent.id
+        for doc in agent.documents:
+            assert doc.type in types and (not doc.system or doc.system in systems), agent.id
 
-        docs = client.get(f"/api/marketplace/agents/{agent.id}/docs").json()
-        assert "has not been published" not in docs["markdown"], agent.id
-        assert not any(c in docs["markdown"] for c in "—–"), f"dash in {agent.id} docs"
 
-        arch = client.get(f"/api/marketplace/agents/{agent.id}/architecture").json()
-        nodes = [n for c in arch["columns"] for g in c["groups"] for n in g["nodes"]]
-        assert [n["label"] for n in nodes if n["highlight"]] == [agent.name], agent.id
-        assert len(arch["steps"]) >= 4 and arch["edges"], agent.id
+def test_an_agent_document_is_a_safe_link():
+    import pytest
+
+    base = store.all_agents[0].model_dump()
+    agent = Agent.model_validate(
+        {
+            **base,
+            "documents": [
+                {
+                    "type": "hld",
+                    "system": "confluence",
+                    "url": "https://confluence.example/hld",
+                    "description": "Components, integrations and data flows of the agent.",
+                }
+            ],
+        }
+    )
+    assert agent.documents[0].system == "confluence"
+    assert agent.documents[0].description.startswith("Components")
+    with pytest.raises(ValueError):
+        Agent.model_validate({**base, "documents": [{"type": "hld", "url": "javascript:alert(1)"}]})
 
 
 def test_learning_for_agent_is_persona_ordered():

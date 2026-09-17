@@ -23,6 +23,25 @@ class Access(BaseModel):
     _links = field_validator("launch_url", "request_url")(safe_link)
 
 
+class AgentDocument(BaseModel):
+    """A link to one of the agent's documents, where the owning team keeps it.
+
+    The hub links to documents and keeps no copies (Swim Lane 1: the types of
+    document and where each lives, not the documents themselves)."""
+
+    # A document type from data/knowledge-sources.json: brd, asd, hld, lld.
+    type: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+    # The system it lives in, from the same file. Blank until confirmed.
+    system: str = ""
+    # Blank until the owning team gives the link.
+    url: str = ""
+    # What this document covers, in the owning team's words, so a reader
+    # knows what they will open. Blank shows the document type's description.
+    description: str = Field(default="", max_length=300)
+
+    _links = field_validator("url")(safe_link)
+
+
 class Agent(BaseModel):
     """Canonical agent metadata. Grouped as in docs/agent-metadata-template.md."""
 
@@ -58,6 +77,8 @@ class Agent(BaseModel):
     # resources
     documentation_url: str = ""
     architecture_url: str = ""
+    # Its documents by type, as links to where each lives. Empty until given.
+    documents: list[AgentDocument] = []
     # lifecycle
     created_at: str
     updated_at: str

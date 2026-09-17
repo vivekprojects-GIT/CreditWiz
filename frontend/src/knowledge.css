@@ -1,0 +1,188 @@
+/* Knowledge sources: the systems and document types that will feed the hub. */
+
+.ks-grid {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.ks-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.ks-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ks-card__head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.ks-kind {
+  margin: 2px 0 0;
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+}
+
+.ks-status {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink-600);
+}
+
+.ks-status--connected {
+  color: var(--ink-900);
+}
+
+.ks-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.ks-feeds {
+  margin: 0;
+}
+
+.ks-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  font-size: var(--t-xs);
+}
+
+.ks-facts dt {
+  color: var(--ink-500);
+}
+
+.ks-facts dd {
+  margin: 0;
+}
+
+.tbc {
+  color: var(--ink-500);
+  font-style: italic;
+}
+
+.ks-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.ks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-xs);
+}
+
+.ks-table th,
+.ks-table td {
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+.ks-table tbody tr:last-child th,
+.ks-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ks-table thead th {
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.ks-table tbody th {
+  min-width: 170px;
+}
+
+.ks-abbr {
+  display: block;
+  font-weight: 600;
+  color: var(--ink-700);
+}
+
+.ks-name {
+  display: block;
+  font-weight: 600;
+}
+
+/* On a phone each row becomes a card: every cell on its own line, labelled,
+   rather than four columns squeezed to a word per line. */
+@media (max-width: 640px) {
+  .ks-table thead {
+    display: none;
+  }
+
+  .ks-table,
+  .ks-table tbody,
+  .ks-table tr,
+  .ks-table th,
+  .ks-table td {
+    display: block;
+  }
+
+  .ks-table tr {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ks-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .ks-table th,
+  .ks-table td {
+    padding: 3px 0;
+    border-bottom: 0;
+  }
+
+  .ks-table tbody th {
+    min-width: 0;
+    margin-bottom: 4px;
+  }
+
+  .ks-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--t-2xs);
+    font-weight: 600;
+    color: var(--ink-500);
+  }
+}
+
+.ks-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.ks-group__list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.ks-note {
+  margin: 20px 0 0;
+  font-size: var(--t-xs);
+  color: var(--ink-500);
+}

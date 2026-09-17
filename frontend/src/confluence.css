@@ -41,7 +41,7 @@
   padding: 16px 12px;
   background: #fff;
   border: 1px solid var(--cf-border);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .cf-space__head {
@@ -63,8 +63,7 @@
   display: grid;
   place-items: center;
   font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+  font-weight: 700;
 }
 
 .cf-space__meta {
@@ -112,7 +111,7 @@
   width: 40px;
   height: 40px;
   border: 1px solid var(--cf-border);
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fff;
 }
 
@@ -137,8 +136,6 @@
   margin: 0 4px 6px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--cf-subtlest);
 }
 
@@ -188,7 +185,7 @@
   padding: 28px 40px 36px;
   background: #fff;
   border: 1px solid var(--cf-border);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .cf-page a {
@@ -244,8 +241,6 @@
   border-radius: 3px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .cf-lozenge--verified {
@@ -339,8 +334,6 @@
   margin-right: 4px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--cf-subtlest);
 }
 
@@ -364,8 +357,6 @@
   margin: 0 0 10px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--cf-subtlest);
 }
 

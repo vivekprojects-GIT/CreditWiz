@@ -38,7 +38,8 @@ GOVERNANCE
 
 RESOURCES
 ├─ documentation_url                                             optional
-└─ architecture_url                                              optional
+├─ architecture_url                                              optional
+└─ documents[]: type, system, url (links only, no copies)        optional
 
 LIFECYCLE
 ├─ created_at          ISO date                                 required

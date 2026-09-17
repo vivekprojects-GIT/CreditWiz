@@ -1,12 +1,8 @@
 import { AccessRequestForm } from './AccessRequestForm'
 import {
-  BookOpen,
-  Boxes,
-  Calendar,
   ChevronRight,
-  Cpu,
   ExternalLink,
-  Layers,
+  FileText,
   MessageSquare,
   Rocket,
   ShieldCheck,
@@ -17,6 +13,7 @@ import { isAbort } from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import { fetchAgentLearning, type Item } from '../../lib/learning'
 import { track, type EventType } from '../../lib/context'
+import { fetchKnowledgeSources, type KnowledgeSources } from '../../lib/knowledge'
 import { ACCESS_LABEL, STATUS_LABEL, fetchAgent, fetchRelated, type Agent } from '../../lib/marketplace'
 import { usePersona } from '../../lib/personaContext'
 import { BackButton } from '../BackButton'
@@ -24,6 +21,7 @@ import { ItemCard } from '../learning/ItemCard'
 import { NotFound } from '../SimplePages'
 import { AgentCard } from './AgentCard'
 import { FeedbackPrompt } from './FeedbackPrompt'
+import '../../knowledge.css'
 
 const PERSONA_LABEL: Record<string, string> = {
   business_user: 'Business users',
@@ -31,6 +29,16 @@ const PERSONA_LABEL: Record<string, string> = {
   risk_analyst: 'Risk analysts',
   operations_user: 'Operations users',
   developer: 'Developers',
+}
+
+/** "Hannah Weiss" -> "HW"; a team name when no person is confirmed. */
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join('')
 }
 
 function ExtLink({
@@ -73,6 +81,18 @@ export function AgentDetailPage() {
   const [agent, setAgent] = useState<Agent | null | undefined>(undefined)
   const [related, setRelated] = useState<Agent[]>([])
   const [videos, setVideos] = useState<Item[]>([])
+  // The document types and systems its documents are listed by.
+  const [sources, setSources] = useState<KnowledgeSources | null | undefined>(undefined)
+
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetchKnowledgeSources(ctrl.signal)
+      .then(setSources)
+      .catch((err: unknown) => {
+        if (!isAbort(err)) setSources(null)
+      })
+    return () => ctrl.abort()
+  }, [])
 
   useEffect(() => {
     const ctrl = new AbortController()
@@ -120,6 +140,8 @@ export function AgentDetailPage() {
   const access = agent.access.type
   const isSample = agent.source_kind === 'sample'
   const canLaunch = !isSample && !!agent.access.launch_url
+  // The header's action column is shown only when there is something to do.
+  const hasAction = (access === 'open' && canLaunch) || access === 'request' || access === 'restricted'
   const ownerMail = agent.owner.email
     ? `mailto:${agent.owner.email}?subject=${encodeURIComponent(`Access to ${agent.name}`)}`
     : undefined
@@ -189,58 +211,39 @@ export function AgentDetailPage() {
               <dd>{formatDate(agent.updated_at)}</dd>
             </div>
           </dl>
+          {/* Only where launching is the action and no link is live yet. */}
+          {access === 'open' && !canLaunch && <p className="agent__note">Launch link coming soon</p>}
         </div>
 
-        <div className="agent__actions">
-          {access === 'open' &&
-            (canLaunch ? (
+        {/* An empty action column kept a third of the header blank. */}
+        {hasAction && (
+          <div className="agent__actions">
+            {access === 'open' && canLaunch && (
               <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--inline">
                 <Rocket size={18} /> Launch agent
               </ExtLink>
-            ) : (
-              // No live launch link yet, so the most useful single click is
-              // the documentation rather than a disabled button.
-              <Link to={`/marketplace/agents/${agent.id}/docs`} className="btn btn--inline">
-                <BookOpen size={18} strokeWidth={2.4} /> Read documentation
-              </Link>
-            ))}
-
-          {access === 'request' && (
-            <>
-              <a className="btn btn--inline" href="#request-access" onClick={goToRequest}>
-                Request access
-              </a>
-              {!isSample && agent.access.request_url && (
-                <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
-                  Open enterprise access portal
-                </ExtLink>
-              )}
-            </>
-          )}
-
-          {access === 'restricted' && (
-            <a className="btn-outline" href={ownerMail} aria-disabled={!ownerMail}>
-              Contact the owner for access
-            </a>
-          )}
-
-          <div className="agent__resources">
-            {(access !== 'open' || canLaunch) && (
-              <Link to={`/marketplace/agents/${agent.id}/docs`} className="btn-outline">
-                <BookOpen size={16} strokeWidth={2.4} /> Documentation
-              </Link>
             )}
-            <Link to={`/marketplace/agents/${agent.id}/architecture`} className="btn-outline">
-              <Layers size={16} strokeWidth={2.4} /> Architecture
-            </Link>
-          </div>
 
-          {/* Only where launching is the action. On a request listing this
-              line talked about launching when the next step is asking. */}
-          {access === 'open' && !canLaunch && (
-            <span className="agent__note">Launch link coming soon</span>
-          )}
-        </div>
+            {access === 'request' && (
+              <>
+                <a className="btn btn--inline" href="#request-access" onClick={goToRequest}>
+                  Request access
+                </a>
+                {!isSample && agent.access.request_url && (
+                  <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
+                    Open enterprise access portal
+                  </ExtLink>
+                )}
+              </>
+            )}
+
+            {access === 'restricted' && (
+              <a className="btn-outline" href={ownerMail} aria-disabled={!ownerMail}>
+                Contact the owner for access
+              </a>
+            )}
+          </div>
+        )}
       </header>
 
       <div className="agent__body">
@@ -285,6 +288,116 @@ export function AgentDetailPage() {
           </section>
         </div>
 
+        {/* Documents stay where the owning team keeps them: the hub lists each
+            with what it covers and a link to open it there, and holds no copy. */}
+        <section className="panel" id="documents">
+          <h2 className="panel__title">
+            <FileText size={20} strokeWidth={2.4} /> Documentation
+          </h2>
+          <p className="panel__text">
+            Each document stays where the owning team keeps it. Open a link to read it there.
+          </p>
+          {sources === undefined && <div className="skeleton" style={{ height: 96 }} />}
+          {sources === null && <p className="muted">The document list could not load. Try again in a moment.</p>}
+          {sources && (
+            <div className="ks-table-wrap">
+              <table className="ks-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Document</th>
+                    <th scope="col">What it covers</th>
+                    <th scope="col">Open it</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sources.document_types.map((type) => {
+                    const doc = agent.documents.find((d) => d.type === type.id)
+                    const system = sources.systems.find((s) => s.id === doc?.system)
+                    const covers = doc?.description || type.about
+                    return (
+                      <tr key={type.id}>
+                        <th scope="row">
+                          <span className="ks-abbr">{type.abbreviation}</span>
+                          <span className="ks-name">{type.name || <span className="tbc">To be confirmed</span>}</span>
+                        </th>
+                        <td data-label="What it covers">{covers || <span className="tbc">To be confirmed</span>}</td>
+                        {/* Where it lives and the link read as one thing: one cell, not
+                            two that both said "To be confirmed". */}
+                        <td data-label="Open it">
+                          {doc?.url ? (
+                            <ExtLink
+                              href={doc.url}
+                              event={type.id === 'hld' || type.id === 'lld' ? 'architecture_click' : 'documentation_click'}
+                              agent={agent}
+                              className="linkbtn"
+                            >
+                              <ExternalLink size={14} strokeWidth={2.2} />{' '}
+                              {system ? `Open in ${system.name}` : `Open ${type.abbreviation}`}
+                            </ExtLink>
+                          ) : (
+                            <span className="tbc">
+                              {system ? `In ${system.name}, link to be confirmed` : 'Link to be confirmed'}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {/* How to get it, and who owns it: two plain halves of one card. */}
+        <section className="panel access" id="request-access">
+          <div className="access__route">
+            <h2 className="panel__title">
+              <ShieldCheck size={20} strokeWidth={2.4} /> Get access
+            </h2>
+            <span className={`access__type access__type--${access}`}>{ACCESS_LABEL[agent.access.type]}</span>
+            <p className="panel__text">{agent.access.how}</p>
+            {/* A request form only makes sense where a request is the route in.
+                Open agents need none; restricted ones go through the owner. */}
+            {access === 'request' && <AccessRequestForm key={agent.id} agentId={agent.id} />}
+          </div>
+          <div className="access__owner">
+            <h3 className="access__label">Owner</h3>
+            <div className="access__person">
+              <span className="access__avatar" aria-hidden="true">
+                {initials(agent.owner.name || agent.owner.team)}
+              </span>
+              <div>
+                <p className="access__name">{agent.owner.name || 'To be confirmed'}</p>
+                <p className="access__team">{agent.owner.team}</p>
+              </div>
+            </div>
+            {agent.source_kind === 'enterprise' && agent.owner.email ? (
+              <a
+                className="btn-outline access__contact"
+                href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`}
+                onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id })}
+              >
+                <MessageSquare size={16} strokeWidth={2.4} /> Contact the owner
+              </a>
+            ) : (
+              <p className="access__pending">Contact details appear once the owning team confirms this listing.</p>
+            )}
+          </div>
+        </section>
+
+        {related.length > 0 && (
+          <section>
+            <h2 className="section-title">Related agents</h2>
+            <div className="agent-grid">
+              {related.map((a) => (
+                <AgentCard key={a.id} agent={a} source="related" compact />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Learning comes last: the agent first, then what helps you use it. */}
         {(videos?.length ?? 0) > 0 && (
           <section className="panel">
             <div className="section-head section-head--tight">
@@ -303,96 +416,6 @@ export function AgentDetailPage() {
             <div className="video-row">
               {videos.map((v) => (
                 <ItemCard key={v.id} item={v} fromAgentId={agent.id} compact />
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="panel">
-          <h2 className="panel__title">Technical details</h2>
-          <dl className="techline">
-            <div>
-              <dt>
-                <Cpu size={14} strokeWidth={2.2} /> Models
-              </dt>
-              <dd>{agent.models.length ? agent.models.join(', ') : 'Not listed'}</dd>
-            </div>
-            <div>
-              <dt>
-                <Boxes size={14} strokeWidth={2.2} /> Tools and services
-              </dt>
-              <dd>{agent.tools_services.length ? agent.tools_services.join(', ') : 'Not listed'}</dd>
-            </div>
-            {agent.architecture_pattern && (
-              <div>
-                <dt>
-                  <Layers size={14} strokeWidth={2.2} /> Architecture pattern
-                </dt>
-                <dd>{agent.architecture_pattern}</dd>
-              </div>
-            )}
-            <div>
-              <dt>
-                <Calendar size={14} strokeWidth={2.2} /> Created
-              </dt>
-              <dd>{formatDate(agent.created_at)}</dd>
-            </div>
-            {agent.source_kind === 'enterprise' && agent.documentation_url && (
-              <div>
-                <dt>
-                  <ExternalLink size={14} strokeWidth={2.2} /> Source documentation
-                </dt>
-                <dd>
-                  <ExtLink href={agent.documentation_url} event="documentation_click" agent={agent} className="linkbtn">
-                    Open
-                  </ExtLink>
-                </dd>
-              </div>
-            )}
-          </dl>
-        </section>
-
-        {/* Getting access is the last thing about the agent: read first, then
-            act. The route, the request and the owner sit in one card, not three. */}
-        <section className="panel panel--access" id="request-access">
-          <h2 className="panel__title">
-            <ShieldCheck size={20} strokeWidth={2.4} /> Get access
-          </h2>
-          <p className="panel__text">
-            <strong>{ACCESS_LABEL[agent.access.type]}.</strong> {agent.access.how}
-          </p>
-          {/* A request form only makes sense where a request is the route in.
-              Open agents need none; restricted ones go through the owner. */}
-          {access === 'request' && <AccessRequestForm key={agent.id} agentId={agent.id} />}
-          <div className="agent__owner">
-            <span>
-              <strong>{agent.owner.name || 'Owner to be confirmed'}</strong> · {agent.owner.team}
-            </span>
-            {agent.source_kind === 'enterprise' && !agent.owner.email ? (
-              <span className="muted">Contact details will appear once the owning team confirms the listing.</span>
-            ) : agent.source_kind === 'enterprise' ? (
-              <a
-                className="linkbtn"
-                href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`}
-                onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id })}
-              >
-                <MessageSquare size={16} /> Collaborate with the owner
-              </a>
-            ) : (
-              <details>
-                <summary>Collaborate with the owner</summary>
-                <p>Sample contact: {agent.owner.email}. Enterprise contact will be enabled when the listing is confirmed.</p>
-              </details>
-            )}
-          </div>
-        </section>
-
-        {related.length > 0 && (
-          <section>
-            <h2 className="section-title">Related agents</h2>
-            <div className="agent-grid">
-              {related.map((a) => (
-                <AgentCard key={a.id} agent={a} source="related" compact />
               ))}
             </div>
           </section>

@@ -12,13 +12,13 @@ First deliverable for review with Ganesh. Scope follows the brief: make the ~10 
 | 4 | Generative / NLP search | `POST /api/marketplace/search`, `backend/app/marketplace/search.py` | Done. Understands intent, matches metadata, ranks, explains why. |
 | 5 | Netflix-style carousels | `backend/data/carousels.json` | Done. Recommended for you, Compliance & Risk, Document Intelligence, Customer Operations, Popular & featured, Developer Tools. |
 | 6 | Persona-based categorisation | `backend/data/personas.json`, persona picker on the page | Done. Five predefined personas. Recommended carousel and search ranking change with persona. |
-| 7 | Agent detail page | `/marketplace/agents/{id}` | Done. One page: what it is, what it does, who it is for, owner, tools and models, access, docs, architecture, related agents. |
-| 8 | Actions | Detail page header and sidebar | Launch, Request access, Documentation, Architecture pattern, Collaborate with owner, Email owner. |
+| 7 | Agent detail page | `/marketplace/agents/{id}` | Done. One page: what it is, what it does, who it is for, owner, tools and models, access, document links, related agents. |
+| 8 | Actions | Detail page header and sidebar | Launch, Request access, Documents, Collaborate with owner, Email owner. |
 | 9 | "Did you find what you need?" | Under search results and on every detail page | Done. Yes / No, and "tell us what was missing" on No. Stored in `backend/var/feedback.jsonl`. |
 
 Also real, so the demo journey never dead-ends:
 
-- **Documentation and architecture in the hub.** Every agent has an in-app documentation page (`/marketplace/agents/{id}/docs`, markdown from `backend/data/docs/{id}.md`) and an architecture pattern page (`/architecture`, from `backend/data/architecture/{pattern}.md`). The original external links stay available as "Source".
+- **Documents are links, not copies.** Each agent lists its documents by type (BRD, ASD, HLD, LLD) with a link to where each lives: Confluence, SharePoint, JIRA, ServiceNow or a document store (`Agent.documents`; the types and systems are in `backend/data/knowledge-sources.json` and shown at Knowledge > Sources). The hub keeps no copy, and a link not yet given says "Link to be confirmed".
 - **Related learning on every agent, owned by the Learning pillar.** The agent page consumes `GET /api/learning/for-agent/{id}`; the Learning pillar owns the content and the recommendation logic. Swim Lane 1 does not implement a learning recommender. Each opens the exact video at `/learning/videos/{id}?from={agent}` with a working player, "Up next", the agents covered, and a **Back to {agent}** button. The Learning pillar itself is a real catalogue filtered by path.
 - **Back everywhere.** Agent, docs, architecture and video pages carry a Back control that returns to the previous in-app page (search results keep their query because it lives in the URL) or to a sensible parent when the page was opened directly.
 - Videos are real, public YouTube sessions from IBM Technology, AWS Developers, Google Cloud, GitHub, CAMS, RapidAML, Litera, Webio and FinCrime Agent, embedded with the privacy-enhanced player and credited on the page. When the MUFG AI Hub records its own sessions, replace `youtube_id` per entry, or set `video_url` for an internally hosted file.

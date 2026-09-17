@@ -2,6 +2,17 @@ import { getJson, postJson } from './api'
 export type AgentStatus = 'production' | 'pilot' | 'beta' | 'in_development' | 'deprecated'
 export type AccessType = 'open' | 'request' | 'restricted'
 
+/** A link to one of the agent's documents where it lives. Blank values have not been confirmed. */
+export interface AgentDocument {
+  /** A document type from the knowledge sources: brd, asd, hld, lld. */
+  type: string
+  /** The system it lives in; blank until confirmed. */
+  system: string
+  url: string
+  /** What this document covers, in the owning team's words; blank uses the document type's description. */
+  description: string
+}
+
 export interface Agent {
   source_kind: 'sample' | 'enterprise'
   id: string
@@ -26,6 +37,8 @@ export interface Agent {
   access: { type: AccessType; how: string; launch_url: string; request_url: string }
   documentation_url: string
   architecture_url: string
+  /** Its documents by type, linked where they live. The hub keeps no copies. */
+  documents: AgentDocument[]
   tags: string[]
   featured: boolean
   popularity: number

@@ -1,67 +1,10 @@
-import { RotateCcw, Sparkles } from 'lucide-react'
-import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { RotateCcw } from 'lucide-react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { track } from '../../lib/context'
 import { askHubStream, reduceLive, startLive, type Live } from '../../lib/journeys'
 import { AssistantAnswer, type Turn } from './AssistantAnswer'
 import { Composer } from './Composer'
-import { HeroRotator, type HeroLine } from './HeroRotator'
-
-const HERO_COMMON: HeroLine[] = [
-  {
-    h: (
-      <>
-        Start with something <em>already proven</em>.
-      </>
-    ),
-    s: 'Search validated prompts, skill videos and AI agents from across the bank, or add your own. Nothing you enter here leaves MUFG.',
-  },
-  {
-    h: (
-      <>
-        Someone has <em>probably done this</em> before.
-      </>
-    ),
-    s: 'Sixty validated prompts and a catalogue of courses, contributed by desks like yours. Reuse beats rebuilding.',
-  },
-  {
-    h: (
-      <>
-        Ask in plain English. <em>Get something usable</em>.
-      </>
-    ),
-    s: 'Describe the task and the assistant finds the cleared prompt, the right course, or helps you draft a new one.',
-  },
-  {
-    h: (
-      <>
-        Know what you can <em>trust</em>.
-      </>
-    ),
-    s: 'Every recommendation shows its owner, who can use it and how to get access. Anything unconfirmed says so.',
-  },
-]
-
-// A line written for the desk, shown first, where the persona has one.
-const HERO_DESK: Record<string, HeroLine> = {
-  relationship_manager: {
-    h: (
-      <>
-        Walk in <em>better prepared</em>.
-      </>
-    ),
-    s: 'Pitch structures, earnings-call analysis and treasury advisory, validated and ready for your next client conversation.',
-  },
-  risk_analyst: {
-    h: (
-      <>
-        See the exposure <em>before it becomes a question</em>.
-      </>
-    ),
-    s: 'Concentration analysis, regulatory gap detection and screening rules, cleared for portfolio work.',
-  },
-}
-
 const MAX_KEPT = 20
 
 // The conversation survives leaving home for an agent page and coming back.
@@ -114,7 +57,7 @@ interface Props {
 }
 
 /**
- * Home as a conversation. Before the first question: the headline, the
+ * Home as a conversation. Before the first question: a greeting, the
  * composer and suggestions. After it: a transcript filling the screen, with
  * the composer resting at its foot. Each reply comes from /api/ask, the hub's
  * graph: the job, what every pillar found, and how it was chosen.
@@ -131,7 +74,6 @@ export function HomeChat({ storeKey, firstName, initials, persona, personaLabel,
   const session = useRef(readValue(sessionKey))
   const busy = turns.some((t) => t.status === 'loading')
   const talking = turns.length > 0
-  const lines = useMemo(() => (HERO_DESK[persona] ? [HERO_DESK[persona], ...HERO_COMMON] : HERO_COMMON), [persona])
 
   useEffect(() => writeThread(storeKey, turns), [storeKey, turns])
 
@@ -217,7 +159,7 @@ export function HomeChat({ storeKey, firstName, initials, persona, personaLabel,
         {talking ? (
           <div className="chat__bar">
             <span className="chat__bar-title">
-              <Sparkles size={16} strokeWidth={2.2} aria-hidden="true" /> Ask the AI Hub
+              Ask the AI Hub
             </span>
             <button type="button" className="chat__new" onClick={reset}>
               <RotateCcw size={15} strokeWidth={2.2} aria-hidden="true" /> New conversation
@@ -225,8 +167,10 @@ export function HomeChat({ storeKey, firstName, initials, persona, personaLabel,
           </div>
         ) : (
           <>
-            <p className="chat__eyebrow">Welcome, {firstName}</p>
-            <HeroRotator key={persona} lines={lines} />
+            <h1 className="chat__title">Welcome, {firstName}</h1>
+            <p className="chat__sub">
+              Describe a task and the hub finds the agents, prompts and learning for it.
+            </p>
           </>
         )}
 
@@ -267,7 +211,6 @@ export function HomeChat({ storeKey, firstName, initials, persona, personaLabel,
             <div className="suggests" role="group" aria-label="Try asking">
               {examples.map((q) => (
                 <button key={q} type="button" className="suggest" onClick={() => send(q)}>
-                  <Sparkles size={15} strokeWidth={2.2} aria-hidden="true" />
                   {q}
                 </button>
               ))}

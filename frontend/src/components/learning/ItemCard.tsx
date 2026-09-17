@@ -1,4 +1,4 @@
-import { BookOpen, Check, Clock, FileText, GraduationCap, Layers, ListChecks, PlayCircle, Sparkles } from 'lucide-react'
+import { BookOpen, Check, Clock, FileText, GraduationCap, Layers, Lightbulb, ListChecks, PlayCircle } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 import { TYPE_LABEL, duration, itemHref, type Item, type ItemType } from '../../lib/learning'
@@ -11,7 +11,7 @@ const ICON: Record<ItemType, ComponentType<{ size?: number; strokeWidth?: number
   guide: BookOpen,
   documentation: Layers,
   'quick-reference': ListChecks,
-  'best-practice': Sparkles,
+  'best-practice': Lightbulb,
 }
 
 export function ItemCard({ item, fromAgentId, compact }: { item: Item; fromAgentId?: string; compact?: boolean }) {

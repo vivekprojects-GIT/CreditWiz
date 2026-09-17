@@ -13,8 +13,8 @@ import {
   MessageSquareText,
   PenLine,
   Plus,
+  RotateCcw,
   ShieldCheck,
-  Sparkles,
   ThumbsDown,
   ThumbsUp,
   UserRound,
@@ -227,7 +227,7 @@ function DraftCard({ draft, busy, onAnother }: { draft: Draft; busy: boolean; on
       </div>
       <pre className="codeblock codeblock--compact">{draft.body}</pre>
       <p className="draftcard__learn">
-        <Sparkles size={14} strokeWidth={2.2} aria-hidden="true" /> Learned from
+        Learned from
         {draft.learned_from.map((s) => (
           <Link key={s.id} className="tagchip" to={`/library/prompts/${s.id}`}>
             {s.title}
@@ -247,7 +247,7 @@ function DraftCard({ draft, busy, onAnother }: { draft: Draft; busy: boolean; on
           <Copy size={15} strokeWidth={2.2} /> {copied ? 'Copied' : 'Copy'}
         </button>
         <button type="button" className="btn-outline" onClick={onAnother} disabled={busy}>
-          {busy ? <Loader2 className="spin" size={15} aria-hidden="true" /> : <Sparkles size={15} strokeWidth={2.2} />} Try another
+          {busy ? <Loader2 className="spin" size={15} aria-hidden="true" /> : <RotateCcw size={15} strokeWidth={2.2} />} Try another
           version
         </button>
       </div>
@@ -541,7 +541,7 @@ function DirectAnswer({ ask, latest, onAsk }: { ask: AskResponse; latest: boolea
         </div>
       )}
       <p className="answer__foot">
-        <Sparkles size={14} strokeWidth={2.2} aria-hidden="true" /> Answered directly in {duration(ask.took_ms)}: no search
+        <Info size={14} strokeWidth={2.2} aria-hidden="true" /> Answered directly in {duration(ask.took_ms)}: no search
         ran{ask.reply_source === 'claude' ? '.' : ' and no model was called.'}
       </p>
     </div>
@@ -695,7 +695,7 @@ export function AssistantAnswer({
               <span className="muted">I can draft a prompt for this from the validated ones on your desk.</span>
             </div>
             <button type="button" className="btn btn--inline" disabled={drafting} onClick={() => void makeDraft(task.loggable_query, false)}>
-              {drafting ? <Loader2 className="spin" size={15} aria-hidden="true" /> : <Sparkles size={15} strokeWidth={2.2} />} Draft a
+              {drafting ? <Loader2 className="spin" size={15} aria-hidden="true" /> : <PenLine size={15} strokeWidth={2.2} />} Draft a
               prompt
             </button>
           </div>

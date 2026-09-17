@@ -1,4 +1,4 @@
-import { Loader2, Search, Sparkles, X } from 'lucide-react'
+import { Loader2, Search, X } from 'lucide-react'
 import type { RefObject } from 'react'
 
 interface Props {
@@ -44,7 +44,7 @@ export function BandSearch({
         }}
         role="search"
       >
-        <Sparkles className="gsearch__icon" size={22} strokeWidth={2.2} aria-hidden="true" />
+        <Search className="gsearch__icon" size={18} strokeWidth={2} aria-hidden="true" />
         <input
           ref={inputRef}
           className="gsearch__input"
@@ -60,14 +60,14 @@ export function BandSearch({
           </button>
         )}
         <button type="submit" className="gsearch__go" disabled={busy || !value.trim()}>
-          {busy ? <Loader2 className="spin" size={20} strokeWidth={2.4} /> : <Search size={20} strokeWidth={2.4} />}
+          {busy && <Loader2 className="spin" size={16} strokeWidth={2.4} />}
           {action}
         </button>
       </form>
 
       {examples.length > 0 && (
         <div className="examples">
-          <span className="examples__label">Try</span>
+          <span className="examples__label">For example</span>
           {examples.map((q) => (
             <button key={q} type="button" className="examples__chip" onClick={() => onSearch(q)}>
               {q}

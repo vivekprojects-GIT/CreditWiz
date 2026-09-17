@@ -9,12 +9,12 @@ interface Props {
   children?: ReactNode
   /** Less vertical padding, for pages where content is the point. */
   compact?: boolean
-  /** Small uppercase label above the title. */
+  /** Short label above the title, such as the section it belongs to. */
   kicker?: ReactNode
 }
 
 /**
- * The ink band every page opens with. One consistent anchor across the hub:
+ * The light header every page opens with. One consistent anchor across the hub:
  * kicker, title, lead, an optional control row and an optional right-hand slot.
  */
 export function PageBand({ title, lead, aside, children, compact, kicker }: Props) {

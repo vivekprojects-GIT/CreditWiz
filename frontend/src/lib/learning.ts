@@ -98,22 +98,6 @@ export interface MyLearning {
   proficiency_note: string
 }
 
-export interface DocPage {
-  source_kind: 'sample' | 'enterprise'
-  agent_id: string
-  agent_name: string
-  title: string
-  markdown: string
-  source_url: string
-  status: string
-  owner: string
-  team: string
-  version: string
-  updated: string
-  labels: string[]
-  read_minutes: number
-}
-
 export const fetchLearningHome = (persona: string, signal?: AbortSignal) =>
   getJson<LearningHome>(`/api/learning${persona ? `?persona=${encodeURIComponent(persona)}` : ''}`, signal)
 
@@ -142,9 +126,6 @@ export async function recordProgress(item_id: string, status: LearningStatus, pr
 export async function rateItem(item_id: string, stars: number | null) {
   return postJson<Item>('/api/learning/ratings', { item_id, stars })
 }
-
-export const fetchAgentDocs = (agentId: string, signal?: AbortSignal) =>
-  getJson<DocPage>(`/api/marketplace/agents/${encodeURIComponent(agentId)}/docs`, signal)
 
 /** Deep link to an item, remembering where the user came from so Back works. */
 export function itemHref(itemId: string, fromAgentId?: string) {

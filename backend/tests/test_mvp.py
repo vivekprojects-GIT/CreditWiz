@@ -156,7 +156,7 @@ def test_agent_acl_covers_all_discovery_and_resources(monkeypatch):
         # Exact quoted id: the learning item "contract-analyzer-in-5" would
         # otherwise match as a substring and fail this for the wrong reason.
         assert '"contract-analyzer"' not in c.get(route).text
-    for suffix in ("", "/docs", "/architecture", "/related"):
+    for suffix in ("", "/related"):
         assert (
             c.get("/api/marketplace/agents/contract-analyzer" + suffix).status_code
             == 404
@@ -413,6 +413,8 @@ def test_account_provisioning_revokes_old_sessions():
         "prompts": 60,
         "templates": 4,
         "assets": 20,
+        "knowledge_systems": 5,
+        "document_types": 4,
     }
 
 

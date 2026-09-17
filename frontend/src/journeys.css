@@ -23,7 +23,7 @@
 .home-work__title {
   margin: 0;
   font-size: var(--t-lg);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-950);
 }
 
@@ -64,12 +64,12 @@
 }
 
 .jcard:hover .jcard__title {
-  color: var(--red-700);
+  color: var(--ink-950);
 }
 
 .jcard__title {
   font-size: var(--t-base);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-900);
 }
 
@@ -89,7 +89,7 @@
   padding-top: var(--s-2);
   border-top: 1px solid var(--line);
   font-size: var(--t-xs);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink-700);
 }
 
@@ -100,13 +100,11 @@
   align-items: center;
   height: 24px;
   padding: 0 10px;
-  border-radius: var(--r-full);
-  background: var(--red-tint);
-  color: var(--red-700);
+  border-radius: var(--r-sm);
+  background: var(--ink-100);
+  color: var(--ink-700);
   font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* Cards: each asset set apart with its kind's icon, for the home conversation. */
@@ -144,8 +142,8 @@
   display: grid;
   place-items: center;
   border-radius: var(--r-md);
-  background: var(--red-tint);
-  color: var(--red-600);
+  background: var(--ink-100);
+  color: var(--ink-700);
 }
 
 .asset__icon--system {
@@ -188,13 +186,11 @@
 
 .asset__kind {
   padding: 3px 8px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   background: var(--ink-100);
   color: var(--ink-600);
   font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 600;
 }
 
 /* The one distinction the page is built on: where the work really happens. */
@@ -210,14 +206,14 @@
 
 .asset__sample {
   font-size: var(--t-xs);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--warn-fg);
 }
 
 .asset__title {
   margin: 0;
   font-size: var(--t-md);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-900);
 }
 
@@ -237,7 +233,7 @@
 }
 
 .asset__facts strong {
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink-700);
 }
 
@@ -268,7 +264,7 @@
   list-style: none;
   cursor: pointer;
   font-size: var(--t-sm);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink-700);
 }
 
@@ -355,7 +351,7 @@
 .journey__group-title {
   margin: 0;
   font-size: var(--t-lg);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-950);
 }
 
@@ -414,7 +410,7 @@
   display: grid;
   place-items: center;
   font-size: var(--t-xs);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .jsteps strong {
@@ -438,9 +434,7 @@
 .roles h3 {
   margin: 0 0 4px;
   font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 600;
   color: var(--ink-500);
 }
 

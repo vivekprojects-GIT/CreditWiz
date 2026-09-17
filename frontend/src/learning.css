@@ -10,19 +10,19 @@
   height: 32px;
   padding: 0 var(--s-3) 0 var(--s-2);
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   background: var(--surface);
   color: var(--ink-700);
   font-size: var(--t-sm);
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
   transition: border-color var(--fast), color var(--fast), background var(--fast);
 }
 
 .backbtn:hover {
-  border-color: var(--red);
-  color: var(--red);
-  background: var(--red-tint);
+  border-color: var(--ink-400);
+  color: var(--ink-950);
+  background: var(--ink-100);
 }
 
 .doc__bar {
@@ -53,10 +53,8 @@
   align-items: center;
   gap: 6px;
   font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--red);
+  font-weight: 600;
+  color: var(--ink-700);
   margin-bottom: var(--s-2);
 }
 
@@ -70,8 +68,8 @@
 
 .md h1 {
   font-size: var(--t-3xl);
-  font-weight: 800;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0 0 var(--s-2);
   line-height: 1.15;
   color: var(--ink-950);
@@ -85,8 +83,8 @@
 
 .md h2 {
   font-size: var(--t-xl);
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--ink-950);
   margin: var(--s-8) 0 var(--s-3);
   padding-top: var(--s-5);
@@ -95,7 +93,7 @@
 
 .md h3 {
   font-size: var(--t-lg);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--ink-950);
   margin: var(--s-5) 0 var(--s-2);
@@ -118,16 +116,16 @@
 }
 
 .md li::marker {
-  color: var(--red);
+  color: var(--ink-700);
 }
 
 .md strong {
   color: var(--ink-950);
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .md a {
-  color: var(--red);
+  color: var(--link);
   font-weight: 600;
 }
 
@@ -176,8 +174,6 @@
 .md th {
   background: var(--ink-50);
   font-size: var(--t-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--ink-500);
   border-bottom-color: var(--line-strong);
 }
@@ -245,11 +241,11 @@
   align-items: center;
   gap: 4px;
   font-size: var(--t-2xs);
-  font-weight: 650;
+  font-weight: 600;
   color: #fff;
   background: rgba(13, 14, 17, 0.78);
   padding: 2px 7px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
 }
 
 .vcard__body {
@@ -260,15 +256,13 @@
 
 .vcard__level {
   font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--red);
+  font-weight: 600;
+  color: var(--ink-700);
 }
 
 .vcard__title {
   font-size: var(--t-base);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.3;
   color: var(--ink-950);
@@ -276,7 +270,7 @@
 }
 
 .vcard:hover .vcard__title {
-  color: var(--red);
+  color: var(--ink-950);
 }
 
 .vcard__desc {
@@ -318,18 +312,18 @@
 .pathbar__item {
   border: 1px solid var(--line-strong);
   background: var(--surface);
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   padding: 6px 14px;
   font-size: var(--t-sm);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink-700);
   cursor: pointer;
   transition: border-color var(--fast), color var(--fast), background var(--fast);
 }
 
 .pathbar__item:hover {
-  border-color: var(--red);
-  color: var(--red);
+  border-color: var(--ink-400);
+  color: var(--ink-950);
 }
 
 .pathbar__item.is-active {
@@ -371,8 +365,8 @@
 .video__title {
   margin: var(--s-2) 0 0;
   font-size: var(--t-2xl);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.15;
   color: var(--ink-950);
 }
@@ -393,11 +387,11 @@
 
 .video__source strong {
   color: var(--ink-800);
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .video__source a {
-  color: var(--red);
+  color: var(--link);
   font-weight: 600;
 }
 
@@ -489,8 +483,7 @@
 
 .player__play-label {
   font-size: var(--t-base);
-  font-weight: 650;
-  letter-spacing: 0.01em;
+  font-weight: 600;
 }
 
 .player__blocked {
@@ -574,11 +567,11 @@
   right: var(--s-2);
   bottom: var(--s-2);
   font-size: var(--t-2xs);
-  font-weight: 650;
+  font-weight: 600;
   color: #fff;
   background: rgba(13, 14, 17, 0.78);
   padding: 2px 7px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
 }
 
 .icard__bar {
@@ -593,7 +586,7 @@
 .icard__bar span {
   display: block;
   height: 100%;
-  background: var(--red);
+  background: var(--ink-800);
 }
 
 /* Non-video items have no thumbnail. They still get a media area of the same
@@ -612,13 +605,13 @@
 }
 
 .icard:hover .icard__cover {
-  color: var(--red);
+  color: var(--ink-950);
 }
 
 /* Red marks the type, but a tinted ground repeated across a section turned the
    page pink, so only the glyph carries the accent. */
 .icard--best-practice .icard__cover {
-  color: var(--red);
+  color: var(--ink-700);
 }
 
 .icard__body {
@@ -638,21 +631,17 @@
 
 .icard__type {
   font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 600;
   color: var(--ink-400);
 }
 
 .icard__required {
   font-size: var(--t-2xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--red);
-  background: var(--red-tint);
+  font-weight: 600;
+  color: var(--ink-700);
+  background: var(--ink-100);
   padding: 2px 7px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
 }
 
 .icard__done {
@@ -660,21 +649,19 @@
   align-items: center;
   gap: 3px;
   font-size: var(--t-2xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 600;
   color: var(--ok-fg);
 }
 
 .icard__pct {
   font-size: var(--t-2xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-500);
 }
 
 .icard__title {
   font-size: var(--t-base);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.3;
   color: var(--ink-950);
@@ -682,7 +669,7 @@
 }
 
 .icard:hover .icard__title {
-  color: var(--red);
+  color: var(--ink-950);
 }
 
 .icard__desc {
@@ -733,17 +720,16 @@
 }
 
 .lsection--required .icard {
-  border-left: 3px solid var(--red);
 }
 
 .sec-count {
   margin-left: var(--s-2);
   font-size: var(--t-xs);
-  font-weight: 650;
-  color: var(--red);
-  background: var(--red-tint);
+  font-weight: 600;
+  color: var(--ink-700);
+  background: var(--ink-100);
   padding: 2px 9px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-sm);
   text-transform: none;
   letter-spacing: 0;
 }
@@ -752,21 +738,21 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
+  height: 32px;
   padding: 0 var(--s-3);
-  border-radius: var(--r-full);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #fff;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink-800);
   font-size: var(--t-sm);
-  font-weight: 650;
+  font-weight: 600;
   white-space: nowrap;
-  transition: background var(--fast), border-color var(--fast);
+  transition: border-color var(--fast), color var(--fast);
 }
 
 .band__action:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: var(--ink-400);
+  color: var(--ink-950);
 }
 
 /* my learning */
@@ -789,13 +775,12 @@
 }
 
 .stat--required {
-  border-left: 3px solid var(--red);
 }
 
 .stat__n {
   font-size: var(--t-3xl);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1;
   color: var(--ink-950);
   font-variant-numeric: tabular-nums;
@@ -804,7 +789,7 @@
 .stat__of {
   font-size: var(--t-xl);
   color: var(--ink-400);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .stat__l {
@@ -828,7 +813,7 @@
 }
 
 .coverage__topic {
-  font-weight: 650;
+  font-weight: 600;
   font-size: var(--t-base);
 }
 
@@ -842,7 +827,7 @@
 .coverage__bar span {
   display: block;
   height: 100%;
-  background: var(--red);
+  background: var(--ink-800);
   border-radius: var(--r-full);
   transition: width var(--out);
 }
@@ -876,7 +861,7 @@
   align-items: center;
   gap: 5px;
   font-size: var(--t-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ok-fg);
 }
 
@@ -892,7 +877,7 @@
 .item__progress span {
   display: block;
   height: 100%;
-  background: var(--red);
+  background: var(--ink-800);
   border-radius: var(--r-full);
 }
 
@@ -964,8 +949,8 @@
 .pathcard__title {
   margin: 0;
   font-size: var(--t-lg);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--ink-950);
 }
 
@@ -992,7 +977,7 @@
 .pathcard__bar span {
   display: block;
   height: 100%;
-  background: var(--red);
+  background: var(--ink-800);
   border-radius: var(--r-full);
   transition: width var(--out);
 }
@@ -1036,12 +1021,12 @@
 }
 
 .rating svg {
-  color: var(--red);
+  color: var(--ink-700);
   flex: none;
 }
 
 .rating strong {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-900);
   font-variant-numeric: tabular-nums;
 }
@@ -1078,7 +1063,7 @@
 }
 
 .starinput__btn.is-on {
-  color: var(--red);
+  color: var(--ink-700);
 }
 
 .starinput__btn:hover:not(:disabled) {

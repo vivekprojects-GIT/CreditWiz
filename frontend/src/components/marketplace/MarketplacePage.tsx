@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronRight, Sparkles } from 'lucide-react'
+import { ArrowRight, ChevronRight } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
@@ -162,7 +162,6 @@ function MarketplaceContent() {
                   concepts restate the query they just typed. Each result still
                   explains itself from the metadata that matched. */}
               <div className="results__intent">
-                <Sparkles size={16} strokeWidth={2.4} />
                 <span>{result.intent.summary}</span>
               </div>
             </div>

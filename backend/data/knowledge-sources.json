@@ -1,0 +1,100 @@
+{
+  "_about": "What will feed the AI Hub, as the MUFG team listed it for Swim Lane 1: the collaboration systems and the document types, and how the team groups its links today. The listing is the team's own; `feeds` is the hub's proposal for what each would become in the hub. Nothing is connected in this prototype. Blank values have not been confirmed by the owning team and show as 'To be confirmed'.",
+  "systems": [
+    {
+      "id": "confluence",
+      "name": "Confluence",
+      "kind": "wiki",
+      "feeds": "Documentation and design pages each agent links to",
+      "owner": "",
+      "location": "",
+      "connection": "not_connected"
+    },
+    {
+      "id": "sharepoint",
+      "name": "SharePoint",
+      "kind": "document_site",
+      "feeds": "Documentation and design files each agent links to",
+      "owner": "",
+      "location": "",
+      "connection": "not_connected"
+    },
+    {
+      "id": "jira",
+      "name": "JIRA",
+      "kind": "work_tracking",
+      "feeds": "Where an agent is in delivery: in development, beta or in production",
+      "owner": "",
+      "location": "",
+      "connection": "not_connected"
+    },
+    {
+      "id": "servicenow",
+      "name": "ServiceNow",
+      "kind": "service_management",
+      "feeds": "How to request access to an agent and get support for it",
+      "owner": "",
+      "location": "",
+      "connection": "not_connected"
+    },
+    {
+      "id": "documents",
+      "name": "Documents",
+      "kind": "document_store",
+      "feeds": "Files kept outside the wikis, linked from the agent they describe",
+      "owner": "",
+      "location": "",
+      "connection": "not_connected"
+    }
+  ],
+  "document_types": [
+    {
+      "id": "brd",
+      "abbreviation": "BRD",
+      "name": "Business Requirements Document",
+      "about": "The business need, scope and requirements a solution must meet.",
+      "feeds": "What the agent does, its use cases and who it is for: the words Discover searches",
+      "lives_in": [],
+      "owner": ""
+    },
+    {
+      "id": "asd",
+      "abbreviation": "ASD",
+      "name": "",
+      "about": "",
+      "feeds": "",
+      "lives_in": [],
+      "owner": ""
+    },
+    {
+      "id": "hld",
+      "abbreviation": "HLD",
+      "name": "High-level design",
+      "about": "The solution's architecture: its components, integrations and data flows.",
+      "feeds": "The agent's architecture page",
+      "lives_in": [],
+      "owner": ""
+    },
+    {
+      "id": "lld",
+      "abbreviation": "LLD",
+      "name": "Low-level design",
+      "about": "Detailed design of each component, for the engineers who build and run it.",
+      "feeds": "A link from the agent's architecture page, for engineers",
+      "lives_in": [],
+      "owner": ""
+    }
+  ],
+  "link_groups": [
+    {
+      "id": "pitchbook",
+      "name": "Pitchbook links",
+      "systems": ["confluence", "servicenow", "jira", "documents"]
+    },
+    {
+      "id": "library",
+      "name": "Library links",
+      "systems": ["confluence", "servicenow", "jira", "documents"]
+    }
+  ]
+}
