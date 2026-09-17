@@ -2237,15 +2237,10 @@ a.plain {
    ============================================================================ */
 
 .agent__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--s-6);
   padding: var(--s-6);
-  border-radius: var(--r-xl);
-  background: var(--surface);
   border: 1px solid var(--line);
-  box-shadow: var(--e-1);
+  border-radius: var(--r-lg);
+  background: var(--surface);
   margin-bottom: var(--s-4);
 }
 
@@ -2257,24 +2252,19 @@ a.plain {
 }
 
 .agent__category {
-  font-size: var(--t-2xs);
-  font-weight: 600;
-  color: var(--ink-400);
+  font-size: var(--t-sm);
+  color: var(--ink-600);
 }
 
 .agent__version {
-  font-size: var(--t-2xs);
-  font-weight: 600;
-  color: var(--ink-500);
-  background: var(--ink-50);
-  border: 1px solid var(--line);
-  padding: 2px 7px;
-  border-radius: var(--r-sm);
+  font-size: var(--t-xs);
+  color: var(--ink-600);
+  font-variant-numeric: tabular-nums;
 }
 
 .agent__name {
   margin: var(--s-3) 0 0;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.2;
@@ -2282,11 +2272,11 @@ a.plain {
 }
 
 .agent__tagline {
-  margin: var(--s-2) 0 0;
-  font-size: var(--t-lg);
+  margin: var(--s-1) 0 0;
+  font-size: var(--t-md);
   color: var(--ink-600);
-  max-width: 68ch;
-  line-height: 1.45;
+  max-width: 72ch;
+  line-height: 1.5;
 }
 
 .agent__meta {
@@ -2308,7 +2298,6 @@ a.plain {
   flex-direction: column;
   align-items: stretch;
   gap: var(--s-2);
-  min-width: 216px;
   flex: none;
 }
 
@@ -2673,8 +2662,7 @@ a.plain {
     grid-template-columns: 1fr;
   }
 
-  .hero,
-  .agent__head {
+  .hero {
     flex-direction: column;
     align-items: stretch;
   }
@@ -2798,15 +2786,6 @@ a.plain {
 
 /* ---------------------------------------------------------------- agent detail header */
 
-.agent__head.band {
-  align-items: flex-start;
-  padding: var(--s-2) 0 var(--s-6);
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
 
 /* the old marketplace hero classes now inherit band typography */
 
@@ -3181,6 +3160,13 @@ button:disabled {
 /* The left column has to be allowed to shrink. Without min-width: 0 it could
    not narrow below the five-fact strip, and at desktop width it pushed the
    action buttons 42px out of the hero, clipping "Architecture". */
+.agent__head-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-6);
+}
+
 .agent__head-main {
   flex: 1;
   min-width: 0;
@@ -3188,10 +3174,22 @@ button:disabled {
 
 .agent__facts {
   margin: var(--s-5) 0 0;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--s-3) var(--s-5);
-  max-width: 860px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--s-4) 0;
+}
+
+.agent__facts > div {
+  min-width: 0;
+  padding: 0 var(--s-4);
+  border-left: 1px solid var(--line);
+}
+
+.agent__facts > div:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
 .agent__facts dt {
@@ -3200,20 +3198,29 @@ button:disabled {
 }
 
 .agent__facts dd {
-  margin: 2px 0 0;
-  font-size: var(--t-sm);
+  margin: 4px 0 0;
+  font-size: var(--t-base);
   line-height: 1.4;
   color: var(--ink-900);
 }
 
-.agent__note {
-  font-size: var(--t-xs);
-  color: var(--ink-500);
+.agent__pending {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-sm);
+  color: var(--ink-600);
+  white-space: nowrap;
 }
 
-.agent__head-main .agent__note {
-  margin: var(--s-4) 0 0;
+.agent__fact-sub {
+  display: block;
+  font-size: var(--t-xs);
+  color: var(--ink-600);
 }
+
+
 
 .agent__body {
   display: grid;
@@ -3349,10 +3356,24 @@ button:disabled {
 }
 
 @media (max-width: 900px) {
-  .agent__head.band {
+  .agent__head {
+    padding: var(--s-5) var(--s-4);
+  }
+
+  .agent__head-top {
     flex-direction: column;
     align-items: stretch;
-    padding: var(--s-2) 0 var(--s-5);
+    gap: var(--s-4);
+  }
+
+  .agent__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .agent__facts > div,
+  .agent__facts > div:first-child {
+    padding: 0 var(--s-3) 0 0;
+    border-left: 0;
   }
 
   .agent__actions {

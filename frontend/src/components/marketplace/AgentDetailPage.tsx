@@ -1,6 +1,7 @@
 import { AccessRequestForm } from './AccessRequestForm'
 import {
   ChevronRight,
+  Clock,
   ExternalLink,
   FileText,
   MessageSquare,
@@ -32,6 +33,11 @@ const PERSONA_LABEL: Record<string, string> = {
 }
 
 /** "Hannah Weiss" -> "HW"; a team name when no person is confirmed. */
+/** A value the owning team has not confirmed says so, rather than being guessed. */
+function Unconfirmed({ text = 'To be confirmed' }: { text?: string }) {
+  return <span className="tbc">{text}</span>
+}
+
 function initials(name: string) {
   return name
     .split(/\s+/)
@@ -141,7 +147,8 @@ export function AgentDetailPage() {
   const isSample = agent.source_kind === 'sample'
   const canLaunch = !isSample && !!agent.access.launch_url
   // The header's action column is shown only when there is something to do.
-  const hasAction = (access === 'open' && canLaunch) || access === 'request' || access === 'restricted'
+  // Open agents without a live link still get the column, to say the link is coming.
+  const hasAction = access === 'open' || access === 'request' || access === 'restricted'
   const ownerMail = agent.owner.email
     ? `mailto:${agent.owner.email}?subject=${encodeURIComponent(`Access to ${agent.name}`)}`
     : undefined
@@ -175,75 +182,84 @@ export function AgentDetailPage() {
       {/* The first screen holds the whole decision: what it is, who it is for,
           who owns it, and every action -- each one click from here. It used to
           take two and a half screens of cards and a sidebar to learn the same. */}
-      <header className="agent__head band">
-        <div className="agent__head-main">
-          <div className="agent__badges">
-            <span className={`status status--${agent.status}`}>{STATUS_LABEL[agent.status]}</span>
-            <span className="agent__category">{agent.category}</span>
-            {agent.version && <span className="agent__version">v{agent.version}</span>}
-            {forYou && <span className="acard__foryou">For your persona</span>}
+      <header className="agent__head">
+        <div className="agent__head-top">
+          <div className="agent__head-main">
+            <div className="agent__badges">
+              <span className={`status status--${agent.status}`}>{STATUS_LABEL[agent.status]}</span>
+              <span className="agent__category">{agent.category}</span>
+              {agent.version && <span className="agent__version">v{agent.version}</span>}
+              {forYou && <span className="acard__foryou">For your persona</span>}
+            </div>
+            <h1 className="agent__name">{agent.name}</h1>
+            <p className="agent__tagline">{agent.tagline}</p>
           </div>
-          <h1 className="agent__name">{agent.name}</h1>
-          <p className="agent__tagline">{agent.tagline}</p>
-          <dl className="agent__facts">
-            <div>
-              <dt>Who it is for</dt>
-              <dd>{agent.personas.map((p) => PERSONA_LABEL[p] ?? p).join(', ') || 'Not listed'}</dd>
+
+          {/* An empty action column kept a third of the header blank. */}
+          {hasAction && (
+            <div className="agent__actions">
+              {/* Where launching is the action but no link is live yet, say so where the button will be. */}
+              {access === 'open' && !canLaunch && (
+                <p className="agent__pending">
+                  <Clock size={14} strokeWidth={2.2} aria-hidden="true" /> Launch link coming soon
+                </p>
+              )}
+              {access === 'open' && canLaunch && (
+                <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--inline">
+                  <Rocket size={18} /> Launch agent
+                </ExtLink>
+              )}
+
+              {access === 'request' && (
+                <>
+                  <a className="btn btn--inline" href="#request-access" onClick={goToRequest}>
+                    Request access
+                  </a>
+                  {!isSample && agent.access.request_url && (
+                    <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
+                      Open enterprise access portal
+                    </ExtLink>
+                  )}
+                </>
+              )}
+
+              {access === 'restricted' && (
+                <a className="btn-outline" href={ownerMail} aria-disabled={!ownerMail}>
+                  Contact the owner for access
+                </a>
+              )}
             </div>
-            <div>
-              <dt>Business domains</dt>
-              <dd>{agent.business_domains.join(', ')}</dd>
-            </div>
-            <div>
-              <dt>Owner</dt>
-              {/* A first-pass listing may not have a confirmed owner yet. Say so
-                  here rather than carrying placeholder text in the data. */}
-              <dd>
-                {agent.owner.name || 'To be confirmed'} · {agent.owner.team}
-              </dd>
-            </div>
-            <div>
-              <dt>Platform</dt>
-              <dd>{agent.platform || 'Not listed'}</dd>
-            </div>
-            <div>
-              <dt>Updated</dt>
-              <dd>{formatDate(agent.updated_at)}</dd>
-            </div>
-          </dl>
-          {/* Only where launching is the action and no link is live yet. */}
-          {access === 'open' && !canLaunch && <p className="agent__note">Launch link coming soon</p>}
+          )}
         </div>
 
-        {/* An empty action column kept a third of the header blank. */}
-        {hasAction && (
-          <div className="agent__actions">
-            {access === 'open' && canLaunch && (
-              <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--inline">
-                <Rocket size={18} /> Launch agent
-              </ExtLink>
-            )}
-
-            {access === 'request' && (
-              <>
-                <a className="btn btn--inline" href="#request-access" onClick={goToRequest}>
-                  Request access
-                </a>
-                {!isSample && agent.access.request_url && (
-                  <ExtLink href={agent.access.request_url} event="request_access" agent={agent} className="btn-outline">
-                    Open enterprise access portal
-                  </ExtLink>
-                )}
-              </>
-            )}
-
-            {access === 'restricted' && (
-              <a className="btn-outline" href={ownerMail} aria-disabled={!ownerMail}>
-                Contact the owner for access
-              </a>
-            )}
+        {/* The facts a reader checks before opening it, in one row under the name. */}
+        <dl className="agent__facts">
+          <div>
+            <dt>Used by</dt>
+            <dd>{agent.personas.map((p) => PERSONA_LABEL[p] ?? p).join(', ') || <Unconfirmed />}</dd>
           </div>
-        )}
+          <div>
+            <dt>Domains</dt>
+            <dd>{agent.business_domains.join(', ') || <Unconfirmed />}</dd>
+          </div>
+          <div>
+            <dt>Owner</dt>
+            {/* A first-pass listing may not have a named owner yet: the team is
+                shown, and the person says it is to be confirmed. */}
+            <dd>
+              {agent.owner.team || <Unconfirmed />}
+              <span className="agent__fact-sub">{agent.owner.name || <Unconfirmed text="Contact to be confirmed" />}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Platform</dt>
+            <dd>{agent.platform || <Unconfirmed />}</dd>
+          </div>
+          <div>
+            <dt>Updated</dt>
+            <dd>{formatDate(agent.updated_at)}</dd>
+          </div>
+        </dl>
       </header>
 
       <div className="agent__body">
