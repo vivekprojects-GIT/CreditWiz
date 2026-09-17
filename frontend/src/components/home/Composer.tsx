@@ -20,6 +20,14 @@ export function Composer({ value, onChange, onSend, busy, personaLabel, placehol
     if (autoFocus) input.current?.focus()
   }, [autoFocus])
 
+  // One line to start; grows with what is typed, up to the CSS max-height.
+  useEffect(() => {
+    const el = input.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
+
   return (
     <form
       className="composer"
@@ -32,7 +40,7 @@ export function Composer({ value, onChange, onSend, busy, personaLabel, placehol
       <textarea
         ref={input}
         className="composer__input"
-        rows={2}
+        rows={1}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
@@ -47,7 +55,7 @@ export function Composer({ value, onChange, onSend, busy, personaLabel, placehol
       <div className="composer__tools">
         {personaLabel && (
           <span className="composer__pill" title="Answers are tuned to this role">
-            <UserRound size={15} strokeWidth={2.2} aria-hidden="true" /> As {personaLabel}
+            <UserRound size={13} strokeWidth={2.2} aria-hidden="true" /> As {personaLabel}
           </span>
         )}
         <span className="composer__hint">Enter to send, Shift and Enter for a new line</span>
@@ -58,7 +66,7 @@ export function Composer({ value, onChange, onSend, busy, personaLabel, placehol
           aria-label="Send"
           title="Send"
         >
-          {busy ? <Loader2 className="spin" size={20} /> : <ArrowUp size={20} strokeWidth={2.4} />}
+          {busy ? <Loader2 className="spin" size={16} /> : <ArrowUp size={16} strokeWidth={2.4} />}
         </button>
       </div>
     </form>

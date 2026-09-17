@@ -34,12 +34,12 @@
 
 .composer {
   max-width: none;
-  margin: var(--s-5) 0 0;
-  padding: 18px 18px 12px;
+  margin: var(--s-4) 0 0;
+  padding: 10px 10px 8px 14px;
   text-align: left;
   background: var(--surface);
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   transition:
     border-color var(--fast),
     box-shadow var(--fast);
@@ -53,14 +53,15 @@
 .composer__input {
   display: block;
   width: 100%;
-  min-height: 58px;
-  padding: 2px;
+  min-height: 24px;
+  max-height: 160px;
+  padding: 2px 0;
   border: 0;
   outline: none;
   resize: none;
   background: transparent;
   font: inherit;
-  font-size: 16.5px;
+  font-size: var(--t-md);
   line-height: 1.45;
   color: var(--ink-900);
 }
@@ -73,16 +74,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-2) var(--s-3);
-  margin-top: 10px;
+  gap: var(--s-2);
+  margin-top: 6px;
 }
 
 .composer__pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 8px;
+  gap: 4px;
+  height: 22px;
+  padding: 0 6px;
   border-radius: 4px;
   background: var(--ink-100);
   font-size: var(--t-xs);
@@ -97,8 +98,8 @@
 
 .composer__send {
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   margin-left: auto;
   display: grid;
   place-items: center;
@@ -308,7 +309,7 @@
 }
 
 .dock .composer__input {
-  min-height: 44px;
+  min-height: 24px;
 }
 
 /* ---- one reply ---- */
