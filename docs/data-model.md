@@ -2,7 +2,7 @@
 
 Nexus keeps its data in two places:
 
-- **Catalogue content** in JSON files under `backend/data/`. Read-only at run time: agents, learning, "Your work", community, prompts and knowledge sources.
+- **Catalogue content** in JSON files under `backend/data/`. Read-only at run time: agents, learning, "Your work", community, prompts and the list of source systems.
 - **What people do** in SQLite at `backend/var/hub.db` (`backend/app/database.py`): sign-ins, progress, ratings, feedback, requests and Super Agent conversations.
 
 The two are joined only by ids. SQLite stores `item_id`, `agent_id`, `prompt_id` and `post_id` as plain text that names a record in a JSON file. Nothing enforces those links.
@@ -22,9 +22,9 @@ erDiagram
   AGENT ||--|| AGENT_ACCESS : "reached through"
   AGENT ||--o{ AGENT_DOCUMENT : "documents"
   AGENT_DOCUMENT }o--|| DOCUMENT_TYPE : "is a"
-  AGENT_DOCUMENT }o--o| KNOWLEDGE_SYSTEM : "lives in"
-  DOCUMENT_TYPE }o--o{ KNOWLEDGE_SYSTEM : "lives in"
-  LINK_GROUP }o--o{ KNOWLEDGE_SYSTEM : "groups"
+  AGENT_DOCUMENT }o--o| SOURCE_SYSTEM : "lives in"
+  DOCUMENT_TYPE }o--o{ SOURCE_SYSTEM : "lives in"
+  LINK_GROUP }o--o{ SOURCE_SYSTEM : "groups"
   AGENT }o--o{ CAPABILITY : "has"
   AGENT }o--o{ BUSINESS_DOMAIN : "works in"
   AGENT }o--o{ PERSONA : "built for"
@@ -77,7 +77,7 @@ erDiagram
   }
   AGENT_DOCUMENT {
     string type FK "document type id"
-    string system FK "knowledge system id"
+    string system FK "source system id"
     string url
     string description
   }
@@ -87,10 +87,10 @@ erDiagram
     string name
     string about
     string feeds
-    string[] lives_in "knowledge system ids"
+    string[] lives_in "source system ids"
     string owner
   }
-  KNOWLEDGE_SYSTEM {
+  SOURCE_SYSTEM {
     string id PK
     string name
     string kind
@@ -102,7 +102,7 @@ erDiagram
   LINK_GROUP {
     string id PK
     string name
-    string[] systems "knowledge system ids"
+    string[] systems "source system ids"
   }
   PERSONA {
     string id PK
@@ -136,10 +136,11 @@ erDiagram
 | Agent, with its owner, access and documents *(embedded)* | `agents.json` |
 | Persona, with its interests *(embedded)* | `personas.json` |
 | Carousel, with its rule *(embedded)* | `carousels.json` |
-| Knowledge system, document type, link group | `knowledge-sources.json` |
+| Source system, document type, link group | `knowledge-sources.json` (`systems`, `document_types`, `link_groups`) |
 
 Notes:
 
+- A source system is an MUFG system where an agent's documents and records live: Confluence, SharePoint, JIRA, ServiceNow. It is a reference list, not a knowledge base or a search index. Nexus links to documents where they live and keeps no copies. The file is still named `knowledge-sources.json`.
 - A carousel holds a rule, not a list. Which agents appear is worked out from the rule on each request.
 - `services`, `example_tasks` and `documents` are part of the agent model but no sample agent fills them yet.
 - A user is given a persona from their job title and department by `persona-mapping.json`. That mapping is rules, not a stored link.
