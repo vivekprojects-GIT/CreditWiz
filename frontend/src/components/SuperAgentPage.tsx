@@ -43,7 +43,6 @@ export function SuperAgentPage() {
       firstName={data.user.first_name}
       initials={data.user.initials}
       persona={persona}
-      personaLabel={work?.persona_label ?? data.user.persona.label}
       examples={work?.examples.length ? work.examples : EXAMPLES}
     />
   )

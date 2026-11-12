@@ -1,26 +1,15 @@
 """Shared user-context models for the whole Nexus.
 
 This layer is horizontal: every pillar writes the same event and feedback shapes
-here. No pillar owns it. Swim Lane 1 is only one producer among nine.
+here. No pillar owns it. Swim Lane 1 is only one producer among them.
 """
 
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-# The nine pillars, plus Nexus shell itself.
-Pillar = Literal[
-    "marketplace",
-    "prompts",
-    "learning",
-    "intake",
-    "governance",
-    "knowledge",
-    "community",
-    "insights",
-    "platform",
-    "hub",
-]
+# The two pillars, plus Nexus shell itself.
+Pillar = Literal["marketplace", "learning", "hub"]
 
 # Event vocabulary shared across pillars. Pillar-specific nouns stay in `meta`.
 EventType = Literal[

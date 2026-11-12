@@ -1,11 +1,12 @@
-import { ArrowRight, ArrowUp, Bell, MessagesSquare } from 'lucide-react'
+import { ArrowRight, ArrowUp, Bell, MessagesSquare, Rocket } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fetchNotifications, isAbort } from '../lib/api'
 import { useChats } from '../lib/chats'
+import { track } from '../lib/context'
 import { useHub } from '../lib/hub'
 import { fetchJourneys, type JourneysHome } from '../lib/journeys'
-import { fetchMarketplaceHome, type Agent } from '../lib/marketplace'
+import { fetchMarketplaceHome, launchLink, type Agent } from '../lib/marketplace'
 import { usePersona } from '../lib/personaContext'
 import type { Notification } from '../lib/types'
 import '../home.css'
@@ -25,6 +26,11 @@ function timeAgo(iso: string): string {
 /** "Good morning" before noon, "Good afternoon" before six, then "Good evening". */
 function greeting(hour = new Date().getHours()) {
   return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+}
+
+/** Today as the page states it, like "Monday 9 November". */
+function today(now = new Date()) {
+  return now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
 /**
@@ -55,15 +61,57 @@ function AskBar({ conversations }: { conversations: number }) {
         />
         <button type="submit" className="askbar__go" disabled={!q.trim()} aria-label="Ask">
           <span className="askbar__go-label">Ask</span>
-          <ArrowUp size={15} strokeWidth={2.4} aria-hidden="true" />
+          <ArrowUp size={15} strokeWidth={2.2} aria-hidden="true" />
         </button>
       </form>
       <Link to="/super-agent" className="askbar__link">
         <MessagesSquare size={14} strokeWidth={2.2} aria-hidden="true" />
         {conversations ? `Your conversations (${conversations})` : 'Open the Super Agent'}
-        <ArrowRight size={14} strokeWidth={2.4} aria-hidden="true" />
+        <ArrowRight size={14} strokeWidth={2.2} aria-hidden="true" />
       </Link>
     </div>
+  )
+}
+
+/**
+ * Launch an agent straight from Home, by the same rule as the agent's own page.
+ * An agent with a link launches in a new tab. One with no link registered opens
+ * its page, which says the link is coming. One that needs access sends the
+ * person to ask for it.
+ */
+function LaunchButton({ agent, persona }: { agent: Agent; persona: string }) {
+  if (agent.access.type !== 'open') {
+    return (
+      <Link className="btn-outline btn--sm" to={`/marketplace/agents/${agent.id}`}>
+        Request access
+      </Link>
+    )
+  }
+  const href = launchLink(agent)
+  if (!href) {
+    return (
+      <Link className="btn-outline btn--sm" to={`/marketplace/agents/${agent.id}`} title="Launch link coming soon">
+        View agent
+      </Link>
+    )
+  }
+  return (
+    <a
+      className="btn btn--sm"
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      onClick={() =>
+        track('marketplace', 'launch', {
+          subject_id: agent.id,
+          subject_type: 'agent',
+          persona,
+          topics: [...agent.business_domains, ...agent.capabilities],
+        })
+      }
+    >
+      <Rocket size={14} strokeWidth={2.2} aria-hidden="true" /> Launch
+    </a>
   )
 }
 
@@ -114,7 +162,6 @@ export function HomePage() {
             <h2 className="home-work__title" id="home-work-title">
               Your work
             </h2>
-            <p className="home-work__lead">The jobs you do as a {work.persona_label}, and what helps at each one.</p>
           </div>
           <JourneyGrid journeys={work.journeys} />
         </section>
@@ -127,7 +174,7 @@ export function HomePage() {
               Picked for you
             </h2>
             <Link to="/marketplace" className="textlink">
-              All agents <ArrowRight size={14} strokeWidth={2.4} />
+              All agents <ArrowRight size={14} strokeWidth={2.2} />
             </Link>
           </div>
           {error ? (
@@ -135,11 +182,12 @@ export function HomePage() {
           ) : picked ? (
             <ul className="home-list">
               {picked.map((a) => (
-                <li key={a.id}>
+                <li key={a.id} className="home-pick">
                   <Link className="home-row" to={`/marketplace/agents/${a.id}`}>
                     <span className="home-row__title">{a.name}</span>
                     <span className="home-row__sub">{a.tagline}</span>
                   </Link>
+                  <LaunchButton agent={a} persona={persona} />
                 </li>
               ))}
             </ul>
@@ -158,19 +206,11 @@ export function HomePage() {
             <li>
               <Link className="home-row" to="/learning/me">
                 <span className="home-row__title">My learning</span>
-                <span className="home-row__sub">Progress, required steps and saved items.</span>
               </Link>
             </li>
             <li>
               <Link className="home-row" to="/learning/catalog">
                 <span className="home-row__title">Learning catalog</span>
-                <span className="home-row__sub">Videos, runbooks and quick references.</span>
-              </Link>
-            </li>
-            <li>
-              <Link className="home-row" to="/community">
-                <span className="home-row__title">Community</span>
-                <span className="home-row__sub">Forums, SME directory and FAQs.</span>
               </Link>
             </li>
           </ul>
@@ -179,7 +219,7 @@ export function HomePage() {
         <section className="panel home-card" aria-labelledby="home-news">
           <div className="home-card__head">
             <h2 className="home-card__title" id="home-news">
-              <Bell size={16} strokeWidth={2.4} /> What's new
+              <Bell size={16} strokeWidth={2.2} /> What's new
             </h2>
           </div>
           {news.length === 0 ? (
@@ -208,7 +248,7 @@ export function HomePage() {
         <h1 className="dash-hero__title" id="dash-title">
           {greeting()}, {data.user.first_name}
         </h1>
-        <p className="dash-hero__sub">Your work, your learning and your communities, in one place.</p>
+        <p className="dash-hero__sub">{today()}</p>
         <AskBar conversations={conversations} />
       </section>
       {below}

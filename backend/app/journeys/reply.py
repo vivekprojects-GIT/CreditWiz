@@ -18,8 +18,6 @@ _FOLLOW_UPS: dict[Intent, tuple[str, str]] = {
     "find": ("What systems do I need?", "What systems do I need for {job}?"),
     "learn": ("How do I get better at this?", "How do I get better at {job}?"),
     "improve": ("How can I do this faster?", "How can I do {job} faster?"),
-    "ask": ("Who can help?", "Who can help with {job}?"),
-    "contribute": ("Share what works", "Share what works for {job}"),
 }
 
 
@@ -51,14 +49,7 @@ def compose(
         return reply
     if intent == "learn":
         return f"To get better at {job}, start with {names}."
-    if intent == "improve":
-        return f"To do {job} faster, try {names}."
-    if intent == "ask":
-        return f"For help with {job}, start with {names}."
-    return (
-        f"To share what works in {job}, use {names}. Contributions are reviewed in "
-        "MUFG's existing workflow tool, not inside Nexus."
-    )
+    return f"To do {job} faster, try {names}."
 
 
 def follow_ups(

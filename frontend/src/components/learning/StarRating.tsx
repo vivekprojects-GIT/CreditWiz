@@ -17,14 +17,14 @@ export function RatingSummary({ average, count }: { average: number | null; coun
   if (average == null) {
     return (
       <span className="rating rating--thin" title={`${count} rating${count === 1 ? '' : 's'} so far`}>
-        <Star size={13} strokeWidth={2} />
+        <Star size={13} strokeWidth={2.2} />
         {count} rating{count === 1 ? '' : 's'}
       </span>
     )
   }
   return (
     <span className="rating" title={`Average of ${count} ratings`}>
-      <Star size={13} strokeWidth={2} fill="currentColor" />
+      <Star size={13} strokeWidth={2.2} fill="currentColor" />
       <strong>{average.toFixed(1)}</strong>
       <span className="rating__n">({count})</span>
     </span>
@@ -39,7 +39,7 @@ export function RatingInput({
 }: {
   value: number | null
   disabled?: boolean
-  onRate: (stars: number | null) => void
+  onRate: (rating: number | null) => void
 }) {
   const [hover, setHover] = useState<number | null>(null)
   const shown = hover ?? value ?? 0
@@ -59,7 +59,7 @@ export function RatingInput({
           aria-label={`${n} star${n === 1 ? '' : 's'}`}
           aria-pressed={value === n}
         >
-          <Star size={22} strokeWidth={1.8} fill={n <= shown ? 'currentColor' : 'none'} />
+          <Star size={22} strokeWidth={2.2} fill={n <= shown ? 'currentColor' : 'none'} />
         </button>
       ))}
     </div>

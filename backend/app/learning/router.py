@@ -9,7 +9,6 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 
 from .. import http, integrations
-from .. import personas as hub_personas
 from ..context import store as context_store
 from ..hub import guardrails
 from ..identity import derive_persona, load_profile
@@ -37,7 +36,7 @@ from .models import (
 from .store import store as catalog_store
 
 _DATA_DIR = Path(
-    os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
+    os.environ.get("NEXUS_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
 )
 router = APIRouter(prefix="/api/learning", tags=["learning"])
 PROFICIENCY_NOTE = (
@@ -45,7 +44,6 @@ PROFICIENCY_NOTE = (
     "measured separately once the enterprise measure is agreed."
 )
 _PATH_AFFINITY = (10.0, 6.0, 3.0)
-_AGENT_PATH_AFFINITY = (5.0, 3.0, 1.0)
 _DOC_TYPES = ("documentation", "guide", "confluence")
 
 
@@ -165,37 +163,13 @@ def recommend_for_persona(persona, limit=6):
     return [i for i in ranked if curation_score(i, persona) > 0][:limit]
 
 
-def recommend_for_agent(agent_id, persona=None, limit=3):
-    agent = marketplace_store.agent(agent_id)
-    if agent is None or not visible(agent):
-        return []
-    _, items = _load()
-    tags = {t.lower() for t in agent.tags}
-    pid = hub_personas.persona_id(persona) if persona else None
-
-    def relevance(i):
-        return (10 if agent_id in i.related_agents else 0) + 2 * len(
-            tags & {t.lower() for t in i.tags}
-        )
-
-    ranked = sorted(
-        items,
-        key=lambda i: (
-            -(agent_id in i.related_agents),
-            -(relevance(i) + _affinity(i.path, pid, _AGENT_PATH_AFFINITY)),
-            i.id,
-        ),
-    )
-    return [i for i in ranked if relevance(i) > 0][:limit]
-
-
 def _with_progress(items, persona_id):
     _, allowed_items = _load()
     allowed = {i.id for i in allowed_items}
     agents = {a.id for a in marketplace_store.agents if visible(a)}
     uid = _user_id()
     rows = progress_store.all_for(uid)
-    stars = ratings_store.summaries(uid)
+    ratings = ratings_store.summaries(uid)
     out = []
     for i in items:
         if i.id not in allowed:
@@ -212,7 +186,7 @@ def _with_progress(items, persona_id):
         out.append(
             ItemWithProgress(
                 **payload,
-                **stars.get(i.id, ratings_store.empty()),
+                **ratings.get(i.id, ratings_store.empty()),
                 status=row.get("status", "not_started"),
                 progress=row.get("progress", 0),
                 required=persona_id in i.required_for,
@@ -296,18 +270,14 @@ _ROLE_PICKS = 8
 
 
 def _provider(item) -> str:
-    """Where an item comes from, as a person would name it: MUFG for what the
-    bank publishes itself, and one group for videos, which come from many channels."""
-    if item.type == "video":
-        return "videos"
-    if not item.source or item.source.startswith(("MUFG", "Confluence")):
-        return "MUFG"
+    """Where an item comes from, as a person would name it: Leap, Pluralsight or
+    Microsoft Learn."""
     return item.source
 
 
 def _across_providers(ranked, limit):
     """Each provider's best in turn, then each one's next: one row mixes MUFG's
-    own learning, every provider's courses and videos, instead of filling up
+    own learning and every provider's courses, instead of filling up
     from whichever provider ranks highest. Order within a provider is kept."""
     queues: dict[str, list] = {}
     for item in ranked:
@@ -318,11 +288,6 @@ def _across_providers(ranked, limit):
             if queue and len(picked) < limit:
                 picked.append(queue.pop(0))
     return picked
-
-
-def _joined(names) -> str:
-    seen = list(dict.fromkeys(names))
-    return seen[0] if len(seen) == 1 else ", ".join(seen[:-1]) + " and " + seen[-1]
 
 
 @router.get("", response_model=LearningHome)
@@ -355,7 +320,6 @@ def home(persona: str | None = None):
             Section(
                 id="required",
                 title="Required for your role",
-                subtitle="Assigned learning. Complete prerequisites first.",
                 items=required,
             )
         )
@@ -364,7 +328,6 @@ def home(persona: str | None = None):
             Section(
                 id="continue",
                 title="Continue learning",
-                subtitle="Pick up where you left off.",
                 items=continuing,
             )
         )
@@ -374,17 +337,16 @@ def home(persona: str | None = None):
             Section(
                 id="role",
                 title="Recommended for your role",
-                subtitle=f"Ranked for your role, across {_joined(_provider(i) for i in picked)}.",
                 items=picked,
             )
         )
     # The type sections are a browse index, so they stay complete for their type
     # even when an item also appears in the personalised rows above. Deduping
     # them removed whole sections and made the index misleading.
-    for sid, title, subtitle, types in (
-        ("best-practice", "Best practices", "How our teams get reliable results.", ("best-practice",)),
-        ("docs", "Documentation and guides", "Reference material and how-to guides.", _DOC_TYPES),
-        ("quick-reference", "Quick references", "One-pagers to keep open while you work.", ("quick-reference",)),
+    for sid, title, types in (
+        ("best-practice", "Best practices", ("best-practice",)),
+        ("docs", "Documentation and guides", _DOC_TYPES),
+        ("quick-reference", "Quick references", ("quick-reference",)),
     ):
         picked = [
             i
@@ -392,7 +354,7 @@ def home(persona: str | None = None):
             if i.type in types and (p.id in i.personas or i.required)
         ]
         if picked:
-            sections.append(Section(id=sid, title=title, subtitle=subtitle, items=picked))
+            sections.append(Section(id=sid, title=title, items=picked))
     paths = _paths_with_progress(paths, enriched)
     role_ids = _persona_paths().get(p.id, [])
     return LearningHome(
@@ -470,7 +432,7 @@ def ask_agent(body: AgentSearch) -> AgentAnswer:
     return ask(
         "learning",
         body.query,
-        lambda searched, model_reads: find([searched], items, persona_id=persona_id, rerank_query=model_reads),
+        lambda searched: find([searched], items, persona_id=persona_id),
     )
 
 
@@ -551,10 +513,10 @@ def rate(body: RatingIn):
     if _with_progress([current], pid)[0].status == "not_started":
         raise HTTPException(409, "Open this item before rating it.")
 
-    if body.stars is None:
+    if body.rating is None:
         ratings_store.clear(uid, current.id)
     else:
-        ratings_store.record(uid, current.id, body.stars)
+        ratings_store.record(uid, current.id, body.rating)
         context_store.record_event(
             {
                 "pillar": "learning",
@@ -563,7 +525,7 @@ def rate(body: RatingIn):
                 "subject_type": current.type,
                 "persona": pid,
                 "topics": current.topics + current.tags,
-                "meta": {"stars": body.stars, "path": current.path},
+                "meta": {"rating": body.rating, "path": current.path},
             },
             uid=uid,
             # One footprint per rating, not one per revision of it.
@@ -609,12 +571,6 @@ def my_learning():
         ],
         proficiency_note=PROFICIENCY_NOTE,
     )
-
-
-@router.get("/for-agent/{agent_id}", response_model=list[ItemWithProgress])
-def for_agent(agent_id: str, persona: str | None = None):
-    p = resolve_persona(persona)
-    return _with_progress(recommend_for_agent(agent_id, p.id), p.id)
 
 
 @router.get("/recommended", response_model=list[ItemWithProgress])

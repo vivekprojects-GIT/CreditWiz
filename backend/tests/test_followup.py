@@ -91,7 +91,7 @@ def test_a_carried_client_name_is_masked_like_one_typed():
 @pytest.fixture
 def planner_model(monkeypatch):
     """A model planner that records what it was given and plans nothing, so rules answer."""
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(llm, "write", lambda *args, **kwargs: None)
     seen: list[tuple] = []

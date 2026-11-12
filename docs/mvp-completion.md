@@ -41,23 +41,23 @@ npm run dev
 
 Open [MUFG](http://localhost:5173). Choose a clearly labeled demo account. Sai is the sample hub administrator; the five other accounts demonstrate the role mappings and independent state. Taylor can see builder-restricted learning; Alex cannot.
 
-The backend reads `backend/.env`. Copy `.env.example` if needed. Search works without an API key. To enable Claude, set `ANTHROPIC_API_KEY`, `CREDITWIZ_DISABLE_LLM=0` and a model available to the configured Anthropic account. Live Claude calls were not part of verification.
+The backend reads `backend/.env`. Copy `.env.example` if needed. Search works without an API key. To enable Claude, set `ANTHROPIC_API_KEY`, `NEXUS_DISABLE_LLM=0` and a model available to the configured Anthropic account. Live Claude calls were not part of verification.
 
-For another frontend port, add its exact origin to `CREDITWIZ_ORIGINS`. The frontend supports `CREDITWIZ_API_TARGET` to select a separate API during development.
+For another frontend port, add its exact origin to `NEXUS_ORIGINS`. The frontend supports `NEXUS_API_TARGET` to select a separate API during development.
 
 ## SQLite and existing data
 
-All mutable state now lives in `backend/var/hub.db`, or in `CREDITWIZ_VAR_DIR/hub.db`. SQLite runs locally without a database server. Writes use transactions, including a single transaction for learning completion and its event. WAL supports concurrent local processes; the database belongs on a local disk.
+All mutable state now lives in `backend/var/hub.db`, or in `NEXUS_VAR_DIR/hub.db`. SQLite runs locally without a database server. Writes use transactions, including a single transaction for learning completion and its event. WAL supports concurrent local processes; the database belongs on a local disk.
 
 On first connection, migration imports legacy `learning.db`, `learning_progress.json`, `interactions.jsonl` and `feedback.jsonl`. Existing SQL progress wins over the older JSON copy. Import is recorded once; original files remain untouched. Old footprints retain the original single-user prototype's identity and are tagged as legacy imports.
 
-Back up the database using SQLite's backup API or stop the service before copying its database files. Keep runtime state out of Git. A new empty `CREDITWIZ_VAR_DIR` creates an independent demo without deleting an existing one.
+Back up the database using SQLite's backup API or stop the service before copying its database files. Keep runtime state out of Git. A new empty `NEXUS_VAR_DIR` creates an independent demo without deleting an existing one.
 
 Authored agents, learning, paths and persona rules remain in version-controlled JSON. Moving authored content into SQL is unnecessary for this MVP.
 
 ## Account setup beyond the demo
 
-Development mode is deliberately passwordless and must remain local. For a hosted environment, provision accounts, set `CREDITWIZ_ENV=production`, use HTTPS and set the allowed frontend origin. Production disables demo account selection and requires password accounts; this is local authentication, not enterprise SSO.
+Development mode is deliberately passwordless and must remain local. For a hosted environment, provision accounts, set `NEXUS_ENV=production`, use HTTPS and set the allowed frontend origin. Production disables demo account selection and requires password accounts; this is local authentication, not enterprise SSO.
 
 ```powershell
 cd backend

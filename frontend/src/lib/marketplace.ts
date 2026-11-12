@@ -2,15 +2,27 @@ import { getJson, postJson } from './api'
 export type AgentStatus = 'production' | 'pilot' | 'beta' | 'in_development' | 'deprecated'
 export type AccessType = 'open' | 'request' | 'restricted'
 
-/** A link to one of the agent's documents where it lives. Blank values have not been confirmed. */
-export interface AgentDocument {
-  /** A document type from the knowledge sources: brd, asd, hld, lld. */
-  type: string
-  /** The system it lives in; blank until confirmed. */
-  system: string
+/** A link to one of the agent's documents, where the owning team keeps it. */
+interface AgentDocument {
+  /** What the document is, as the owning team calls it: BRD, HLD, Runbook. */
+  label: string
   url: string
-  /** What this document covers, in the owning team's words; blank uses the document type's description. */
+  /** What this document covers, in the owning team's words; may be blank. */
   description: string
+}
+
+/**
+ * Demo setting. Sample agents carry placeholder launch links (agents.mufg.example),
+ * which open a page that does not exist. While this is on they count as launchable,
+ * so the Launch button can be clicked in a demo. Turn it off once owners have
+ * registered real links: only confirmed, non-sample links launch then.
+ */
+const DEMO_LAUNCH = true
+
+/** The link Launch opens for this agent, or '' when there is none to open. */
+export function launchLink(agent: Agent): string {
+  if (agent.access.type !== 'open' || !agent.access.launch_url) return ''
+  return DEMO_LAUNCH || agent.source_kind !== 'sample' ? agent.access.launch_url : ''
 }
 
 export interface Agent {
@@ -37,7 +49,7 @@ export interface Agent {
   access: { type: AccessType; how: string; launch_url: string; request_url: string }
   documentation_url: string
   architecture_url: string
-  /** Its documents by type, linked where they live. Nexus keeps no copies. */
+  /** Its documents, linked where they live. Nexus keeps no copies. */
   documents: AgentDocument[]
   tags: string[]
   featured: boolean
@@ -66,10 +78,9 @@ export interface MarketplaceHome {
   domains: string[]
   carousels: Carousel[]
   agent_count: number
-  example_queries: string[]
 }
 
-export interface SearchIntent {
+interface SearchIntent {
   summary: string
   concepts: string[]
   domains: string[]
@@ -77,7 +88,7 @@ export interface SearchIntent {
   keywords: string[]
 }
 
-export interface AgentMatch {
+interface AgentMatch {
   agent: Agent
   score: number
   why: string
@@ -89,7 +100,6 @@ export interface AgentMatch {
 export interface SearchResponse {
   query: string
   intent: SearchIntent
-  engine: 'claude' | 'fusion'
   results: AgentMatch[]
   no_match: boolean
   next_steps: { label: string; href: string }[]

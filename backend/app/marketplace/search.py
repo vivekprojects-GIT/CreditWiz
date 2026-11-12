@@ -16,14 +16,11 @@ embedding index can be plugged in later.
 
 from __future__ import annotations
 
-import logging
-import os
 import re
 
 from . import keyword, semantic
-from .models import Agent, AgentMatch, Persona, RerankedOrder, SearchIntent
+from .models import Agent, AgentMatch, Persona, SearchIntent
 
-log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------- tokenising
 
@@ -99,6 +96,13 @@ _LEXICON: list[tuple[tuple[str, ...], str, list[str], list[str], list[str]]] = [
 ]
 
 
+def _as_topic(label: str) -> str:
+    """A lexicon label mid-sentence: lower-case its first letter, but leave an
+    acronym alone ("AML screening" stays, and so does the "KYC" inside a label)."""
+    first = label.split(" ", 1)[0]
+    return label if first.isupper() else label[0].lower() + label[1:]
+
+
 def local_intent(query: str) -> SearchIntent:
     # Punctuation between words defeated substring triggers: the phrase
     # "money laundering" never matched "anti-money-laundering" because of the
@@ -120,96 +124,26 @@ def local_intent(query: str) -> SearchIntent:
             for k in kws:
                 if k not in keywords:
                     keywords.append(k)
-    summary = "Looking for " + (", ".join(concepts[:3]).lower() if concepts else "an agent matching your description")
+    # One line: the most specific topic understood. The lexicon runs specific to
+    # generic, so the first match is the one to name; listing three read as tags.
+    summary = "Looking for " + (_as_topic(concepts[0]) if concepts else "an agent matching your description")
     return SearchIntent(summary=summary, concepts=concepts, domains=domains, capabilities=caps, keywords=keywords)
 
 
 # ---------------------------------------------------------- optional Claude
-
-# Sonnet 5 interprets a search request in ~3s; Opus 5 is more thorough but takes ~30s,
-# too slow for a search box. Override with CREDITWIZ_SEARCH_MODEL.
-_DEFAULT_MODEL = "claude-sonnet-5"
-
-
-def _model() -> str:
-    return os.environ.get("CREDITWIZ_SEARCH_MODEL", _DEFAULT_MODEL)
-
-
-def claude_available() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY")) and os.environ.get("CREDITWIZ_DISABLE_LLM") not in ("1", "true")
-
-
-def claude_intent(query: str, agents: list[Agent]) -> SearchIntent | None:
-    """Ask Claude to interpret the request. Returns None on any failure so the caller falls back."""
-    try:
-        import anthropic
-    except ImportError:
-        return None
-    domains = sorted({d for a in agents for d in a.business_domains})
-    caps = sorted({c for a in agents for c in a.capabilities})
-    system = (
-        "You interpret an employee's plain-language request for an internal AI agent marketplace at a credit company. "
-        "Return a short summary of what they need (one sentence, start with 'Looking for'), the underlying concepts, "
-        "and pick only from the provided domain and capability lists. Add up to 8 extra keywords that would appear in "
-        "the metadata of a matching agent.\n"
-        f"Domains: {', '.join(domains)}\nCapabilities: {', '.join(caps)}"
-    )
-    try:
-        model = _model()
-        client = anthropic.Anthropic(timeout=20.0, max_retries=1)
-        kwargs: dict = {}
-        if "haiku" not in model:  # Haiku 4.5 rejects the effort parameter
-            kwargs["output_config"] = {"effort": "low"}
-        response = client.messages.parse(
-            model=model,
-            max_tokens=1024,
-            system=system,
-            messages=[{"role": "user", "content": query}],
-            output_format=SearchIntent,
-            **kwargs,
-        )
-        if response.stop_reason == "refusal" or response.parsed_output is None:
-            return None
-        intent = response.parsed_output
-        intent.domains = [d for d in intent.domains if d in domains]
-        intent.capabilities = [c for c in intent.capabilities if c in caps]
-        return intent
-    except Exception as exc:  # noqa: BLE001 - any API failure degrades to local search
-        log.warning("Claude intent failed, using local search: %s", exc)
-        return None
-
-
-_INTENT_CACHE: dict[str, SearchIntent] = {}
-_INTENT_CACHE_MAX = 256
-
-
-def understand(query: str, agents: list[Agent]) -> tuple[SearchIntent, str]:
-    if claude_available():
-        key = f"{_model()}|{query.strip().lower()}"
-        cached = _INTENT_CACHE.get(key)
-        if cached is not None:
-            return cached, "claude"
-        intent = claude_intent(query, agents)
-        if intent is not None:
-            if len(_INTENT_CACHE) >= _INTENT_CACHE_MAX:
-                _INTENT_CACHE.pop(next(iter(_INTENT_CACHE)))
-            _INTENT_CACHE[key] = intent
-            return intent, "claude"
-    return local_intent(query), "local"
-
 
 # -------------------------------------------------------------- matching
 #
 # Typed search is hybrid retrieval over the agent metadata. The request --
 # enriched with what we understood from it -- is embedded once and compared
 # with every agent's embedded description, and scored separately by BM25 over
-# the same text. The two rankings are fused by rank, not by score.
+# the same text. Results are ordered by semantic similarity; the keyword
+# score only decides, in the relevance gate, whether an exact-word hit is shown.
 #
 # Deliberately absent: per-field lexical weights, popularity and persona
 # multipliers. Each grew for a reason, and together they were three tuning
-# knobs explaining one ordering. Fusion is the one exception, and it earns its
-# place by needing no weight at all: RRF reads ranks, so there is nothing to
-# tune between the two retrievers. The
+# knobs explaining one ordering. There is no fusion step either: one signal,
+# similarity, gives the order, so there is nothing to tune. The
 # Recommended-for-you carousel keeps its arithmetic (curation, below) because
 # that per-component table is a review asset; a typed query does not need it.
 
@@ -227,10 +161,6 @@ def understand(query: str, agents: list[Agent]) -> tuple[SearchIntent, str]:
 # Model-dependent and query-shape-dependent: retune if either changes.
 SIMILARITY_FLOOR = 0.30
 RELATIVE_FLOOR = 0.65
-# Rank fusion constant. 60 is the value from the original RRF paper and the one
-# nearly every hybrid-search implementation uses; it damps the gap between rank
-# 1 and rank 2 so one ranker's top hit cannot dominate on its own.
-RRF_K = 60
 # A keyword hit counts as strong at half the best keyword score. Exact names and
 # acronyms score far above incidental term overlap, so this keeps the former and
 # drops the latter.
@@ -251,8 +181,7 @@ def retrieval_text(query: str) -> str:
     critical path of every search, and it makes the results depend on how well
     that guess went rather than on what the person asked. Measured on this
     catalogue, expansion was worth about one query in fourteen and cost several
-    seconds. A model still reads the request, once, at the rerank -- where it
-    judges candidates against the query instead of rewriting the query.
+    seconds. No model reads the request at all now: the similarity order stands.
 
     The floors below are set for this shape: a bare query scores far lower than
     an expanded one for the same meaning.
@@ -265,20 +194,14 @@ def keyword_text(query: str) -> str:
     return query.strip()
 
 
-def rrf(*rankings: dict[str, float], k: int = RRF_K) -> dict[str, float]:
-    """Reciprocal Rank Fusion: score = sum over rankers of 1 / (k + rank).
+def semantic_order(similar: dict[str, float], keywords: dict[str, float]) -> list[str]:
+    """Every retrieved agent id, closest in meaning first.
 
-    Rank-based, so a cosine similarity in 0..1 and a BM25 score in 0..10 fuse
-    without either scale dominating. An earlier hybrid blended the raw scores
-    and let lexical noise outvote a correct semantic top hit; this cannot.
+    An agent only the keyword index found (an exact name or acronym the
+    embedding missed) has no similarity, so it follows the ones that have,
+    by its keyword score. The order is fixed for a given query.
     """
-    fused: dict[str, float] = {}
-    for ranking in rankings:
-        for rank_index, agent_id in enumerate(
-            sorted(ranking, key=lambda i: -ranking[i])
-        ):
-            fused[agent_id] = fused.get(agent_id, 0.0) + 1.0 / (k + rank_index + 1)
-    return fused
+    return sorted({*similar, *keywords}, key=lambda i: (-similar.get(i, 0.0), -keywords.get(i, 0.0), i))
 
 
 def rank(
@@ -291,13 +214,13 @@ def rank(
     similar: dict[str, float] | None = None,
     keywords: dict[str, float] | None = None,
 ) -> list[AgentMatch]:
-    """Hybrid search: semantic and keyword candidates fused by rank.
+    """Hybrid search: semantic and keyword candidates, closest in meaning first.
 
     `similar` / `keywords` let the router pass retrievals it already ran, so the
     query is embedded once for both the ranking and the trace.
 
-    RRF orders the union, but it has no notion of "nothing is relevant" -- it
-    always returns whatever either ranker returned. A relevance gate keeps a
+    Similarity orders the union, but it has no notion of "nothing is relevant"
+    -- a retriever always returns its top hits. A relevance gate keeps a
     candidate only if it is close semantically (both floors) OR is a strong
     keyword hit. "zebra origami" clears neither and returns no match.
     """
@@ -340,9 +263,8 @@ def rank(
     # whole catalogue, so an agent this user may not see can be retrieved; it is
     # dropped here by construction and can never surface.
     by_id = {agent.id: agent for agent in agents}
-    fused = rrf(similar, keywords)
     matches: list[AgentMatch] = []
-    for agent_id, score in sorted(fused.items(), key=lambda kv: -kv[1]):
+    for agent_id in semantic_order(similar, keywords):
         agent = by_id.get(agent_id)
         if agent is None or not relevant(agent_id):
             continue
@@ -351,7 +273,7 @@ def rank(
         matches.append(
             AgentMatch(
                 agent=agent,
-                score=round(score, 4),
+                score=round(similar.get(agent_id, 0.0), 4),
                 similarity=round(similar[agent_id], 3) if agent_id in similar else None,
                 keyword=keywords.get(agent_id),
                 why=_why(agent, intent, persona),
@@ -360,72 +282,6 @@ def rank(
             )
         )
     return matches[:limit]
-
-
-RERANK_CANDIDATES = 10
-
-
-def rerank(query: str, matches: list[AgentMatch]) -> tuple[list[AgentMatch], str]:
-    """Reorder fused candidates by reading them against the request.
-
-    RRF orders by agreement between two retrievers, which is a proxy for
-    relevance rather than a judgement about it: neither retriever ever compares
-    a candidate with the request as a whole. This does, over the shortlist only,
-    where the cost is bounded.
-
-    Returns the matches and how they were ordered, so the trace can say which.
-    Any failure returns the fused order untouched -- a reranker that cannot run
-    must never cost a user their results.
-    """
-    if len(matches) < 2 or not claude_available():
-        return matches, "fusion"
-    shortlist = matches[:RERANK_CANDIDATES]
-    catalogue = "\n".join(
-        f"{m.agent.id}: {m.agent.name}. {m.agent.tagline} "
-        f"Capabilities: {', '.join(m.agent.capabilities)}."
-        for m in shortlist
-    )
-    system = (
-        "You rank internal AI agents against an employee's request. Return the ids "
-        "in order, best first, using only ids from the list. Drop an agent only if "
-        "it is clearly irrelevant to the request. Judge fit to the request, not how "
-        "impressive the agent sounds."
-    )
-    try:
-        import anthropic
-
-        client = anthropic.Anthropic(timeout=20.0, max_retries=1)
-        model = _model()
-        kwargs: dict = {}
-        if "haiku" not in model:
-            kwargs["output_config"] = {"effort": "low"}
-        response = client.messages.parse(
-            model=model,
-            max_tokens=512,
-            system=system,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"Request: {query}\n\nAgents:\n{catalogue}",
-                }
-            ],
-            output_format=RerankedOrder,
-            **kwargs,
-        )
-        if response.stop_reason == "refusal" or response.parsed_output is None:
-            return matches, "fusion"
-        by_id = {m.agent.id: m for m in shortlist}
-        ordered = [by_id[i] for i in response.parsed_output.order if i in by_id]
-        if not ordered:
-            return matches, "fusion"
-        # Anything the reranker did not mention keeps its fused position behind
-        # what it did rank, so a truncated reply cannot silently lose results.
-        named = {m.agent.id for m in ordered}
-        rest = [m for m in matches if m.agent.id not in named]
-        return ordered + rest, "claude"
-    except Exception as exc:  # noqa: BLE001 - a failed rerank keeps the fused order
-        log.warning("Rerank failed, keeping fused order: %s", exc)
-        return matches, "fusion"
 
 
 def _coverage(agent: Agent, intent: SearchIntent) -> int | None:

@@ -29,12 +29,6 @@
   text-wrap: balance;
 }
 
-.chat__sub {
-  margin: var(--s-2) 0 0;
-  font-size: var(--t-md);
-  color: var(--ink-600);
-}
-
 /* ---- composer ---- */
 
 /* The one place to start: a raised card, calm in focus rather than alarm red. */
@@ -85,20 +79,6 @@
   align-items: center;
   gap: var(--s-2);
   margin-top: 6px;
-}
-
-.composer__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  height: 24px;
-  padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-full);
-  background: var(--ink-50);
-  font-size: var(--t-xs);
-  font-weight: 500;
-  color: var(--ink-700);
 }
 
 .composer__hint {
@@ -185,7 +165,7 @@
 .suggest--start {
   gap: 12px;
   min-height: 52px;
-  padding: 8px 14px 8px 9px;
+  padding: 8px 14px 8px 8px;
   border-radius: var(--r-lg);
   box-shadow: var(--e-1);
   color: var(--ink-800);
@@ -291,7 +271,7 @@
   gap: 10px;
   max-width: 760px;
   height: 54px;
-  padding: 0 7px 0 16px;
+  padding: 0 8px 0 16px;
   border: 1px solid var(--line);
   border-radius: var(--r-full);
   background: var(--surface);
@@ -385,22 +365,6 @@
 
 /* ---- the Super Agent's own page ---- */
 
-.chat__kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  padding: 4px 12px 4px 8px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-full);
-  background: var(--surface);
-  box-shadow: var(--e-1);
-  color: var(--ink-700);
-  font-size: var(--t-xs);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
 /* ---- the conversation ---- */
 
 /* Grows to the foot of the page, so a short conversation still has its
@@ -427,16 +391,16 @@
   padding: var(--s-3) 0;
   border-bottom: 1px solid var(--line);
   /* Frosted: what scrolls beneath it softens rather than vanishing at an edge. */
-  background: rgba(244, 245, 247, 0.94);
-  backdrop-filter: saturate(1.4) blur(12px);
-  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: saturate(1.8) blur(20px);
+  -webkit-backdrop-filter: saturate(1.8) blur(20px);
 }
 
 .chat__new {
   flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   height: 34px;
   padding: 0 14px;
   border: 1px solid var(--line);
@@ -512,7 +476,7 @@
   box-shadow: var(--e-1);
   color: var(--ink-800);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.02em;
 }
 
@@ -646,17 +610,6 @@
   background: var(--surface);
   font-size: var(--t-2xs);
   font-weight: 600;
-}
-
-.fitchip {
-  margin-left: 8px;
-  padding: 1px 7px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  font-size: var(--t-2xs);
-  font-weight: 600;
-  color: var(--ink-600);
-  vertical-align: middle;
 }
 
 /* The agentic flow as it runs: reading, each agent, writing. */
@@ -904,4 +857,29 @@
   .msg {
     max-width: 100%;
   }
+}
+
+/* ==========================================================================
+   Home: For you
+   ========================================================================== */
+
+.foryou {
+  margin-bottom: var(--s-8);
+}
+
+.foryou__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--s-4);
+  margin-top: var(--s-3);
+}
+
+.foryou__card {
+  margin: 0;
+}
+
+.foryou__courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--s-3);
 }

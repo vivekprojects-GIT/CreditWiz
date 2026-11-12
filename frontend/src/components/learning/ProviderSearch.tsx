@@ -69,9 +69,7 @@ export function ProviderSearch({ q, source, catalog }: { q: string; source: stri
               <div key={g.provider} className="psearch__group">
                 <div className="psearch__head">
                   <span className={`provider provider--${g.provider === 'Pluralsight' ? 'pluralsight' : 'mslearn'}`}>{g.provider}</span>
-                  <Link to="/integrations" className={`status ${STATE[g.state].tone}`}>
-                    {STATE[g.state].label}
-                  </Link>
+                  <span className={`status ${STATE[g.state].tone}`}>{STATE[g.state].label}</span>
                 </div>
                 {g.note && <p className="psearch__note">{g.note}</p>}
                 {g.state === 'live' && results.length === 0 && (

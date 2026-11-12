@@ -124,60 +124,6 @@ def _entra(uid: str | None) -> Integration:
     )
 
 
-def _viva_engage(uid: str | None) -> Integration:
-    from .community import vivaengage
-
-    env_tokens = _set("VIVA_ENGAGE_GRAPH_TOKEN") and _set("VIVA_ENGAGE_TOKEN")
-    signed_in = entra.signed_in(uid)
-    blocking = last_error("viva_engage", uid)
-    if blocking:
-        state: State = "blocked"
-    elif vivaengage.configured():
-        state = "live"
-    elif entra.configured():
-        state = "signed_out"
-    else:
-        state = "not_configured"
-    summary = {
-        "live": "Community shows live Viva Engage communities and conversations.",
-        "blocked": "Viva Engage refused the last call, so Community is showing sample content. The reason is below.",
-        "signed_out": "Sign in with Microsoft and Community will switch to live Viva Engage content.",
-        "not_configured": "Community shows sample content until Microsoft sign-in is set up.",
-        "sample": "",
-    }[state]
-    return Integration(
-        id="viva_engage",
-        name="Viva Engage",
-        state=state,
-        summary=summary,
-        blocking=blocking,
-        needs=[
-            Need(what="Microsoft Entra sign-in set up, and the person signed in with Microsoft", met=signed_in or env_tokens),
-            Need(what="Delegated Microsoft Graph permission Community.Read.All, with admin consent", met=state == "live"),
-            Need(what="Delegated Viva Engage (Yammer) permission user_impersonation, with consent", met=state == "live"),
-            Need(what="MUFG's Viva Engage network in native mode (required by the Graph community API)", met=state == "live"),
-        ],
-        calls=[
-            "GET https://graph.microsoft.com/v1.0/employeeExperience/communities",
-            "GET https://www.yammer.com/api/v1/messages.json and /messages/in_group/{group_id}.json",
-            "GET https://www.yammer.com/api/v1/messages/in_thread/{thread_id}.json",
-            "GET https://www.yammer.com/api/v1/search.json (search, as the signed-in person)",
-            "GET https://www.yammer.com/api/v1/users/current.json (which posts the person has liked)",
-            "POST https://www.yammer.com/api/v1/messages.json (reply, as the signed-in person)",
-            "POST and DELETE https://www.yammer.com/api/v1/messages/liked_by/current.json (like, and take it back)",
-        ],
-        code="backend/app/community/vivaengage.py",
-        docs=[
-            Doc(label="Graph: list communities", url="https://learn.microsoft.com/en-us/graph/api/employeeexperience-list-communities?view=graph-rest-1.0"),
-            Doc(label="Graph: Viva Engage overview", url="https://learn.microsoft.com/en-us/graph/api/resources/engagement-api-overview?view=graph-rest-1.0"),
-            Doc(label="Viva Engage REST: authentication", url="https://learn.microsoft.com/en-us/rest/api/yammer/authentication-1"),
-            Doc(label="Viva Engage REST: supported core APIs", url="https://learn.microsoft.com/en-us/rest/api/yammer/yammer-core-apis"),
-            Doc(label="Viva Engage REST: like a message", url="https://learn.microsoft.com/en-us/rest/api/yammer/messagesliked_bycurrentjsonmessage_idid"),
-            Doc(label="Viva Engage REST: search", url="https://learn.microsoft.com/en-us/rest/api/yammer/searchjson"),
-        ],
-    )
-
-
 def _pluralsight() -> Integration:
     from .learning import pluralsight
 
@@ -216,6 +162,20 @@ def _pluralsight() -> Integration:
     )
 
 
+def _leap() -> Integration:
+    # No connection exists yet: how Leap is read (an API or an export) is MUFG L&D's to confirm.
+    return Integration(
+        id="leap",
+        name="Leap",
+        state="sample",
+        summary="Learning shows the catalogue's sample Leap courses. Leap is not connected yet.",
+        needs=[Need(what="Leap's access method from MUFG L&D: an API or an export file", met=False)],
+        calls=[],
+        code="",
+        docs=[],
+    )
+
+
 def _microsoft_learn() -> Integration:
     blocking = last_error("microsoft_learn", None)
     state: State = "blocked" if blocking else "live"
@@ -244,4 +204,4 @@ def _microsoft_learn() -> Integration:
 @router.get("", response_model=list[Integration])
 def status() -> list[Integration]:
     uid = auth.current_id.get()
-    return [_entra(uid), _viva_engage(uid), _pluralsight(), _microsoft_learn()]
+    return [_entra(uid), _leap(), _pluralsight(), _microsoft_learn()]

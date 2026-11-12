@@ -48,6 +48,9 @@ class LearnPage(BaseModel):
     prerequisites: str = ""
     # A module's units, or a learning path's modules
     units: list[LearnLink] = []
+    # Microsoft's player pages for the unit's videos; a [[video:n]] line in the
+    # markdown says where the nth one plays.
+    videos: list[str] = []
     markdown: str
 
 
@@ -303,18 +306,102 @@ def parse_page(url: str, text: str) -> LearnPage:
     )
 
 
+# --------------------------------------------------------------------- video
+#
+# A unit's videos sit in Microsoft's own player page. The MCP's markdown leaves
+# them out, so the unit's web page is read for them. Microsoft's player allows
+# embedding, so the reader shows it where the page has it and nobody is sent away.
+
+_EMBED = re.compile(r'<div class="embeddedvideo">\s*<iframe[^>]*\bsrc="([^"]+)"')
+# Where Learn's pages point for a video, and where a player may actually be.
+_EMBED_HOSTS = {"go.microsoft.com", HOST, "www.microsoft.com"}
+_PLAYER_HOSTS = {HOST, "www.microsoft.com"}
+_MAX_VIDEOS = 4
+
+
+def video_mark(n: int) -> str:
+    """The line that stands where a unit's nth video plays."""
+    return f"[[video:{n}]]"
+
+
+def _https_on(url: str, hosts: set[str]) -> bool:
+    parsed = urlparse(url)
+    return parsed.scheme == "https" and parsed.hostname in hosts
+
+
+def is_player(url: str) -> bool:
+    """A Microsoft video player page, and nothing else: only these are embedded."""
+    return _https_on(url, _PLAYER_HOSTS) and "video" in urlparse(url).path.lower()
+
+
+def _text(fragment: str) -> str:
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", fragment))).strip()
+
+
+def embeds(page_html: str) -> list[tuple[str, str]]:
+    """Each video on a unit's page: its link, and the paragraph just before it."""
+    found: list[tuple[str, str]] = []
+    for m in _EMBED.finditer(page_html):
+        end = page_html.rfind("</p>", 0, m.start())
+        start = page_html.rfind("<p", 0, end) if end != -1 else -1
+        beside = start != -1 and m.start() - end < 200
+        found.append((html.unescape(m.group(1)), _text(page_html[start:end]) if beside else ""))
+    return found
+
+
+def place_videos(markdown: str, before: list[str]) -> str:
+    """Mark where each video plays: after the paragraph it follows on Learn, or at
+    the top when that paragraph cannot be found in the text."""
+    lines = markdown.split("\n")
+    loose: list[str] = []
+    for n, paragraph in enumerate(before):
+        tail = paragraph[-48:].strip()
+        at = next((i for i, line in enumerate(lines) if tail and _plain(line).endswith(_plain(tail))), None)
+        if at is None:
+            loose.append(video_mark(n))
+        else:
+            lines[at + 1 : at + 1] = ["", video_mark(n)]
+    return "\n".join([*loose, "", *lines] if loose else lines)
+
+
+def _videos(url: str) -> list[tuple[str, str]]:
+    """The players on a unit's page, with the paragraph before each. Empty when
+    the page has none or cannot be read: the unit still reads as text."""
+    try:
+        page_html = http.send(SERVICE, "GET", url, headers={"Accept": "text/html"}).text
+        found: list[tuple[str, str]] = []
+        for src, before in embeds(page_html)[:_MAX_VIDEOS]:
+            if not _https_on(src, _EMBED_HOSTS):
+                continue
+            # Learn links a video through a redirect: embed where it lands, if that is a player.
+            player = http.send(SERVICE, "GET", src, headers={"Accept": "text/html"}).url
+            if is_player(player):
+                found.append((player, before))
+        return found
+    except http.ExternalError:
+        return []
+
+
 _pages: dict[str, tuple[LearnPage, float]] = {}
 _pages_lock = threading.Lock()
 
 
 def page(url: str) -> LearnPage:
-    """A Learn page, read through the MCP server. Held for an hour."""
+    """A Learn page, read through the MCP server, with a unit's videos. Held for an hour."""
     now = time.monotonic()
     with _pages_lock:
         held = _pages.get(url)
         if held and held[1] > now:
             return held[0]
     found = parse_page(url, _session.call("microsoft_docs_fetch", {"url": url}))
+    clips = _videos(url) if found.kind == "Unit" else []
+    if clips:
+        found = found.model_copy(
+            update={
+                "videos": [player for player, _ in clips],
+                "markdown": place_videos(found.markdown, [before for _, before in clips]),
+            }
+        )
     with _pages_lock:
         if len(_pages) > 128:
             _pages.clear()

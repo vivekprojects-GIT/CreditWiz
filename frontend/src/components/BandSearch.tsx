@@ -44,7 +44,7 @@ export function BandSearch({
         }}
         role="search"
       >
-        <Search className="gsearch__icon" size={18} strokeWidth={2} aria-hidden="true" />
+        <Search className="gsearch__icon" size={18} strokeWidth={2.2} aria-hidden="true" />
         <input
           ref={inputRef}
           className="gsearch__input"
@@ -56,11 +56,11 @@ export function BandSearch({
         />
         {value && onClear && (
           <button type="button" className="gsearch__clear" aria-label="Clear search" onClick={onClear}>
-            <X size={18} strokeWidth={2.4} />
+            <X size={18} strokeWidth={2.2} />
           </button>
         )}
         <button type="submit" className="gsearch__go" disabled={busy || !value.trim()}>
-          {busy && <Loader2 className="spin" size={16} strokeWidth={2.4} />}
+          {busy && <Loader2 className="spin" size={16} strokeWidth={2.2} />}
           {action}
         </button>
       </form>

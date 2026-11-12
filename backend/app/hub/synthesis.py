@@ -18,10 +18,8 @@ from .governance import LABEL
 from .models import PillarGroup, Source
 
 _NOUN: dict[str, tuple[str, str]] = {
-    "prompts": ("prompt", "prompts"),
     "marketplace": ("agent", "agents"),
     "learning": ("learning item", "learning items"),
-    "community": ("person or page", "people and pages"),
 }
 _MAX_REPLY = 900
 
@@ -106,8 +104,8 @@ def reply(
     saw a placeholder. `on_delta` receives the reply as it is written.
     """
     fallback = catalogue_reply(intents[0], journey, toolkit, groups, searched)
-    items = [(c.kind, c.title, c.summary, None) for c in toolkit[:4]] + [
-        (h.kind, h.title, h.summary, h.fit) for g in groups for h in g.hits
+    items = [(c.kind, c.title, c.summary) for c in toolkit[:4]] + [
+        (h.kind, h.title, h.summary) for g in groups for h in g.hits
     ]
     if not items:
         return fallback, "rules", "Nothing was found, so there was nothing for a model to write about."
@@ -116,7 +114,7 @@ def reply(
     if not llm.available():
         return fallback, "rules", "Written from the catalogue: no model is configured for Nexus."
 
-    titles = [t for _, t, _, _ in items]
+    titles = [t for _, t, _ in items]
     stream = _Restore(restore, on_delta) if on_delta else None
     text = llm.write(
         model_view, list(intents), journey.title if journey else None, items,

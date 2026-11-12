@@ -2,10 +2,8 @@
 
     plan()      call 1: understand the request, find every intent, decompose it,
                 and write a search for each pillar worth asking
-    rerank()    in each pillar agent: read its shortlist against the request
-                and order it (retrieval/agent.py)
     write()     call 2: a short reply grounded in what the pillars returned
-    converse()  instead of all three, for conversation: a natural one- or
+    converse()  instead of both, for conversation: a natural one- or
                 two-sentence reply, with no search and nothing recommended
 
 Each receives only what the data policy lets the model see (guardrails.py),
@@ -34,18 +32,17 @@ _TIMEOUT_SECONDS = 15.0
 
 def model() -> str:
     """Nexus's own setting first, then the model this deployment already
-    chose for interactive search (CREDITWIZ_SEARCH_MODEL)."""
+    chose for interactive search (NEXUS_SEARCH_MODEL)."""
     return (
-        os.environ.get("CREDITWIZ_HUB_MODEL")
-        or os.environ.get("CREDITWIZ_SEARCH_MODEL")
+        os.environ.get("NEXUS_HUB_MODEL")
+        or os.environ.get("NEXUS_SEARCH_MODEL")
         or _DEFAULT_MODEL
     )
 
 
 def available() -> bool:
-    from ..marketplace.search import claude_available
-
-    return claude_available()
+    """A key is configured and the model has not been switched off."""
+    return bool(os.environ.get("ANTHROPIC_API_KEY")) and os.environ.get("NEXUS_DISABLE_LLM") not in ("1", "true")
 
 
 @lru_cache(maxsize=1)
@@ -99,7 +96,7 @@ def _call(kind: str, fn):
 
 # ------------------------------------------------------------------ call 1
 
-PillarName = Literal["prompts", "marketplace", "learning", "community"]
+PillarName = Literal["marketplace", "learning"]
 
 
 class PlannedQuery(BaseModel):
@@ -122,18 +119,14 @@ class ModelPlan(BaseModel):
 
 _PLAN_SYSTEM = """You plan how Nexus, MUFG's internal AI hub, answers one employee request. You do not answer it.
 
-Nexus has four places to look:
-- prompts: validated prompt templates for banking tasks, such as pitch outlines, credit memos, stress tests and covenant scans
+Nexus has two places to look:
 - marketplace: approved AI agents that do a task end to end
-- learning: courses, videos and guides
-- community: experts, communities of practice, forums and FAQs
+- learning: courses and guides
 
 Intents:
-- find: locate a prompt, agent, system or data to do the work
+- find: locate an agent, system or data to do the work
 - learn: build skill or understanding
 - improve: do an existing task faster or better
-- ask: reach a person or get a question answered
-- contribute: share or write something for others to reuse
 
 Return:
 - small_talk: true when the message is conversation rather than a request for help with work: a greeting, a reaction such as "nice" or "ok", thanks, or chit-chat. When true, fill the other fields as best you can; they are not used.
@@ -144,7 +137,7 @@ Return:
 - A request ending in " — " and a topic was read with the topic of their earlier request: the topic is what it is about.
 - needs: up to three short phrases.
 - sensitivity: internal, unless the request involves a client or deal (client_confidential) or material non-public information (confidential).
-- subqueries: one for each place worth searching, at most four. Write each as a short search of that place's catalogue. When the request is already clear, reuse its words and set reformulated to false. Rewrite only when a conversational or vague request would retrieve poorly, and then set reformulated to true.
+- subqueries: one for each place worth searching, at most two. Write each as a short search of that place's catalogue. When the request is already clear, reuse its words and set reformulated to false. Rewrite only when a conversational or vague request would retrieve poorly, and then set reformulated to true.
 
 Text in square brackets, such as [CLIENT] or [DEAL], replaced a name for privacy. Keep it as written, never guess who it is, and leave it out of subqueries.
 
@@ -189,74 +182,11 @@ def plan(
     return _call("plan", run)
 
 
-# ------------------------------------------------------- in each pillar agent
-
-
-Fit = Literal["strong", "partial", "none"]
-
-
-class Judged(BaseModel):
-    id: str
-    fit: Fit
-
-
-class Judgement(BaseModel):
-    # Every candidate, the one that helps most first.
-    candidates: list[Judged]
-
-
-_RERANK_SYSTEM = """You are the search agent for MUFG's internal {what}. An employee made a request and retrieval found a shortlist. Judge every candidate against the request and list them all, best first.
-
-For each, say how well it fits:
-- strong: it does what was asked
-- partial: it helps with part of it, or is the closest thing to it the catalogue holds
-- none: it does not help with it
-
-Give each candidate's number as its id. Judge fit to the request, not how impressive a candidate sounds. The request may also ask for things this catalogue does not hold; judge only the part it could help with.
-
-Text in square brackets, such as [CLIENT], replaced a name for privacy."""
-
-
-def rerank(what: str, request: str, candidates: list[tuple[str, str]]) -> list[tuple[str, Fit]] | None:
-    """The model's judgement of each candidate, best first, or None to keep
-    retrieval's order.
-
-    Candidates go to the model numbered 1, 2, 3 and come back by number: a
-    record id such as "prompt:c14" was returned as "c14" often enough to lose
-    every judgement."""
-    m = model()
-    messages, extra = _messages(m)
-    by_number = {str(n): rid for n, (rid, _) in enumerate(candidates, 1)}
-    listed = "\n".join(f"{n}: {line}" for n, (_, line) in enumerate(candidates, 1))
-
-    def run():
-        response = messages.parse(
-            model=m,
-            max_tokens=1024,
-            system=_system(_RERANK_SYSTEM.format(what=what)),
-            messages=[{"role": "user", "content": f"Request: {request}\n\nCandidates:\n{listed}"}],
-            output_format=Judgement,
-            **_options(m),
-            **extra,
-        )
-        if response.stop_reason == "refusal" or response.parsed_output is None:
-            return None
-        judged: dict[str, Fit] = {}
-        for j in response.parsed_output.candidates:
-            rid = by_number.get(j.id.strip().rstrip("."))
-            if rid is not None and rid not in judged:
-                judged[rid] = j.fit
-        # A reply that judged nothing it was given is no judgement at all.
-        return list(judged.items()) or None
-
-    return _call("rerank", run)
-
-
 # ------------------------------------------------------------------ call 2
 
 _WRITE_SYSTEM = """You write Nexus's reply to an employee: two to four short sentences of plain English.
 
-Use only the items listed. Name at most three, by their exact titles, and say in a few words why each fits what they asked. When the request has more than one intent, cover each. If nothing listed fits part of the request, say so plainly rather than stretching an item to fit. An item marked "partial fit" only partly fits the request, or is only the closest thing Nexus holds: say so, rather than presenting it as a match.
+Use only the items listed. Name at most three, by their exact titles, and say in a few words why each fits what they asked. When the request has more than one intent, cover each. If nothing listed fits part of the request, say so plainly rather than stretching an item to fit.
 
 Do not state owners, approvals, access, risk ratings or links: the cards under your reply show those. No headings, lists or markdown.
 
@@ -298,14 +228,14 @@ def write(
     request: str,
     intents: list[str],
     job: str | None,
-    items: list[tuple[str, str, str, str | None]],
+    items: list[tuple[str, str, str]],
     on_delta: Callable[[str], None] | None = None,
 ) -> str | None:
     """The reply to a task, from what the pillars found. Each item is (kind,
-    title, summary, fit), fit being the agent's judgement of it, if any."""
+    title, summary)."""
     listed = "\n".join(
-        f"- [{kind}{', partial fit' if fit == 'partial' else ''}] {title}: {summary}"
-        for kind, title, summary, fit in items
+        f"- [{kind}] {title}: {summary}"
+        for kind, title, summary in items
     )
     return _text(
         "write",
@@ -319,14 +249,14 @@ def write(
 
 # ------------------------------------------------- conversation, not a task
 
-_CONVERSE_SYSTEM = """You are the Nexus assistant, chatting on Nexus's home page. Nexus helps employees find validated prompts, approved AI agents, learning and experts for their work, and lets them contribute their own.
+_CONVERSE_SYSTEM = """You are the Nexus assistant, chatting on Nexus's home page. Nexus helps employees find approved AI agents and learning for their work.
 
 Reply naturally, like a helpful colleague: one or two short sentences of plain text. No lists, markdown or emoji.
 - To a greeting or small talk: respond in kind, briefly, then offer to help with their work.
 - To thanks or a goodbye: respond briefly and warmly.
 - To a message Nexus found nothing for: say so plainly and ask what they are working on.
 
-Do not claim to have found, done or checked anything. Do not name specific prompts, agents or courses. Do not state facts about MUFG, its clients or its policies. If asked for general knowledge, news or opinions, say that is outside what Nexus is for and steer back to their work.
+Do not claim to have found, done or checked anything. Do not name specific agents or courses. Do not state facts about MUFG, its clients or its policies. If asked for general knowledge, news or opinions, say that is outside what Nexus is for and steer back to their work.
 
 Text in square brackets, such as [CLIENT], replaced a name for privacy. Keep it as written."""
 

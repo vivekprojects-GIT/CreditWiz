@@ -36,11 +36,11 @@ const agent = {
   architecture_url: '',
   documents: [
     {
-      type: 'hld',
-      system: 'confluence',
+      label: 'HLD',
       url: 'https://confluence.example/contract-analyzer/hld',
       description: 'Components, integrations and data flows of the Contract Analyzer.',
     },
+    { label: 'Runbook', url: 'https://sharepoint.example/contract-analyzer/runbook', description: '' },
   ],
   tags: [],
   featured: false,
@@ -50,23 +50,11 @@ const agent = {
   source_kind: 'sample',
 }
 
-const sources = {
-  systems: [
-    { id: 'confluence', name: 'Confluence', kind: 'wiki', feeds: '', owner: '', location: '', connection: 'not_connected' },
-  ],
-  document_types: [
-    { id: 'brd', abbreviation: 'BRD', name: 'Business Requirements Document', about: 'The business need and scope.', feeds: '', lives_in: [], owner: '' },
-    { id: 'hld', abbreviation: 'HLD', name: 'High-level design', about: 'The architecture.', feeds: '', lives_in: [], owner: '' },
-  ],
-  link_groups: [],
-}
-
 describe('agent documentation', () => {
-  it('lists each document with what it covers, where it lives and a link to open it there', async () => {
+  it('lists each document with what it covers and a link to open it where it lives', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input)
-      if (url.includes('/api/knowledge/sources')) return response(sources)
-      if (url.includes('/related') || url.includes('/for-agent/')) return response([])
+      if (url.includes('/related')) return response([])
       if (url.includes('/api/marketplace/agents/contract-analyzer')) return response(agent)
       return response({ ok: true, id: 'event' })
     })
@@ -83,17 +71,16 @@ describe('agent documentation', () => {
     )
 
     const table = await screen.findByRole('table')
-    const [, brd, hld] = within(table).getAllByRole('row')
+    const [, hld, runbook] = within(table).getAllByRole('row')
 
-    // A given link opens where the document lives, in a new tab, described in the owner's words.
-    const open = within(hld).getByRole('link', { name: /Open in Confluence/ })
+    // A link opens where the document lives, in a new tab, described in the owner's words.
+    const open = within(hld).getByRole('link', { name: /Open HLD/ })
     expect(open.getAttribute('href')).toBe('https://confluence.example/contract-analyzer/hld')
     expect(open.getAttribute('target')).toBe('_blank')
     expect(within(hld).getByText('Components, integrations and data flows of the Contract Analyzer.')).toBeTruthy()
 
-    // A document with no link yet is still described, and says its link is to be confirmed.
-    expect(within(brd).getByText('The business need and scope.')).toBeTruthy()
-    expect(within(brd).getByText('Link to be confirmed')).toBeTruthy()
-    expect(within(brd).queryByRole('link')).toBeNull()
+    // A document nobody has described yet says so, and still opens.
+    expect(within(runbook).getByText('To be confirmed')).toBeTruthy()
+    expect(within(runbook).getByRole('link', { name: /Open Runbook/ })).toBeTruthy()
   })
 })

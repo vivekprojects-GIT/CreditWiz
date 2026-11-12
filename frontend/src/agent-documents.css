@@ -1,0 +1,81 @@
+/* An agent's documents: a short table of links to where each one lives. */
+
+.doc-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-xs);
+}
+
+.doc-table th,
+.doc-table td {
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+.doc-table tbody tr:last-child th,
+.doc-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.doc-table thead th {
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.doc-table tbody th {
+  min-width: 170px;
+  font-weight: 600;
+}
+
+/* On a phone each row becomes a card: every cell on its own line, labelled. */
+@media (max-width: 640px) {
+  .doc-table thead {
+    display: none;
+  }
+
+  .doc-table,
+  .doc-table tbody,
+  .doc-table tr,
+  .doc-table th,
+  .doc-table td {
+    display: block;
+  }
+
+  .doc-table tr {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .doc-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .doc-table th,
+  .doc-table td {
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+
+  .doc-table tbody th {
+    min-width: 0;
+    margin-bottom: 4px;
+  }
+
+  .doc-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--t-2xs);
+    font-weight: 600;
+    color: var(--ink-500);
+  }
+}

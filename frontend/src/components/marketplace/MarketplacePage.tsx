@@ -22,7 +22,7 @@ export function MarketplacePage() {
 }
 function MarketplaceContent() {
   const { persona } = usePersona()
-  const { pillars } = useHub()
+  const { pillars, user } = useHub()
   const search = pillars.find((p) => p.id === 'marketplace')?.search
   const [params, setParams] = useSearchParams()
   const [home, setHome] = useState<MarketplaceHome | null>(null)
@@ -129,8 +129,8 @@ function MarketplaceContent() {
         <span>AI Marketplace</span>
       </nav>
 
-      {/* No lead line: the placeholder already says what to type, and the
-          sentence under the title only repeated it. */}
+      {/* No lead line and no example chips: the title and the placeholder say
+          what to do. */}
       <PageBand compact kicker="AI Marketplace" title="Find the right agent for the job">
         <BandSearch
           value={query}
@@ -140,7 +140,6 @@ function MarketplaceContent() {
           placeholder={search?.placeholder ?? 'Describe what you need'}
           label="Describe what you need"
           action={search?.action ?? 'Find agents'}
-          examples={!urlQuery && home ? home.example_queries.slice(0, 4) : []}
           busy={searching}
           inputRef={inputRef}
         />
@@ -177,36 +176,17 @@ function MarketplaceContent() {
               <div className="nomatch__actions">
                 {result.next_steps.map((s) => (
                   <Link key={s.href} to={s.href} className="btn btn--blue btn--inline">
-                    {s.label} <ArrowRight size={18} strokeWidth={2.4} />
+                    {s.label} <ArrowRight size={18} strokeWidth={2.2} />
                   </Link>
                 ))}
               </div>
             </div>
           ) : (
             <div className="results__grid">
-              {result.results.map((m, i) => (
-                <div key={m.agent.id} className={`results__item${i === 0 ? ' is-top' : ''}`}>
-                  {/* Only the best match carries a percentage. Ranking is a
-                      rank-fusion of two retrievers, so no per-card number can
-                      be guaranteed to agree with the order below the top --
-                      a "38% best match" above a "50% second" read as wrong.
-                      Ranks 2 and 3 are labelled by position; rank 4 onward
-                      shows nothing. The best-match percentage is coverage of
-                      the extracted domains and capabilities, omitted when
-                      nothing was extracted rather than invented. */}
-                  {i === 0 && (
-                    <span className="results__best">
-                      Best match
-                      {m.coverage != null && (
-                        <span className="results__pct" title="Covers this share of what we understood you needed">
-                          {m.coverage}% match
-                        </span>
-                      )}
-                    </span>
-                  )}
-                  {i > 0 && i < 3 && (
-                    <span className="results__rank">{i === 1 ? '2nd match' : '3rd match'}</span>
-                  )}
+              {result.results.map((m) => (
+                <div key={m.agent.id} className="results__item">
+                  {/* No rank or percentage badge: the order is the ranking, and each
+                      card says why it matched. */}
                   <AgentCard agent={m.agent} why={m.why} source="search" />
                 </div>
               ))}
@@ -233,12 +213,12 @@ function MarketplaceContent() {
                 className="textlink"
                 onClick={() => track('marketplace', 'click', { persona, meta: { source: 'browse-all' } })}
               >
-                All {home.agent_count} agents <ArrowRight size={16} strokeWidth={2.4} />
+                All {home.agent_count} agents <ArrowRight size={16} strokeWidth={2.2} />
               </Link>
             </div>
           </div>
           {home.carousels.map((c) => (
-            <Carousel key={c.id} data={c} extra={c.id === 'recommended' ? <PersonaPreview personas={home.personas} /> : undefined} />
+            <Carousel key={c.id} data={c} extra={c.id === 'recommended' && user.is_admin ? <PersonaPreview personas={home.personas} /> : undefined} />
           ))}
         </div>
       )}

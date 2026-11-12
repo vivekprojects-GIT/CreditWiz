@@ -10,7 +10,7 @@ from app.main import app
 
 client = TestClient(app)
 RM = {"persona": "relationship_manager"}
-EVERY_PILLAR = ("prompts", "marketplace", "learning", "community")
+EVERY_PILLAR = ("marketplace", "learning")
 
 
 def _ask(q: str) -> dict:
@@ -27,10 +27,8 @@ def _kinds(body: dict) -> set[str]:
     "q, pillars, searched",
     [
         ("find me a compliance agent", ["marketplace"], "compliance"),
-        ("I need a prompt for a credit memo", ["prompts"], "credit memo"),
         # "prompt" is the topic here, not the kind of thing asked for.
         ("course on prompt engineering", ["learning"], "prompt engineering"),
-        ("who is the expert on KYC", ["community"], "KYC"),
         # The words that decided the intent are not what it is about.
         ("help me get better at credit analysis", ["learning"], "credit analysis"),
         ("any tutorials on VaR", ["learning"], "VaR"),
@@ -43,10 +41,10 @@ def test_one_intent_asks_one_kind_of_place_for_what_it_is_about(q, pillars, sear
     assert [g["pillar"] for g in body["pillars"]] == pillars
 
 
-def test_finding_without_naming_a_kind_asks_both_catalogues_for_the_subject():
+def test_improving_without_naming_a_kind_asks_discover_for_the_subject():
     body = _ask("make my portfolio review faster")
     assert body["task"]["intents"] == ["improve"]
-    assert body["plan"]["selected_pillars"] == ["prompts", "marketplace"]
+    assert body["plan"]["selected_pillars"] == ["marketplace"]
     assert {s["query"] for s in body["plan"]["subqueries"]} == {"portfolio review"}
 
 
@@ -68,18 +66,18 @@ def test_a_new_request_does_not_inherit_the_last_job():
 
 
 def test_the_job_toolkit_brings_only_the_kind_asked_for():
-    prompt = _ask("I need a prompt for a credit memo")
-    assert prompt["task"]["activity"] is not None
-    assert _kinds(prompt) == {"prompt"}
-    expert = _ask("who is the expert on KYC")
-    assert expert["task"]["activity"] is not None
-    assert expert["recommended"] and _kinds(expert) <= {"expert", "community"}
+    agent = _ask("I need an agent for client onboarding")
+    assert agent["task"]["activity"] is not None
+    assert _kinds(agent) == {"agent"}
+    course = _ask("I need a course for client onboarding")
+    assert course["task"]["activity"] is not None
+    assert _kinds(course) == {"learning"}
 
 
 @pytest.fixture
 def model(monkeypatch):
     """A planner that, like a real one might, proposes every pillar."""
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(llm, "write", lambda *args, **kwargs: None)
 
@@ -105,9 +103,9 @@ def model(monkeypatch):
 
 
 def test_asking_for_a_kind_of_thing_outright_is_an_intent_of_its_own():
-    body = _ask("I want a prompt for covenant monitoring and someone who knows covenants")
-    assert set(body["task"]["intents"]) == {"ask", "find"}
-    assert set(body["plan"]["selected_pillars"]) == {"community", "prompts"}
+    body = _ask("I want an agent for sanctions screening and a course on it")
+    assert set(body["task"]["intents"]) == {"learn", "find"}
+    assert set(body["plan"]["selected_pillars"]) == {"marketplace", "learning"}
 
 
 def test_asking_for_an_agent_decides_the_plan_without_a_model():

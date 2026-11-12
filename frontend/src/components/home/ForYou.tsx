@@ -1,18 +1,14 @@
-import { ArrowRight, MessageSquare, ThumbsUp } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
-import { fetchCommunityHome, fetchFeed, timeAgo, type Community, type Post } from '../../lib/community'
 import { fetchItems, PROVIDERS, type Item } from '../../lib/learning'
 import { CourseDrawer } from '../learning/CourseDrawer'
 import { CourseCard } from '../learning/ProviderShelves'
-import '../../community.css'
 
-/** What to pick up next: one course from Pluralsight or Microsoft Learn, and what your communities are discussing. */
+/** What to pick up next: one course from Pluralsight or Microsoft Learn. */
 export function ForYou({ persona }: { persona: string }) {
   const [courses, setCourses] = useState<{ continuing: boolean; items: Item[] } | null>(null)
-  const [posts, setPosts] = useState<Post[] | null>(null)
-  const [communities, setCommunities] = useState<Map<string, Community>>(new Map())
   const [open, setOpen] = useState<string | null>(null)
 
   useEffect(() => {
@@ -37,14 +33,6 @@ export function ForYou({ persona }: { persona: string }) {
       .catch((e: unknown) => {
         if (!isAbort(e)) setCourses({ continuing: false, items: [] })
       })
-    fetchFeed({ persona }, ctrl.signal)
-      .then((feed) => setPosts(feed.posts.slice(0, 3)))
-      .catch((e: unknown) => {
-        if (!isAbort(e)) setPosts([])
-      })
-    fetchCommunityHome(persona, ctrl.signal)
-      .then((home) => setCommunities(new Map(home.communities.map((c) => [c.id, c]))))
-      .catch(() => setCommunities(new Map()))
     return () => ctrl.abort()
   }, [persona, open])
 
@@ -58,7 +46,7 @@ export function ForYou({ persona }: { persona: string }) {
           <div className="home-card__head">
             <h3 className="home-card__title">{courses?.continuing ? 'Continue learning' : 'Recommended for your role'}</h3>
             <Link to="/learning" className="textlink">
-              Learning <ArrowRight size={14} strokeWidth={2.4} />
+              Learning <ArrowRight size={14} strokeWidth={2.2} />
             </Link>
           </div>
           {!courses ? (
@@ -74,41 +62,6 @@ export function ForYou({ persona }: { persona: string }) {
           )}
         </div>
 
-        <div className="panel foryou__card">
-          <div className="home-card__head">
-            <h3 className="home-card__title">From your communities</h3>
-            <Link to="/community" className="textlink">
-              Community <ArrowRight size={14} strokeWidth={2.4} />
-            </Link>
-          </div>
-          {!posts ? (
-            <div className="skeleton" style={{ height: 120 }} />
-          ) : posts.length ? (
-            <ul className="foryou__posts">
-              {posts.map((p) => (
-                <li key={p.id}>
-                  <Link to={`/community?thread=${encodeURIComponent(p.id)}`} className="foryou__post">
-                    <span className="foryou__where">
-                      {communities.get(p.community_id)?.name ?? 'Community'} · {timeAgo(p.created_at)}
-                    </span>
-                    <span className="foryou__text">{p.title || p.body}</span>
-                    <span className="foryou__stats">
-                      <span>
-                        <ThumbsUp size={13} strokeWidth={2.2} /> {p.like_count}
-                      </span>
-                      <span>
-                        <MessageSquare size={13} strokeWidth={2.2} /> {p.reply_count}
-                      </span>
-                      <span>{p.author.name}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="muted">Nothing new in your communities.</p>
-          )}
-        </div>
       </div>
       <CourseDrawer itemId={open} onClose={() => setOpen(null)} />
     </section>

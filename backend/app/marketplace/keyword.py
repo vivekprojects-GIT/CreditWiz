@@ -2,8 +2,9 @@
 
 Semantic retrieval is strong on meaning and weak on exact tokens: near-duplicate
 names ("Sanctions Review Agent v2" vs "... EMEA"), acronyms and IDs. BM25 is the
-opposite. Hybrid search fuses the two by RANK (see search.rank), so their
-incomparable score scales never meet.
+opposite. Hybrid search retrieves with both (see search.rank): similarity gives
+the order, and a strong keyword hit is what lets an exact name or acronym be
+shown at all. The two score scales are never added together.
 
 Both rankers read `semantic.embedding_text(agent)`, so an agent is described
 identically to both and a difference in ranking is a difference in method,
@@ -23,8 +24,8 @@ from .models import Agent
 # Standard BM25 parameters: k1 = term-frequency saturation, b = length normalisation.
 K1 = 1.5
 B = 0.75
-# Matched to the semantic side, so neither retriever gets a deeper say than
-# the other in fusion. See semantic.DEFAULT_CANDIDATES.
+# Matched to the semantic side, so neither retriever proposes more than the
+# other. See semantic.DEFAULT_CANDIDATES.
 DEFAULT_CANDIDATES = 6
 
 

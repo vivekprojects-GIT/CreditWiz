@@ -1,4 +1,4 @@
-import { getJson, postJson } from './api'
+import { postJson } from './api'
 /**
  * Shared Nexus user-context client.
  *
@@ -8,8 +8,7 @@ import { getJson, postJson } from './api'
  * same functions so one user context is assembled across Nexus.
  */
 
-export type Pillar =
-  'marketplace' | 'prompts' | 'learning' | 'intake' | 'governance' | 'knowledge' | 'community' | 'insights' | 'platform' | 'hub'
+export type Pillar = 'marketplace' | 'learning' | 'hub'
 
 export type EventType =
   | 'search'
@@ -25,7 +24,7 @@ export type EventType =
   | 'feedback_positive'
   | 'feedback_negative'
 
-export interface InterestSignal {
+interface InterestSignal {
   topic: string
   weight: number
   events: number
@@ -65,7 +64,7 @@ interface TrackPayload {
   meta?: Record<string, unknown>
 }
 
-const JSON_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CreditWiz-Request': '1' }
+const JSON_HEADERS = { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Nexus-Request': '1' }
 
 /** Fire-and-forget footprint. Never throws, never blocks the UI. */
 export function track(pillar: Pillar, type: EventType, data: TrackPayload = {}) {
@@ -89,6 +88,3 @@ export async function sendFeedback(body: {
   return postJson<{ ok: boolean; id: string }>('/api/context/feedback', body)
 }
 
-export async function fetchUserContext(signal?: AbortSignal) {
-  return getJson<UserContext>('/api/context/me', signal)
-}

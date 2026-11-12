@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: 9px var(--s-3);
+  padding: 8px var(--s-3);
   border-radius: var(--r-md);
   color: var(--ink-900);
   text-decoration: none;
@@ -48,20 +48,3 @@
   background: var(--ink-50);
 }
 
-.hsearch__communities {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2);
-  margin: 0 0 var(--s-3);
-  padding: 0;
-  list-style: none;
-}
-
-.hsearch__communities .chip {
-  color: var(--ink-800);
-  text-decoration: none;
-}
-
-.hsearch__communities .chip:hover {
-  background: var(--ink-200);
-}

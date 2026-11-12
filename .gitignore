@@ -30,3 +30,6 @@ backend/var/*.db-shm
 
 # Derived semantic index; rebuilt from agents.json on boot
 backend/var/chroma/
+
+# Browser automation logs
+.playwright-mcp/

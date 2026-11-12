@@ -23,11 +23,11 @@ from .models import Item, LearningPath
 
 
 def _data_dir() -> Path:
-    """Resolved per read, not at import, so CREDITWIZ_DATA_DIR can be pointed
+    """Resolved per read, not at import, so NEXUS_DATA_DIR can be pointed
     somewhere else by a test or a deployment without reimporting the module."""
     return Path(
         os.environ.get(
-            "CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data"
+            "NEXUS_DATA_DIR", Path(__file__).resolve().parents[2] / "data"
         )
     )
 
@@ -89,7 +89,7 @@ class LearningStore:
         return self._persona_paths
 
     def invalidate(self) -> None:
-        """Drop the cache. Tests that point CREDITWIZ_DATA_DIR somewhere new
+        """Drop the cache. Tests that point NEXUS_DATA_DIR somewhere new
         need the next read to come from the new location."""
         with self._lock:
             self._loaded_at = 0.0

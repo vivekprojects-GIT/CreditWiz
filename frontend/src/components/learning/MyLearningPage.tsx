@@ -39,9 +39,7 @@ export function MyLearningPage() {
       </nav>
 
       <PageBand
-        kicker={data?.persona_label}
         title="My learning"
-        lead="Where you are with the learning relevant to your role."
         aside={
           data && data.required_total > 0 ? (
             <span className="band__count">
@@ -105,7 +103,7 @@ export function MyLearningPage() {
               ))}
             </ul>
             <p className="coverage__note">
-              <Info size={14} strokeWidth={2.4} /> {data.proficiency_note}
+              <Info size={14} strokeWidth={2.2} /> {data.proficiency_note}
             </p>
           </section>
 

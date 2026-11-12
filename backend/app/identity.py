@@ -25,7 +25,7 @@ from pydantic import BaseModel
 from . import personas as hub_personas
 
 _DATA_DIR = Path(
-    os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[1] / "data")
+    os.environ.get("NEXUS_DATA_DIR", Path(__file__).resolve().parents[1] / "data")
 )
 
 
@@ -63,7 +63,7 @@ def _read(name: str) -> dict:
 # cannot change mid-request, so hold it for the duration of one. Reset by the
 # session middleware, so nothing leaks between requests or between users.
 _current: ContextVar[tuple[str, DirectoryProfile] | None] = ContextVar(
-    "creditwiz_profile", default=None
+    "nexus_profile", default=None
 )
 
 

@@ -1,6 +1,6 @@
 """The two indexes a pillar agent retrieves from, over one text per record.
 
-    data file / contributions table  --authoritative-->  the records
+    data file  --authoritative-->  the records
              |
              '--derived-->  one text per record --> Chroma  meaning, by cosine
                                                 --> BM25    exact words, acronyms
@@ -10,9 +10,8 @@ stay exactly as they are. Nothing is read back out of an index as fact:
 retrieval returns ids and numbers, and each record is then read from its
 source. Deleting the index directory costs a rebuild and nothing else.
 
-Every record belongs to a source. "catalog" is what ships in a data file;
-"contribution" is what people submit through Create. A sync replaces one
-source at a time, so reloading a catalogue never drops a contribution.
+Every record belongs to a source; "catalog" is what ships in a data file. A
+sync replaces one source at a time.
 """
 
 from __future__ import annotations
@@ -32,7 +31,7 @@ from ..text import STOP_WORDS, stem
 
 log = logging.getLogger("mufg.retrieval")
 
-# What each retriever proposes to fusion, as on Discover.
+# What each retriever proposes to the relevance gate, as on Discover.
 CANDIDATES = 6
 # Records embedded per call. The model's working memory grows to the largest
 # batch it has run and keeps that size, so a whole catalogue at once cost
@@ -58,7 +57,7 @@ class Doc:
 
 
 def enabled() -> bool:
-    return os.environ.get("CREDITWIZ_DISABLE_SEMANTIC") not in ("1", "true")
+    return os.environ.get("NEXUS_DISABLE_SEMANTIC") not in ("1", "true")
 
 
 def tokens(text: str) -> list[str]:
@@ -109,7 +108,7 @@ class SemanticIndex:
                 from ..database import VAR_DIR
 
                 # The same directory as Discover's index, one collection each.
-                path = Path(os.environ.get("CREDITWIZ_INDEX_DIR") or VAR_DIR / "chroma")
+                path = Path(os.environ.get("NEXUS_INDEX_DIR") or VAR_DIR / "chroma")
                 path.mkdir(parents=True, exist_ok=True)
                 self._handle = chromadb.PersistentClient(path=str(path)).get_or_create_collection(
                     self.collection,

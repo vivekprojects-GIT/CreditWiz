@@ -141,7 +141,7 @@ function ItemContent() {
         <div className="doc__bar-right">
           {status === 'completed' ? (
             <span className="item__done">
-              <Check size={15} strokeWidth={3} /> Completed
+              <Check size={15} strokeWidth={2.2} /> Completed
             </span>
           ) : (
             <button
@@ -150,7 +150,7 @@ function ItemContent() {
               disabled={busy || item.blocked_by.length > 0 || item.prerequisite_unavailable}
               onClick={() => void mark('completed')}
             >
-              <Check size={16} strokeWidth={2.6} /> Mark as complete
+              <Check size={16} strokeWidth={2.2} /> Mark as complete
             </button>
           )}
         </div>
@@ -195,7 +195,7 @@ function ItemContent() {
               {item.level && <span className="vcard__level">{item.level}</span>}
               {time && (
                 <span className="acard__kicker">
-                  <Clock size={13} strokeWidth={2.4} /> {time}
+                  <Clock size={13} strokeWidth={2.2} /> {time}
                 </span>
               )}
               <span className="acard__kicker">{item.path_title}</span>
@@ -246,7 +246,7 @@ function ItemContent() {
               <ul className="course__outcomes">
                 {item.outcomes.map((o) => (
                   <li key={o}>
-                    <Check size={16} strokeWidth={2.6} aria-hidden="true" /> {o}
+                    <Check size={16} strokeWidth={2.2} aria-hidden="true" /> {o}
                   </li>
                 ))}
               </ul>
@@ -291,7 +291,7 @@ function ItemContent() {
                 rel="noreferrer"
                 onClick={() => track('learning', 'click', { subject_id: item.id, subject_type: item.type, persona })}
               >
-                Open {TYPE_LABEL[item.type].toLowerCase()} <ExternalLink size={15} strokeWidth={2.4} />
+                Open {TYPE_LABEL[item.type].toLowerCase()} <ExternalLink size={15} strokeWidth={2.2} />
               </a>
             </section>
           )}
@@ -309,9 +309,9 @@ function ItemContent() {
               <RatingInput
                 value={item.my_rating}
                 disabled={item.status === 'not_started' || rating}
-                onRate={(stars) => {
+                onRate={(rating) => {
                   setRating(true)
-                  rateItem(item.id, stars)
+                  rateItem(item.id, rating)
                     .then((updated) => setItem((prev) => (prev ? { ...prev, ...updated } : prev)))
                     .catch(() => undefined)
                     .finally(() => setRating(false))
@@ -329,7 +329,7 @@ function ItemContent() {
               <div className="agent__links">
                 {item.related_agents.map((aid) => (
                   <Link key={aid} to={`/marketplace/agents/${aid}`} className="linkbtn">
-                    {item.related_agent_names[aid] ?? aid} <ArrowRight size={16} strokeWidth={2.4} />
+                    {item.related_agent_names[aid] ?? aid} <ArrowRight size={16} strokeWidth={2.2} />
                   </Link>
                 ))}
               </div>
@@ -345,7 +345,7 @@ function ItemContent() {
             ))}
           </div>
           <Link to={`/learning?path=${item.path}`} className="textlink" style={{ marginTop: 10 }}>
-            All {item.path_title.toLowerCase()} content <ArrowRight size={16} strokeWidth={2.4} />
+            All {item.path_title.toLowerCase()} content <ArrowRight size={16} strokeWidth={2.2} />
           </Link>
         </aside>
       </div>

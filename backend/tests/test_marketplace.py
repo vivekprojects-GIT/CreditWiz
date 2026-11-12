@@ -2,7 +2,7 @@ import os
 
 from fastapi.testclient import TestClient
 
-os.environ["CREDITWIZ_DISABLE_LLM"] = "1"
+os.environ["NEXUS_DISABLE_LLM"] = "1"
 
 from app.main import app
 from app.marketplace import search
@@ -64,9 +64,6 @@ def test_nlp_search_understands_onboarding_documents():
             "persona": "compliance_user",
         },
     ).json()
-    # Nothing interprets the query before retrieval, so "engine" names the
-    # reranker. With no key configured, RRF's order stands.
-    assert body["engine"] == "fusion"
     assert body["no_match"] is False
     top = [m["agent"]["id"] for m in body["results"]]
     assert top[0] in {"kyc-cip-agent", "onboarding-pack-assistant"}
@@ -118,8 +115,8 @@ def test_shared_context_layer_is_hub_wide_not_pillar_owned(tmp_path):
         json={
             "pillar": "learning",
             "type": "learning_view",
-            "subject_id": "how-to-build-a-kyc-agent",
-            "subject_type": "video",
+            "subject_id": "kyc-document-checklist",
+            "subject_type": "quick-reference",
             "topics": ["kyc", "Legal"],
         },
     ).json()
@@ -310,19 +307,12 @@ def test_documents_are_links_to_where_they_live_not_copies():
     assert agent["documents"] == []
 
 
-def test_every_agent_is_open_and_names_only_listed_document_types_and_systems():
-    from app.knowledge.store import load
-
-    sources = load()
-    types = {d.id for d in sources.document_types}
-    systems = {s.id for s in sources.systems}
+def test_every_agent_is_open():
     for agent in store.all_agents:
         assert agent.access.type == "open", agent.id
-        for doc in agent.documents:
-            assert doc.type in types and (not doc.system or doc.system in systems), agent.id
 
 
-def test_an_agent_document_is_a_safe_link():
+def test_an_agent_document_is_a_labelled_safe_link():
     import pytest
 
     base = store.all_agents[0].model_dump()
@@ -331,45 +321,25 @@ def test_an_agent_document_is_a_safe_link():
             **base,
             "documents": [
                 {
-                    "type": "hld",
-                    "system": "confluence",
+                    "label": "HLD",
                     "url": "https://confluence.example/hld",
                     "description": "Components, integrations and data flows of the agent.",
                 }
             ],
         }
     )
-    assert agent.documents[0].system == "confluence"
+    assert agent.documents[0].label == "HLD"
     assert agent.documents[0].description.startswith("Components")
-    with pytest.raises(ValueError):
-        Agent.model_validate({**base, "documents": [{"type": "hld", "url": "javascript:alert(1)"}]})
-
-
-def test_learning_for_agent_is_persona_ordered():
-    recs = client.get(
-        "/api/learning/for-agent/kyc-cip-agent",
-        params={"persona": "compliance_user"},
-    ).json()
-    ids = [i["id"] for i in recs]
-    assert "kyc-verifier-walkthrough" in ids and len(ids) <= 3
-    # Both items explicitly link to the CIP Agent; either is the right lead
-    # for a compliance user, and both sit ahead of anything only tag-related.
-    assert recs[0]["id"] in {"kyc-verifier-walkthrough", "kyc-document-checklist"}
-    dev = [
-        i["id"]
-        for i in client.get(
-            "/api/learning/for-agent/kyc-cip-agent",
-            params={"persona": "developer"},
-        ).json()
-    ]
-    assert dev[0] == "how-to-build-a-kyc-agent"  # builder content first for a developer
+    # A document is a link: without a label or a safe address it is refused.
+    for bad in ({"label": "HLD", "url": "javascript:alert(1)"}, {"label": "HLD"}, {"url": "https://confluence.example/hld"}):
+        with pytest.raises(ValueError):
+            Agent.model_validate({**base, "documents": [bad]})
 
 
 def test_learning_items_span_many_content_types():
     items = client.get("/api/learning/items").json()
     types = {i["type"] for i in items}
     assert {
-        "video",
         "quick-reference",
         "best-practice",
         "documentation",
@@ -380,7 +350,7 @@ def test_learning_items_span_many_content_types():
     assert len(items) >= 20
     assert client.get("/api/learning/items", params={"type": "quick-reference"}).json()
     assert client.get("/api/learning/items/nope").status_code == 404
-    detail = client.get("/api/learning/items/kyc-verifier-walkthrough").json()
+    detail = client.get("/api/learning/items/kyc-document-checklist").json()
     assert (
         detail["path_title"]
         and "kyc-cip-agent" in detail["related_agent_names"]
@@ -401,7 +371,7 @@ def test_role_recommendations_mix_every_source_with_a_reason():
     role = next(s for s in body["sections"] if s["id"] == "role")
     assert 1 < len(role["items"]) <= 8
     # One row across providers, not whichever provider happens to rank highest.
-    assert len({i["source"] for i in role["items"]}) >= 4
+    assert len({i["source"] for i in role["items"]}) >= 3
     assert all(i["recommendation_reason"] for i in role["items"])
 
 
@@ -456,12 +426,12 @@ def test_progress_tracks_started_and_completed():
 def test_my_learning_reports_progress_and_coverage_not_proficiency():
     client.post(
         "/api/learning/progress",
-        json={"item_id": "kyc-verifier-walkthrough", "status": "completed"},
+        json={"item_id": "kyc-document-checklist", "status": "completed"},
     )
     client.post(
         "/api/learning/progress",
         json={
-            "item_id": "sanctions-screening-basics",
+            "item_id": "sanctions-screening-cheatsheet",
             "status": "in_progress",
             "progress": 65,
         },
@@ -485,17 +455,17 @@ def test_rating_requires_the_learner_to_have_opened_the_item():
     assert (
         client.post(
             "/api/learning/ratings",
-            json={"item_id": "kyc-verifier-walkthrough", "stars": 5},
+            json={"item_id": "kyc-document-checklist", "rating": 5},
         ).status_code
         == 409
     )
     client.post(
         "/api/learning/progress",
-        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+        json={"item_id": "kyc-document-checklist", "status": "in_progress"},
     )
     body = client.post(
         "/api/learning/ratings",
-        json={"item_id": "kyc-verifier-walkthrough", "stars": 5},
+        json={"item_id": "kyc-document-checklist", "rating": 5},
     ).json()
     assert body["my_rating"] == 5 and body["rating_count"] == 1
 
@@ -506,11 +476,11 @@ def test_average_is_withheld_until_enough_ratings_but_weighted_value_exists():
 
     client.post(
         "/api/learning/progress",
-        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+        json={"item_id": "kyc-document-checklist", "status": "in_progress"},
     )
     body = client.post(
         "/api/learning/ratings",
-        json={"item_id": "kyc-verifier-walkthrough", "stars": 5},
+        json={"item_id": "kyc-document-checklist", "rating": 5},
     ).json()
     assert body["rating_count"] == 1 < ratings.MIN_SHOWN
     assert body["rating_average"] is None
@@ -521,32 +491,71 @@ def test_average_is_withheld_until_enough_ratings_but_weighted_value_exists():
 def test_rating_again_replaces_rather_than_accumulates():
     client.post(
         "/api/learning/progress",
-        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+        json={"item_id": "kyc-document-checklist", "status": "in_progress"},
     )
-    for stars in (2, 4):
+    for rating in (2, 4):
         body = client.post(
             "/api/learning/ratings",
-            json={"item_id": "kyc-verifier-walkthrough", "stars": stars},
+            json={"item_id": "kyc-document-checklist", "rating": rating},
         ).json()
     assert body["my_rating"] == 4 and body["rating_count"] == 1
 
     cleared = client.post(
         "/api/learning/ratings",
-        json={"item_id": "kyc-verifier-walkthrough", "stars": None},
+        json={"item_id": "kyc-document-checklist", "rating": None},
     ).json()
     assert cleared["my_rating"] is None and cleared["rating_count"] == 0
+
+
+def test_rating_with_an_unknown_field_is_refused_rather_than_cleared():
+    """A misspelt field used to read as "no rating" and silently clear it."""
+    client.post(
+        "/api/learning/progress",
+        json={"item_id": "kyc-document-checklist", "status": "in_progress"},
+    )
+    client.post(
+        "/api/learning/ratings",
+        json={"item_id": "kyc-document-checklist", "rating": 4},
+    )
+    refused = client.post(
+        "/api/learning/ratings",
+        json={"item_id": "kyc-document-checklist", "stars": 5},
+    )
+    assert refused.status_code == 422
+    body = client.get("/api/learning/items/kyc-document-checklist").json()
+    assert body["my_rating"] == 4
+
+
+def test_an_existing_ratings_table_is_renamed_without_losing_ratings():
+    """Databases made before the rename still have a stars column."""
+    import sqlite3
+
+    from app import database
+
+    conn = sqlite3.connect(":memory:")
+    conn.execute(
+        "CREATE TABLE learning_ratings (user_id TEXT NOT NULL, item_id TEXT NOT NULL, "
+        "stars INTEGER NOT NULL CHECK(stars BETWEEN 1 AND 5), "
+        "created_at TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(user_id, item_id))"
+    )
+    conn.execute("INSERT INTO learning_ratings VALUES ('u-1001', 'kyc', 4, 'then', 'then')")
+    database._rename_columns(conn)
+    database._rename_columns(conn)  # running it twice changes nothing
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(learning_ratings)")}
+    assert "rating" in columns and "stars" not in columns
+    assert conn.execute("SELECT rating FROM learning_ratings").fetchone() == (4,)
 
 
 def test_average_appears_once_the_item_clears_the_threshold():
     """Three learners, three different scores: the mean becomes publishable."""
     from app.learning import ratings
 
-    item = "kyc-verifier-walkthrough"
-    for user, stars in (("u-1001", 5), ("demo-compliance", 4), ("demo-operations", 3)):
+    item = "kyc-document-checklist"
+    for user, rating in (("u-1001", 5), ("demo-compliance", 4), ("demo-operations", 3)):
         assert client.post("/api/auth/demo", json={"user_id": user}).status_code == 200
         client.post("/api/learning/progress", json={"item_id": item, "status": "in_progress"})
         body = client.post(
-            "/api/learning/ratings", json={"item_id": item, "stars": stars}
+            "/api/learning/ratings", json={"item_id": item, "rating": rating}
         ).json()
 
     assert body["rating_count"] == ratings.MIN_SHOWN == 3
@@ -559,12 +568,12 @@ def test_ratings_are_collected_but_never_ranked_on():
     """The chosen stance: collect now, rank later. Curation stays explainable."""
     client.post(
         "/api/learning/progress",
-        json={"item_id": "kyc-verifier-walkthrough", "status": "in_progress"},
+        json={"item_id": "kyc-document-checklist", "status": "in_progress"},
     )
     before = client.get("/api/learning/curation").json()
     client.post(
         "/api/learning/ratings",
-        json={"item_id": "kyc-verifier-walkthrough", "stars": 1},
+        json={"item_id": "kyc-document-checklist", "rating": 1},
     )
     after = client.get("/api/learning/curation").json()
     assert before["ranked"] == after["ranked"]
@@ -774,7 +783,7 @@ def test_agents_are_embedded_once_and_only_re_embedded_when_changed(tmp_path, mo
 
     # A private directory: the session fixture already populated the shared
     # one, and this test counts what a first sync adds.
-    monkeypatch.setenv("CREDITWIZ_INDEX_DIR", str(tmp_path / "chroma"))
+    monkeypatch.setenv("NEXUS_INDEX_DIR", str(tmp_path / "chroma"))
     index = semantic.SemanticIndex()
     agents = store.all_agents
     first = index.sync(agents)
@@ -817,7 +826,7 @@ def test_semantic_retrieval_finds_an_agent_that_shares_no_words():
 
 def test_search_still_works_when_the_semantic_index_is_disabled(monkeypatch):
     """A failed or switched-off index must degrade to lexical, never 500."""
-    monkeypatch.setenv("CREDITWIZ_DISABLE_SEMANTIC", "1")
+    monkeypatch.setenv("NEXUS_DISABLE_SEMANTIC", "1")
     from app.marketplace import semantic
 
     assert semantic.SemanticIndex().search("sanctions screening") == {}
@@ -844,7 +853,6 @@ def test_search_records_a_trace_that_explains_the_ranking():
     assert trace["persona"] == "compliance_user"
 
     meta = trace["meta"]
-    assert meta["engine"] in {"claude", "fusion"}
     assert meta["results"] and set(meta["scores"]) == set(meta["results"])
     assert "domains" in meta["intent"] and "capabilities" in meta["intent"]
     assert "available" in meta["retrieval"] and "candidates" in meta["retrieval"]
@@ -902,21 +910,25 @@ def test_keyword_index_pins_an_exact_name():
     assert keyword.index.search("zebra origami") == {}
 
 
-def test_rrf_fuses_by_rank_and_ignores_score_scale():
-    """A cosine in 0..1 and a BM25 in 0..10 must fuse as ranks, not magnitudes."""
-    from app.marketplace.search import rrf
+def test_results_are_ordered_by_similarity_not_by_keyword_score():
+    """The order is the semantic one. A huge keyword score does not lift an agent;
+    an agent only the keyword index found follows the ones with a similarity."""
+    from app.marketplace.search import semantic_order
 
-    semantic_ranks = {"a": 0.9, "b": 0.8, "c": 0.1}
-    keyword_ranks = {"b": 900.0, "a": 850.0}  # wildly different scale
-    fused = rrf(semantic_ranks, keyword_ranks)
-    # a and b are each first in one ranker and second in the other: a tie.
-    assert abs(fused["a"] - fused["b"]) < 1e-9
-    # c appears in one ranker only, last: it must trail both.
-    assert fused["c"] < fused["a"]
+    similar = {"a": 0.9, "b": 0.8, "c": 0.4}
+    keywords = {"c": 900.0, "b": 850.0, "d": 700.0, "e": 950.0}
+    assert semantic_order(similar, keywords) == ["a", "b", "c", "e", "d"]
+
+
+def test_search_results_come_back_closest_in_meaning_first():
+    query = "summarise credit memo"
+    body = client.post("/api/marketplace/search", json={"query": query}).json()
+    shown = [m["similarity"] or 0.0 for m in body["results"]]
+    assert len(shown) > 1 and shown == sorted(shown, reverse=True)
 
 
 def test_hybrid_search_still_returns_no_match_for_nonsense():
-    """RRF always returns something; the relevance gate must not."""
+    """A retriever always returns something; the relevance gate must not."""
     body = client.post("/api/marketplace/search", json={"query": "zebra origami"}).json()
     assert body["no_match"] is True and body["results"] == []
 
@@ -924,7 +936,7 @@ def test_hybrid_search_still_returns_no_match_for_nonsense():
 def test_search_trace_records_both_rankers():
     client.post("/api/marketplace/search", json={"query": "sanctions review"})
     meta = client.get("/api/context/events?type=search&limit=1").json()[0]["meta"]
-    assert meta["fusion"] == "rrf"
+    assert meta["order"] == "semantic"
     assert "candidates" in meta["keyword"] and "candidates" in meta["retrieval"]
     assert meta["results"][0] == "kyc-sanctions-review-agent"
 
@@ -938,7 +950,7 @@ def test_retrieval_is_filtered_by_audience_not_after_it():
     asserts -- an audience that matches nothing must come back empty rather
     than come back full and be trimmed later.
     """
-    from app.marketplace import keyword, semantic
+    from app.marketplace import semantic
 
     query = "sanctions screening"
     assert semantic.index.available, "index must be built for this to mean anything"
@@ -1005,3 +1017,12 @@ def test_nothing_is_added_to_the_query_before_it_is_searched():
 
     body = client.post("/api/marketplace/search", json={"query": "zebra origami"}).json()
     assert body["no_match"] is True and body["results"] == []
+
+def test_search_heading_is_one_short_line_naming_the_main_topic():
+    """One topic, not a list of three, and acronyms keep their capitals."""
+    from app.marketplace.search import local_intent
+
+    onboarding = local_intent("I need an agent that can review customer onboarding documents")
+    assert onboarding.summary == "Looking for customer onboarding / KYC"
+    assert local_intent("screen a client against sanctions lists").summary == "Looking for AML screening"
+    assert local_intent("zebra origami").summary == "Looking for an agent matching your description"

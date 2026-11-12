@@ -36,9 +36,7 @@ export function JourneysPage() {
       </nav>
       <PageBand
         compact
-        kicker={home?.persona_label}
         title="Your work"
-        lead="The jobs you do, and what helps at each one: systems, data, prompts, agents, learning and people."
       />
       {error ? (
         <p role="alert">{error}</p>

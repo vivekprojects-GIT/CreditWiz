@@ -1,31 +1,23 @@
 import {
   ArrowRight,
-  Bot,
+  Workflow,
   Briefcase,
   Check,
   ChevronRight,
-  Copy,
   CornerDownRight,
   GraduationCap,
   Info,
   Layers,
   Loader2,
   Lock,
-  MessageSquareText,
-  PenLine,
-  Plus,
-  RotateCcw,
   ShieldCheck,
   ThumbsDown,
   ThumbsUp,
-  UserRound,
-  Users,
   type LucideIcon,
 } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { track, type Maturity, type UserContext } from '../../lib/context'
-import { useCreate } from '../../lib/create'
 import { useHub } from '../../lib/hub'
 import { matchSections } from '../../lib/hubSearch'
 import {
@@ -42,7 +34,6 @@ import {
   type Plan,
   type TaskContext,
 } from '../../lib/journeys'
-import { draftPrompt, type Draft } from '../../lib/prompts'
 import { AssetList } from '../journeys/AssetList'
 
 export interface Turn {
@@ -72,25 +63,18 @@ const MATURITY_LABEL: Record<Maturity, string> = {
 }
 
 const PILLAR_ICON: Record<PillarName, LucideIcon> = {
-  prompts: MessageSquareText,
-  marketplace: Bot,
+  marketplace: Workflow,
   learning: GraduationCap,
-  community: Users,
 }
 
 const BROWSE: Record<PillarName, string> = {
-  prompts: 'Open the library',
   marketplace: 'See all in Discover',
   learning: 'Catalog',
-  community: 'Open Community',
 }
 
 const HIT_ICON: Record<string, LucideIcon> = {
-  prompt: MessageSquareText,
-  agent: Bot,
+  agent: Workflow,
   learning: GraduationCap,
-  expert: UserRound,
-  community: Users,
   page: Layers,
 }
 
@@ -121,7 +105,7 @@ function Group({
         <span className="aicount">{count}</span>
         {link && (
           <Link className="ailink" to={link.to}>
-            {link.label} <ArrowRight size={13} strokeWidth={2.4} />
+            {link.label} <ArrowRight size={13} strokeWidth={2.2} />
           </Link>
         )}
       </div>
@@ -140,11 +124,6 @@ function HitRow({ hit, onOpen }: { hit: PillarHit; onOpen?: () => void }) {
       <span className="airow__body">
         <span className="airow__title">
           {hit.title}
-          {hit.fit === 'partial' && (
-            <span className="fitchip" title="The agent judged it the closest thing, or a fit for part of what you asked">
-              Partial match
-            </span>
-          )}
         </span>
         <span className="airow__sub">{hit.meta || hit.summary}</span>
       </span>
@@ -217,53 +196,6 @@ function ContextChips({ task, followsOn = '' }: { task: TaskContext; followsOn?:
         </span>
       )}
     </p>
-  )
-}
-
-/** A prompt written from the validated ones. Nothing is saved until contributed. */
-function DraftCard({ draft, busy, onAnother }: { draft: Draft; busy: boolean; onAnother: () => void }) {
-  const { open } = useCreate()
-  const [copied, setCopied] = useState(false)
-  return (
-    <section className="draftcard" aria-label={`Draft prompt: ${draft.title}`}>
-      <div className="draftcard__head">
-        <PenLine size={18} strokeWidth={2.2} aria-hidden="true" />
-        <div>
-          <b>Draft prompt · {draft.title}</b>
-          <span className="muted">Written for you from validated prompts. Nothing is saved until you contribute it.</span>
-        </div>
-      </div>
-      <pre className="codeblock codeblock--compact">{draft.body}</pre>
-      <p className="draftcard__learn">
-        Learned from
-        {draft.learned_from.map((s) => (
-          <Link key={s.id} className="tagchip" to={`/library/prompts/${s.id}`}>
-            {s.title}
-          </Link>
-        ))}
-        <span className="muted">Their constraints were carried into the draft.</span>
-      </p>
-      <div className="draftcard__acts">
-        <button type="button" className="btn btn--inline" onClick={() => open({ kind: 'prompt', draft })}>
-          <Plus size={16} strokeWidth={2.4} /> Save and contribute
-        </button>
-        <button
-          type="button"
-          className="btn-outline"
-          onClick={() => void navigator.clipboard?.writeText(draft.body).then(() => setCopied(true)).catch(() => undefined)}
-        >
-          <Copy size={15} strokeWidth={2.2} /> {copied ? 'Copied' : 'Copy'}
-        </button>
-        <button type="button" className="btn-outline" onClick={onAnother} disabled={busy}>
-          {busy ? <Loader2 className="spin" size={15} aria-hidden="true" /> : <RotateCcw size={15} strokeWidth={2.2} />} Try another
-          version
-        </button>
-      </div>
-      <p className="answer__foot">
-        <ShieldCheck size={14} strokeWidth={2.2} aria-hidden="true" /> A contributed prompt goes to the Data Privacy Office
-        before anyone else can run it.
-      </p>
-    </section>
   )
 }
 
@@ -422,10 +354,8 @@ function WhyThis({ user, task, plan }: { user: UserContext; task: TaskContext; p
 
 /** The answer while it streams in: understood, planned, each pillar as it lands, the reply as it is written. */
 const AGENT_NAME: Record<PillarName, string> = {
-  prompts: 'Prompts & Skills agent',
   marketplace: 'Discover agent',
   learning: 'Learning agent',
-  community: 'Community search',
 }
 
 /** The agentic flow as it runs: the request read, each agent searching and judging, the answer written. */
@@ -446,7 +376,7 @@ function LiveSteps({ live, waiting }: { live: Live; waiting: PillarName[] }) {
       return {
         id: p,
         label: g
-          ? `${AGENT_NAME[p]} found ${g.hits.length}${g.reranked ? ', judged by Claude' : ''}`
+          ? `${AGENT_NAME[p]} found ${g.hits.length}`
           : `${AGENT_NAME[p]} is searching`,
         done: !!g,
       }
@@ -458,7 +388,7 @@ function LiveSteps({ live, waiting }: { live: Live; waiting: PillarName[] }) {
       {steps.map((s) => (
         <li key={s.id} className={s.done ? 'livesteps__done' : 'livesteps__now'}>
           {s.done ? (
-            <Check size={14} strokeWidth={2.6} aria-hidden="true" />
+            <Check size={14} strokeWidth={2.2} aria-hidden="true" />
           ) : (
             <Loader2 className="spin" size={14} aria-hidden="true" />
           )}
@@ -558,9 +488,8 @@ function DirectAnswer({ ask, latest, onAsk }: { ask: AskResponse; latest: boolea
 
 /**
  * One reply in the home conversation. The job's own toolkit when the request
- * is one of the person's jobs; then what each pillar found; a prompt written
- * for them when they asked for one. Nothing is shown that the catalogue does
- * not hold.
+ * is one of the person's jobs; then what each pillar found. Nothing is shown
+ * that the catalogue does not hold.
  */
 export function AssistantAnswer({
   turn,
@@ -574,10 +503,6 @@ export function AssistantAnswer({
   onRated: (id: number, helpful: boolean) => void
 }) {
   const { pillars } = useHub()
-  // A draft they asked for after the answer arrived; the answer's own otherwise.
-  const [ownDraft, setOwnDraft] = useState<Draft | null>(null)
-  const [drafting, setDrafting] = useState(false)
-  const [draftError, setDraftError] = useState('')
 
   if (turn.status === 'loading')
     return turn.live ? (
@@ -602,12 +527,11 @@ export function AssistantAnswer({
   const task = a.task
   const plan = a.plan
   const turnId = a.turn_id
-  const draft = ownDraft ?? a.draft
   const activity = task.activity
   const groups: PillarGroup[] = a.pillars.filter((g) => g.hits.length)
   const listed = new Set(groups.flatMap((g) => g.hits.map((h) => h.href)))
   // Pages only from the pillars the plan asked: a request for an agent is not
-  // answered with Community's pages too.
+  // answered with Learning's pages too.
   const asked = pillars.filter((p) => (plan.selected_pillars as string[]).includes(p.id))
   // A follow-up's pages are matched with the topic it was read with, as its searches were.
   const matched = plan.follows_on ? `${turn.q} ${plan.follows_on}` : turn.q
@@ -615,8 +539,6 @@ export function AssistantAnswer({
   const nothing = !activity && !groups.length && !pages.length
   // Nothing matched a request that named no task: Nexus says what it can do instead.
   const offerCapabilities = a.capabilities.length > 0
-  const canDraft =
-    !draft && !offerCapabilities && task.sensitivity !== 'confidential' && (nothing || task.intents.includes('contribute'))
 
   const recordOpen = (ref: string) => {
     if (turnId) void openedFromTurn(turnId, ref).catch(() => undefined)
@@ -624,18 +546,6 @@ export function AssistantAnswer({
   const opened = (hit: PillarHit) => {
     recordOpen(hit.ref)
     track('hub', 'click', { subject_id: hit.ref, subject_type: hit.kind, meta: { intent: task.intent } })
-  }
-
-  async function makeDraft(goal: string, variant: boolean) {
-    setDrafting(true)
-    setDraftError('')
-    try {
-      setOwnDraft(await draftPrompt(goal, variant))
-    } catch (e) {
-      setDraftError(e instanceof Error ? e.message : 'The draft could not be written. Try again.')
-    } finally {
-      setDrafting(false)
-    }
   }
 
   function rate(helpful: boolean) {
@@ -694,32 +604,9 @@ export function AssistantAnswer({
         </Group>
       )}
 
-      {draft ? (
-        <DraftCard draft={draft} busy={drafting} onAnother={() => void makeDraft(draft.goal, !draft.variant)} />
-      ) : (
-        canDraft && (
-          <div className="authoroffer">
-            <PenLine size={18} strokeWidth={2.2} aria-hidden="true" />
-            <div>
-              <b>Want one written for you?</b>
-              <span className="muted">I can draft a prompt for this from the validated ones on your desk.</span>
-            </div>
-            <button type="button" className="btn btn--inline" disabled={drafting} onClick={() => void makeDraft(task.loggable_query, false)}>
-              {drafting ? <Loader2 className="spin" size={15} aria-hidden="true" /> : <PenLine size={15} strokeWidth={2.2} />} Draft a
-              prompt
-            </button>
-          </div>
-        )
-      )}
-      {draftError && (
-        <p className="state state--error" role="alert">
-          {draftError}
-        </p>
-      )}
-
-      {nothing && !draft && !offerCapabilities && (
+      {nothing && !offerCapabilities && (
         <p className="answer__empty">
-          Or ask for it through <Link to="/intake/new">AI Requests</Link>, so the team can see the need.
+          Or browse <Link to="/marketplace">Discover</Link> and <Link to="/learning">Learning</Link> directly.
         </p>
       )}
 

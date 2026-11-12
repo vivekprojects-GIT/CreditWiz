@@ -36,7 +36,7 @@ from .models import Agent
 log = logging.getLogger("mufg.semantic")
 
 COLLECTION = "agents"
-# What each retriever proposes to the fusion step. Matched to RESULT_LIMIT: on
+# What each retriever proposes to the relevance gate. Matched to RESULT_LIMIT: on
 # this catalogue, deepening either retriever to 12 changed no result and no
 # ordering on a 14-query check, because the relevance gate cut the extra
 # candidates anyway. Revisit alongside the gate if the catalogue grows enough
@@ -112,7 +112,7 @@ def _where(groups: list[str] | None, domains: list[str] | None) -> dict | None:
 
 
 def enabled() -> bool:
-    return os.environ.get("CREDITWIZ_DISABLE_SEMANTIC") not in ("1", "true")
+    return os.environ.get("NEXUS_DISABLE_SEMANTIC") not in ("1", "true")
 
 
 def _embedding_function():
@@ -193,7 +193,7 @@ class SemanticIndex:
 
                 # Override so a test suite can hold one index for its whole run
                 # instead of an empty one per temp directory.
-                path = Path(os.environ.get("CREDITWIZ_INDEX_DIR") or VAR_DIR / "chroma")
+                path = Path(os.environ.get("NEXUS_INDEX_DIR") or VAR_DIR / "chroma")
                 path.mkdir(parents=True, exist_ok=True)
                 client = chromadb.PersistentClient(path=str(path))
                 self._collection = client.get_or_create_collection(

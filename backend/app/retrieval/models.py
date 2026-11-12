@@ -22,10 +22,9 @@ class AgentHit(PillarHit):
 
 
 class AgentAnswer(BaseModel):
-    agent: Literal["prompts", "learning"]
+    agent: Literal["learning"]
     # The request as the agent searched it: client and deal names removed.
     query: str
     retrieval: Literal["hybrid", "keyword"]
-    reranked: bool
     hits: list[AgentHit]
     took_ms: int

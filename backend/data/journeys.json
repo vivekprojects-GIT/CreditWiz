@@ -3,9 +3,7 @@
     "persona": "relationship_manager",
     "examples": [
       "Prepare for a client meeting",
-      "Make my portfolio review faster",
-      "Who can help with a credit request?",
-      "Share a prompt I use for account plans"
+      "Make my portfolio review faster"
     ],
     "journeys": [
       {
@@ -29,10 +27,7 @@
         "assets": [
           { "ref": "asset:salesforce", "intent": "find", "why": "Your client list, activity and pipeline." },
           { "ref": "asset:client-profitability", "intent": "find", "why": "Shows which relationships earn the most, and where returns are thin." },
-          { "ref": "asset:account-plan-prompt", "intent": "improve", "why": "Drafts the account plan from your notes." },
-          { "ref": "learning:prompt-patterns-one-pager", "intent": "learn", "why": "Patterns that get better drafts from a prompt." },
-          { "ref": "asset:coverage-lead-expert", "intent": "ask", "why": "Check priorities with someone who knows the sector." },
-          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share the account plan approach that works for you." }
+          { "ref": "learning:prompt-patterns-one-pager", "intent": "learn", "why": "Patterns that get better drafts from a prompt." }
         ]
       },
       {
@@ -56,10 +51,7 @@
         "assets": [
           { "ref": "asset:client-profitability", "intent": "find", "why": "What the client does with MUFG today, by product." },
           { "ref": "asset:market-intelligence", "intent": "find", "why": "Market and peer data to estimate the total wallet." },
-          { "ref": "asset:wallet-share-prompt", "intent": "improve", "why": "Turns both into a gap summary by product." },
-          { "ref": "learning:prompting-for-analysts", "intent": "learn", "why": "Get more reliable analysis from a prompt." },
-          { "ref": "asset:coverage-lead-expert", "intent": "ask", "why": "Sense-check the estimate with the sector lead." },
-          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share how you estimate wallet share." }
+          { "ref": "learning:prompt-patterns-one-pager", "intent": "learn", "why": "Get more reliable analysis from a prompt." }
         ]
       },
       {
@@ -83,10 +75,7 @@
         "assets": [
           { "ref": "asset:customer-360", "intent": "find", "why": "The client's products, contacts and open issues in one view." },
           { "ref": "asset:market-intelligence", "intent": "find", "why": "Recent news on the client and its sector." },
-          { "ref": "asset:meeting-brief-prompt", "intent": "improve", "why": "Builds the one-page brief and agenda." },
-          { "ref": "learning:human-in-the-loop-best-practice", "intent": "learn", "why": "Check anything drafted by AI before it reaches a client." },
-          { "ref": "asset:coverage-lead-expert", "intent": "ask", "why": "Get context on the client's sector before you go." },
-          { "ref": "asset:meeting-prep-use-case", "intent": "contribute", "why": "Add your input to the meeting preparation use case." }
+          { "ref": "learning:human-in-the-loop-best-practice", "intent": "learn", "why": "Check anything drafted by AI before it reaches a client." }
         ]
       },
       {
@@ -110,11 +99,8 @@
         "assets": [
           { "ref": "asset:market-intelligence", "intent": "find", "why": "Events and news that signal a financing need." },
           { "ref": "asset:salesforce", "intent": "find", "why": "Record the opportunity once it is real." },
-          { "ref": "asset:pitch-outline-prompt", "intent": "improve", "why": "Shapes the need into a pitch outline." },
           { "ref": "agent:contract-analyzer", "intent": "improve", "why": "Reviews term sheets and agreements against the standard playbook." },
-          { "ref": "learning:contract-analyzer-in-5", "intent": "learn", "why": "See AI document review in practice." },
-          { "ref": "asset:product-specialist-expert", "intent": "ask", "why": "Check the structure with a product specialist." },
-          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share a pitch that landed." }
+          { "ref": "learning:negotiation-skills-for-deal-teams", "intent": "learn", "why": "Prepare for the negotiation once the need is real." }
         ]
       },
       {
@@ -139,9 +125,7 @@
           { "ref": "asset:konect", "intent": "find", "why": "Where the KYC record lives." },
           { "ref": "agent:kyc-supervisor-agent", "intent": "find", "why": "Runs the KYC review across the specialist agents." },
           { "ref": "agent:onboarding-pack-assistant", "intent": "improve", "why": "Prepares the onboarding pack and tracks what is missing." },
-          { "ref": "learning:kyc-document-checklist", "intent": "learn", "why": "Which documents the client needs to provide." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask about documents, timings and follow-ups." },
-          { "ref": "learning:writing-agent-requests-guide", "intent": "contribute", "why": "Write a good request if onboarding needs something new." }
+          { "ref": "learning:kyc-document-checklist", "intent": "learn", "why": "Which documents the client needs to provide." }
         ]
       },
       {
@@ -165,11 +149,7 @@
         "assets": [
           { "ref": "asset:credit-system", "intent": "find", "why": "Where the request is raised, approved and tracked." },
           { "ref": "asset:client-profitability", "intent": "find", "why": "Returns on the relationship, for the business case." },
-          { "ref": "asset:credit-request-prompt", "intent": "improve", "why": "Drafts the business case section." },
-          { "ref": "learning:responsible-ai-fundamentals", "intent": "learn", "why": "Where AI may help a decision and where it may not." },
-          { "ref": "agent:policy-qa-agent", "intent": "ask", "why": "Answers lending policy questions with citations to the source." },
-          { "ref": "asset:credit-partner-expert", "intent": "ask", "why": "Ask what credit will look for before you submit." },
-          { "ref": "asset:credit-request-use-case", "intent": "contribute", "why": "Add your input to the credit request drafting use case." }
+          { "ref": "learning:credit-committee-how-decisions-are-made", "intent": "learn", "why": "What the credit committee looks for before you submit." }
         ]
       },
       {
@@ -193,10 +173,7 @@
         "assets": [
           { "ref": "asset:customer-360", "intent": "find", "why": "Products the client already holds." },
           { "ref": "asset:client-profitability", "intent": "find", "why": "Where returns are thin and a product could help." },
-          { "ref": "asset:next-product-prompt", "intent": "improve", "why": "Suggests the next product and how to open the conversation." },
-          { "ref": "learning:human-in-the-loop-best-practice", "intent": "learn", "why": "Keep a person in charge of anything said to a client." },
-          { "ref": "asset:product-specialist-expert", "intent": "ask", "why": "Check product fit before you raise it." },
-          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share what opened a good conversation." }
+          { "ref": "learning:human-in-the-loop-best-practice", "intent": "learn", "why": "Keep a person in charge of anything said to a client." }
         ]
       },
       {
@@ -220,10 +197,7 @@
         "assets": [
           { "ref": "asset:client-profitability", "intent": "find", "why": "Returns across your book." },
           { "ref": "asset:credit-system", "intent": "find", "why": "Limits and upcoming renewals." },
-          { "ref": "asset:portfolio-review-prompt", "intent": "improve", "why": "Summarises returns, limits, renewals and follow-ups." },
-          { "ref": "learning:prompting-for-analysts", "intent": "learn", "why": "Get more reliable summaries from a prompt." },
-          { "ref": "asset:credit-partner-expert", "intent": "ask", "why": "Talk through renewals and risk flags." },
-          { "ref": "asset:rm-champions", "intent": "contribute", "why": "Share your review template." }
+          { "ref": "learning:prompt-patterns-one-pager", "intent": "learn", "why": "Get more reliable summaries from a prompt." }
         ]
       }
     ]
@@ -233,7 +207,6 @@
     "examples": [
       "Where does a client's KYC review stand?",
       "Speed up sanctions screening",
-      "Who can help with beneficial ownership?",
       "How do I verify a client's identity?"
     ],
     "journeys": [
@@ -257,9 +230,7 @@
           { "ref": "asset:konect", "intent": "find", "why": "Where the client's KYC record and its review live." },
           { "ref": "agent:kyc-supervisor-agent", "intent": "find", "why": "Runs the review across the specialist agents and brings their results together." },
           { "ref": "learning:kyc-agent-runbook-confluence", "intent": "learn", "why": "Escalation paths and known failure modes for the KYC agents." },
-          { "ref": "agent:kyc-completeness-agent", "intent": "improve", "why": "Confirms every check has reported before Konect is updated." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask about documents, timings and follow-ups." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share what makes a review faster." }
+          { "ref": "agent:kyc-completeness-agent", "intent": "improve", "why": "Confirms every check has reported before Konect is updated." }
         ]
       },
       {
@@ -280,11 +251,8 @@
         ],
         "assets": [
           { "ref": "asset:konect", "intent": "find", "why": "Where the identification checks are filed." },
-          { "ref": "learning:kyc-verifier-walkthrough", "intent": "learn", "why": "What identification and verification involve, and which documents count." },
           { "ref": "learning:kyc-document-checklist", "intent": "learn", "why": "Which documents satisfy identification, and the expiry rules that catch people out." },
-          { "ref": "agent:kyc-cip-agent", "intent": "improve", "why": "Handles the identification checks: identity documents, formation documents and authorised persons." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask whether a document will be accepted." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share the document problems you see most." }
+          { "ref": "agent:kyc-cip-agent", "intent": "improve", "why": "Handles the identification checks: identity documents, formation documents and authorised persons." }
         ]
       },
       {
@@ -305,12 +273,8 @@
         ],
         "assets": [
           { "ref": "asset:konect", "intent": "find", "why": "Where the screening outcome is filed with the KYC review." },
-          { "ref": "learning:sanctions-screening-basics", "intent": "learn", "why": "The process step by step: lists, matching, hits and dispositions." },
           { "ref": "learning:sanctions-screening-cheatsheet", "intent": "learn", "why": "How to record a disposition so it survives audit." },
-          { "ref": "agent:kyc-sanctions-review-agent", "intent": "improve", "why": "Screens against the OFAC, EU, UN and OFSI sanctions lists." },
-          { "ref": "agent:policy-qa-agent", "intent": "ask", "why": "Answers sanctions policy questions with a citation, or says it does not know." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask how hits and escalations are handled." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share how you clear false positives." }
+          { "ref": "agent:kyc-sanctions-review-agent", "intent": "improve", "why": "Screens against the OFAC, EU, UN and OFSI sanctions lists." }
         ]
       },
       {
@@ -332,9 +296,7 @@
         "assets": [
           { "ref": "asset:konect", "intent": "find", "why": "Where the conclusion is filed with the KYC review." },
           { "ref": "learning:financial-crime-and-aml-analytics", "intent": "learn", "why": "Financial crime typologies, and how to cut false positives without losing coverage." },
-          { "ref": "agent:kyc-adverse-media-agent", "intent": "improve", "why": "Searches adverse media for financial crime and regulatory actions against the client." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Check how a finding should be treated." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share searches that find what matters." }
+          { "ref": "agent:kyc-adverse-media-agent", "intent": "improve", "why": "Searches adverse media for financial crime and regulatory actions against the client." }
         ]
       },
       {
@@ -356,9 +318,7 @@
         "assets": [
           { "ref": "asset:konect", "intent": "find", "why": "Where the ownership findings are filed with the KYC review." },
           { "ref": "agent:kyc-ownership-org-chart-agent", "intent": "improve", "why": "Works out the ultimate beneficial ownership chain and the entity hierarchy." },
-          { "ref": "agent:kyc-fincen-bo-form-agent", "intent": "improve", "why": "Completes the FinCEN beneficial ownership form." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask how complex structures are handled." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share how you untangle a complex structure." }
+          { "ref": "agent:kyc-fincen-bo-form-agent", "intent": "improve", "why": "Completes the FinCEN beneficial ownership form." }
         ]
       },
       {
@@ -380,10 +340,7 @@
         "assets": [
           { "ref": "asset:konect", "intent": "find", "why": "Where the tax review is filed with the KYC record." },
           { "ref": "learning:kyc-agent-runbook-confluence", "intent": "learn", "why": "Escalation paths and known failure modes for the KYC agents." },
-          { "ref": "agent:kyc-tax-agent", "intent": "improve", "why": "Reviews W-8 and W-9 forms, FATCA and CRS classification, and treaty eligibility." },
-          { "ref": "agent:policy-qa-agent", "intent": "ask", "why": "Answers policy questions with a citation, or says it does not know." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask what the review accepts when a form is incomplete." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share the classification questions that come up most." }
+          { "ref": "agent:kyc-tax-agent", "intent": "improve", "why": "Reviews W-8 and W-9 forms, FATCA and CRS classification, and treaty eligibility." }
         ]
       },
       {
@@ -406,9 +363,7 @@
         "assets": [
           { "ref": "learning:human-in-the-loop-best-practice", "intent": "learn", "why": "When an agent may draft, when a person must approve, and how to evidence it." },
           { "ref": "agent:kyc-email-drafting-agent", "intent": "improve", "why": "Drafts RFI letters, follow-up notifications and chase emails." },
-          { "ref": "agent:kyc-client-response-analyzer", "intent": "improve", "why": "Picks up client responses, classifies the documents and routes them to the right specialist." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask about timings and follow-ups." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share outreach that gets a quick reply." }
+          { "ref": "agent:kyc-client-response-analyzer", "intent": "improve", "why": "Picks up client responses, classifies the documents and routes them to the right specialist." }
         ]
       },
       {
@@ -427,10 +382,7 @@
           { "system": "Policy library", "does": "The approved policies the answers cite." }
         ],
         "assets": [
-          { "ref": "learning:grounding-agents-best-practice", "intent": "learn", "why": "How the Policy Q&A agent stays accurate, and when it refuses to answer." },
-          { "ref": "agent:policy-qa-agent", "intent": "ask", "why": "Answers questions about MUFG policies with citations to the source document." },
-          { "ref": "asset:kyc-lead-expert", "intent": "ask", "why": "Ask how a KYC policy is applied in practice." },
-          { "ref": "asset:compliance-ai", "intent": "contribute", "why": "Share answers others keep asking for." }
+          { "ref": "learning:grounding-agents-best-practice", "intent": "learn", "why": "How the Policy Q&A agent stays accurate, and when it refuses to answer." }
         ]
       }
     ]

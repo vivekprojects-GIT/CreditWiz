@@ -127,7 +127,7 @@ export function useChats(user: string): Chat[] {
 }
 
 /** What a conversation is called: its own name, else its first request. */
-export function chatTitle(chat: Chat): string {
+function chatTitle(chat: Chat): string {
   if (chat.title) return chat.title
   // Small talk ("hi") makes a poor title; the first real request names it.
   const first = chat.turns.find((t) => t.ask?.kind === 'task') ?? chat.turns[0]

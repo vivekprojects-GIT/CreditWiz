@@ -7,6 +7,28 @@ import { Markdown } from '../Markdown'
 
 const LEARN = /(?<!!)\[([^\]]*)\]\((https:\/\/learn\.microsoft\.com\/[^)\s]+)\)/g
 
+/** A line that stands where one of the unit's videos plays. */
+const VIDEO = /^\[\[video:(\d+)\]\]\s*$/m
+/** Only Microsoft's own player pages are ever framed. */
+const PLAYER = /^https:\/\/(learn|www)\.microsoft\.com\//
+
+/** Microsoft's player, in place: the video plays here, on Microsoft's own player page. */
+function LearnVideo({ src, title }: { src: string; title: string }) {
+  if (!PLAYER.test(src)) return null
+  return (
+    <div className="reader__video">
+      <iframe
+        src={src}
+        title={`Video: ${title}`}
+        loading="lazy"
+        allow="fullscreen; picture-in-picture"
+        allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    </div>
+  )
+}
+
 /** A unit's module is the folder it sits in. */
 function moduleOf(url: string) {
   return url.replace(/\/[^/]+$/, '/')
@@ -104,25 +126,32 @@ export function LearnReaderPage() {
                 )}
               </p>
             </header>
-            <Markdown source={body} />
+            {/* The text, with each video where Learn has it. Odd parts are video numbers. */}
+            {body.split(VIDEO).map((part, n) =>
+              n % 2 ? (
+                <LearnVideo key={n} src={current.videos[Number(part)] ?? ''} title={current.title} />
+              ) : part.trim() ? (
+                <Markdown key={n} source={part} />
+              ) : null,
+            )}
             <nav className="reader__pager" aria-label="Units">
               {prev ? (
                 <Link className="btn-outline" to={readerHref(prev.url, itemId)}>
-                  <ArrowLeft size={14} strokeWidth={2.4} /> {prev.title}
+                  <ArrowLeft size={14} strokeWidth={2.2} /> {prev.title}
                 </Link>
               ) : (
                 <span />
               )}
               {next && (
                 <Link className="btn btn--inline" to={readerHref(next.url, itemId)}>
-                  {current.kind === 'Module' ? 'Start' : 'Next'}: {next.title} <ArrowRight size={14} strokeWidth={2.4} />
+                  {current.kind === 'Module' ? 'Start' : 'Next'}: {next.title} <ArrowRight size={14} strokeWidth={2.2} />
                 </Link>
               )}
             </nav>
             <p className="reader__credit">
               Content from Microsoft Learn, read through Microsoft's Learn MCP server.{' '}
               <a href={url} target="_blank" rel="noreferrer">
-                Open the original <ExternalLink size={12} strokeWidth={2.4} />
+                Open the original <ExternalLink size={12} strokeWidth={2.2} />
               </a>
             </p>
           </article>
@@ -152,7 +181,7 @@ export function LearnReaderPage() {
                   disabled={done}
                   onClick={() => void recordProgress(itemId, 'completed', 100).then(() => setDone(true))}
                 >
-                  <Check size={14} strokeWidth={2.6} /> {done ? 'Marked complete' : 'Mark complete'}
+                  <Check size={14} strokeWidth={2.2} /> {done ? 'Marked complete' : 'Mark complete'}
                 </button>
               </section>
             )}

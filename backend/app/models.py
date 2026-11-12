@@ -92,7 +92,7 @@ class HomeResponse(BaseModel):
 
 
 class SearchResult(BaseModel):
-    kind: Literal["solution", "agent", "prompt", "learning"]
+    kind: Literal["solution", "agent", "learning"]
     title: str
     href: str
 

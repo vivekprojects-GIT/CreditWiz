@@ -20,27 +20,23 @@ from .models import Pillar, Source, SubQuery
 
 # Which pillars answer which intent, when rules plan.
 PILLARS_FOR: dict[Intent, tuple[Pillar, ...]] = {
-    "find": ("prompts", "marketplace"),
-    "improve": ("prompts", "marketplace"),
+    "find": ("marketplace",),
+    "improve": ("marketplace",),
     "learn": ("learning",),
-    "ask": ("community",),
-    "contribute": ("prompts", "community"),
 }
 # The kinds of thing a request can name outright. For finding or improving,
-# naming one is the routing: "find me a KYC agent" asks Discover, not the
-# prompt library too.
+# naming one is the routing: "find me a KYC course" asks Learning, not
+# Discover too.
 _KINDS: dict[Pillar, str] = {
-    "prompts": r"prompts?|templates?",
     "marketplace": r"agents?|tools?",
     # Quick references, cheat sheets, checklists and runbooks are Learning's.
     "learning": r"courses?|training|videos?|tutorials?|quick\s?references?|cheat\s?sheets?|checklists?|runbooks?",
-    "community": r"experts?|communit(?:y|ies)|forums?",
 }
 NAMED: tuple[tuple[Pillar, re.Pattern[str]], ...] = tuple(
     (p, re.compile(rf"\b(?:{words})\b", re.IGNORECASE)) for p, words in _KINDS.items()
 )
-# A kind asked for as a thing, "a prompt" or "an expert", rather than used as
-# a topic, as in "a course on prompt engineering".
+# A kind asked for as a thing, "an agent" or "a course", rather than used as
+# a topic, as in "a course on agent design".
 _ASKED_FOR: tuple[tuple[Pillar, re.Pattern[str]], ...] = tuple(
     (
         p,
@@ -53,7 +49,7 @@ _ASKED_FOR: tuple[tuple[Pillar, re.Pattern[str]], ...] = tuple(
     for p, words in _KINDS.items()
 )
 # The intent that asking for each kind of thing carries.
-_KIND_INTENT: dict[Pillar, Intent] = {"prompts": "find", "marketplace": "find", "learning": "learn", "community": "ask"}
+_KIND_INTENT: dict[Pillar, Intent] = {"marketplace": "find", "learning": "learn"}
 _NARROWABLE = ("find", "improve")
 
 
@@ -97,7 +93,7 @@ def route(intents: list[Intent], sanitized: str) -> tuple[list[Pillar], bool]:
     request asks more than one kind of place only when it has more than one
     intent. For finding or improving, naming a kind is the routing: "is there
     an agent for sanctions screening" asks Discover alone, and "a course on
-    prompt engineering" asks Learning alone, "prompt" there being the topic."""
+    agent design" asks Learning alone, "agent" there being the topic."""
     named = [p for p, pattern in NAMED if pattern.search(sanitized)]
     narrowed = bool(named) and any(i in _NARROWABLE for i in intents)
     pillars = list(
@@ -108,19 +104,18 @@ def route(intents: list[Intent], sanitized: str) -> tuple[list[Pillar], bool]:
 
 def _asked_for(intents: list[Intent], cue: str, sanitized: str) -> tuple[list[Intent], str]:
     """The intents a request carries by asking for a kind of thing outright,
-    and the words that asked. "I want a prompt for covenant monitoring and
-    someone who knows covenants" asks for a prompt as well as a person. With no
+    and the words that asked. "I want an agent for covenant monitoring and
+    a course on covenants" asks for an agent as well as a course. With no
     cue, find is only a default, and what was asked for replaces it."""
     out = list(intents) if cue else []
     first = ""
-    if "contribute" not in out:  # "write a prompt" is contributing one
-        for p, pattern in _ASKED_FOR:
-            hit = pattern.search(sanitized)
-            implied = _KIND_INTENT[p]
-            if hit is None or implied in out or (implied == "find" and "improve" in out):
-                continue
-            out.append(implied)
-            first = first or hit.group(0).lower()
+    for p, pattern in _ASKED_FOR:
+        hit = pattern.search(sanitized)
+        implied = _KIND_INTENT[p]
+        if hit is None or implied in out or (implied == "find" and "improve" in out):
+            continue
+        out.append(implied)
+        first = first or hit.group(0).lower()
     return (out, cue or first) if out else (intents, cue)
 
 

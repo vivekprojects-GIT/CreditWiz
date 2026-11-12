@@ -1,27 +1,20 @@
 """The Learning agent.
 
-Finds courses, videos and guides, and skill videos colleagues contributed
-through Create, for a request: the retrieval Discover runs
-(retrieval/agent.py), over its own Chroma collection. The home assistant's
-learning pillar asks it, and so does POST /api/learning/search.
-
-    catalog        the learning catalogue, data/learning.json
-    contribution   skill videos from Create (prompts/contributions.py)
+Finds courses, videos and guides for a request: the retrieval Discover runs
+(retrieval/agent.py), over its own Chroma collection, fed from the learning
+catalogue (data/learning.json). The home assistant's learning pillar asks it,
+and so does POST /api/learning/search.
 """
 
 from __future__ import annotations
 
-from ..prompts import contributions
 from ..retrieval.agent import Candidate, Found, RetrievalAgent, explain
 from ..retrieval.index import Doc
 from ..retrieval.models import AgentHit
 from .models import Item
 from .store import store as catalog_store
 
-agent = RetrievalAgent(
-    "learning",
-    "learning catalogue: courses, videos and guides, and skill videos colleagues contributed",
-)
+agent = RetrievalAgent("learning")
 
 TYPE_LABEL = {
     "video": "Video",
@@ -74,7 +67,6 @@ def _hit(i: Item, c: Candidate, queries: list[str]) -> AgentHit:
         href=f"/learning/items/{i.id}",
         why=explain(c, [*i.topics, *i.tags], queries),
         meta=" · ".join(f for f in facts if f),
-        fit=c.fit,
         score=c.score,
         similarity=c.similarity,
         keyword=c.keyword,
@@ -87,27 +79,13 @@ def find(
     *,
     persona_id: str,
     exclude: set[str] | frozenset[str] = frozenset(),
-    rerank_query: str | None = None,
 ) -> tuple[Found, list[AgentHit]]:
-    """What the agent finds among the items this person may see (`pool`)
-    and the skill videos they may see. Items mapped to their role lead at
-    equal fit."""
+    """What the agent finds among the items this person may see (`pool`).
+    Items mapped to their role lead at equal fit."""
     sync()
-    who = contributions.viewer()
-    contributed = contributions.findable("learning", who)
     items = {f"learning:{i.id}": i for i in pool}
-    allowed = (set(items) | set(contributed)) - set(exclude)
-
-    def describe(rid: str) -> str:
-        i = items.get(rid)
-        if i is None:
-            return contributions.describe(contributed[rid])
-        return f"{i.title} ({TYPE_LABEL.get(i.type, i.type)}). {_first_sentence(i.description)}"
+    allowed = set(items) - set(exclude)
 
     for_role = {rid for rid, i in items.items() if persona_id in i.personas}
-    found = agent.find(queries, allowed, describe=describe, prefer=for_role, rerank_query=rerank_query)
-    hits = [
-        _hit(items[c.id], c, queries) if c.id in items else contributions.hit(contributed[c.id], who, c, queries)
-        for c in found.candidates
-    ]
-    return found, hits
+    found = agent.find(queries, allowed, prefer=for_role)
+    return found, [_hit(items[c.id], c, queries) for c in found.candidates]

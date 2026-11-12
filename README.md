@@ -77,11 +77,11 @@ choices. They are tunable decisions, not things that were specified.
 The screenshots below are current. Account selection, catalog filters and
 ordered paths are additions the operations guide describes in full.
 
-### 1. Home — one hub, nine pillars
+### 1. Home — one hub, two pillars
 
 ![Home](docs/screenshots/01-home.png)
 
-Persona-picked agents and what's new sit under the three priority modules. The persona is **derived** from the directory profile, never stored on it.
+Persona-picked agents and what's new sit under the Discover and Learning modules. The persona is **derived** from the directory profile, never stored on it.
 
 ### 2. Marketplace — describe what you need
 
@@ -205,9 +205,9 @@ breakdown, so "why is the Sanctions Review Agent first?" is a sum you can check 
 
 ```text
                               AI HUB
- ┌──────────┬──────────┬────────┴─────┬──────────┬──────────┐
-Marketplace Learning  Community    Prompts    Skills    other pillars…
- └──────────┴──────────┴──────┬───────┴──────────┴──────────┘
+              ┌───────────────┴───────────────┐
+         Marketplace                      Learning
+              └───────────────┬───────────────┘
                               ▼
                   SHARED USER CONTEXT LAYER
               ┌───────────────┴───────────────┐
@@ -250,6 +250,23 @@ uv sync --frozen
 uv run uvicorn app.main:app --host 127.0.0.1 --reload --port 8000
 ```
 
+Without uv, install the same pinned versions with pip (Python 3.12+):
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --host 127.0.0.1 --reload --port 8000
+```
+
+`requirements.txt` is exported from `uv.lock`. After changing dependencies in
+`pyproject.toml`, regenerate it:
+
+```bash
+uv export --frozen --no-hashes --no-emit-project -o requirements.txt
+```
+
 ```bash
 cd frontend
 npm ci
@@ -263,22 +280,22 @@ On first start the backend downloads the embedding model (ONNX MiniLM, about
 download fails, search falls back to the keyword ranker and still works.
 
 Optional: copy `backend/.env.example` to `backend/.env` and add
-`ANTHROPIC_API_KEY`, set `CREDITWIZ_DISABLE_LLM=0`, and choose an available
+`ANTHROPIC_API_KEY`, set `NEXUS_DISABLE_LLM=0`, and choose an available
 model for Claude-interpreted search. Without it the local lexicon interprets
 the request and everything still works.
 
 | Variable | Local default | Purpose |
 | --- | --- | --- |
-| `CREDITWIZ_ENV` | `development` | `production` disables demo sign-in and requires provisioned accounts |
-| `CREDITWIZ_DISABLE_LLM` | `1` | `0` lets a configured `ANTHROPIC_API_KEY` interpret searches |
-| `CREDITWIZ_DISABLE_SEMANTIC` | unset | `1` forces the keyword-only ranker |
-| `CREDITWIZ_ORIGINS` | localhost:5173 | CSRF allowlist; any loopback port is accepted outside production |
-| `CREDITWIZ_SEARCH_MODEL` | `claude-sonnet-5` | Model used to interpret a search request |
-| `CREDITWIZ_DATA_DIR` | `backend/data` | Where the authored JSON catalogues are read from |
-| `CREDITWIZ_VAR_DIR` | `backend/var` | Runtime state: SQLite and the semantic index |
-| `CREDITWIZ_INDEX_DIR` | under `VAR_DIR` | Overrides only the semantic index location |
-| `CREDITWIZ_STATIC_DIR` | `frontend/dist` | Built SPA served by FastAPI in the container |
-| `CREDITWIZ_BOOTSTRAP_EMAIL` / `_PASSWORD` | unset | Production only: provisions the first admin. Password must be 12+ characters |
+| `NEXUS_ENV` | `development` | `production` disables demo sign-in and requires provisioned accounts |
+| `NEXUS_DISABLE_LLM` | `1` | `0` lets a configured `ANTHROPIC_API_KEY` interpret searches |
+| `NEXUS_DISABLE_SEMANTIC` | unset | `1` forces the keyword-only ranker |
+| `NEXUS_ORIGINS` | localhost:5173 | CSRF allowlist; any loopback port is accepted outside production |
+| `NEXUS_SEARCH_MODEL` | `claude-sonnet-5` | Model used to interpret a search request |
+| `NEXUS_DATA_DIR` | `backend/data` | Where the authored JSON catalogues are read from |
+| `NEXUS_VAR_DIR` | `backend/var` | Runtime state: SQLite and the semantic index |
+| `NEXUS_INDEX_DIR` | under `VAR_DIR` | Overrides only the semantic index location |
+| `NEXUS_STATIC_DIR` | `frontend/dist` | Built SPA served by FastAPI in the container |
+| `NEXUS_BOOTSTRAP_EMAIL` / `_PASSWORD` | unset | Production only: provisions the first admin. Password must be 12+ characters |
 
 ```bash
 cd backend
@@ -292,40 +309,11 @@ npm run build
 
 ---
 
-## Deployment
-
-Live: **https://mufg-ai-hub.onrender.com**
-
-One Render web service, not two. Every API call in the app is a relative
-`/api/...` with `credentials: 'same-origin'`, so a separate frontend origin
-would never send the session cookie. The Dockerfile builds the frontend and
-FastAPI serves it, which also removes CORS from the deployment.
-
-```text
-Dockerfile   node build → frontend/dist
-             uv export → pip install (hash-verified)
-             embedding model baked in, so a cold start does not download it
-render.yaml  Blueprint: New > Blueprint, point it at this repo
-```
-
-Render prompts for the `sync: false` values; all are optional on a first
-deploy. Paste `ANTHROPIC_API_KEY` to enable Claude-interpreted search — the key
-alone controls it.
-
-**Free-tier limits worth knowing before a demo.** There is no persistent disk,
-so accounts, progress, ratings, footprints and both search indexes are rebuilt
-on every deploy and every wake; the catalogue itself is baked into the image
-and always survives. The instance sleeps after inactivity, so the first request
-takes 30–60 s — open the URL a minute before a review. To keep data, switch
-`plan` to `starter` and uncomment the disk block in `render.yaml`.
-
----
-
 ## Branches
 
 | Branch | Purpose |
 | --- | --- |
-| `main` | Current state. Render deploys from here. |
+| `main` | Current state. |
 | `dev` | Integration branch. Feature work merges here first. |
 | `test` | QA and validation before promotion to `main`. |
 | `end` | End-state / target-architecture spikes, including work explicitly out of MVP scope. |
@@ -350,7 +338,7 @@ backend/
     account.py         preferences and local access requests
     manage.py          account provisioning and catalog validation
     main.py            app wiring, session boundary, SPA, header typeahead
-    context/           shared footprints + user context (all nine pillars)
+    context/           shared footprints + user context (both pillars)
     marketplace/       ← Swim Lane 1
       store.py         agent catalogue, normalisation, TTL cache
       search.py        intent, hybrid ranking (RRF), curation score

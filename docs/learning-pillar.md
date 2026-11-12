@@ -166,7 +166,6 @@ The cross-pillar example, completing several KYC learning items raising KYC agen
 | `GET /api/learning/items/{id}` | One item with related items and agents |
 | `POST /api/learning/progress` | Record started / in progress / completed |
 | `GET /api/learning/my-learning` | Progress counts and topic coverage |
-| `GET /api/learning/for-agent/{id}?persona=` | Content that teaches an agent (consumed by the Marketplace) |
 | `GET /api/learning/curation` | Per-component curation breakdown |
 
 ## Authored paths and access

@@ -27,12 +27,6 @@
   color: var(--ink-950);
 }
 
-.home-work__lead {
-  margin: 0;
-  font-size: var(--t-sm);
-  color: var(--ink-600);
-}
-
 .jgrid {
   list-style: none;
   margin: 0;
@@ -147,8 +141,8 @@
 }
 
 .asset__icon--system {
-  background: var(--info-bg);
-  color: var(--info-fg);
+  background: var(--ink-900);
+  color: #fff;
 }
 
 /* ---- assets and their trust cards ---- */
@@ -185,7 +179,7 @@
 }
 
 .asset__kind {
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: var(--r-sm);
   background: var(--ink-100);
   color: var(--ink-600);
@@ -195,8 +189,8 @@
 
 /* The one distinction the page is built on: where the work really happens. */
 .asset__kind--system {
-  background: var(--info-bg);
-  color: var(--info-fg);
+  background: var(--ink-900);
+  color: #fff;
 }
 
 .asset__status {
@@ -355,32 +349,11 @@
   color: var(--ink-950);
 }
 
-.journey__hint {
-  font-size: var(--t-sm);
-  color: var(--ink-500);
-}
-
 .journey__side {
   position: sticky;
   top: 84px;
   display: grid;
   gap: var(--s-4);
-}
-
-.journey__note {
-  margin: 0;
-  padding: var(--s-4);
-  border-radius: var(--r-lg);
-  background: var(--info-bg);
-  color: var(--ink-800);
-  font-size: var(--t-sm);
-  line-height: 1.55;
-}
-
-.journey__note strong {
-  display: block;
-  margin-bottom: 2px;
-  color: var(--info-fg);
 }
 
 /* The steps are a real sequence, so they are numbered. */

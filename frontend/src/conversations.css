@@ -31,7 +31,7 @@
   font: inherit;
   font-size: var(--t-md);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   cursor: pointer;
   transition: background var(--fast);
 }
@@ -135,7 +135,7 @@
   align-items: center;
   gap: 10px;
   margin: 0 6px 6px;
-  padding: 7px 10px;
+  padding: 8px 10px;
   border-radius: var(--r-md);
   color: var(--ink-900);
   font-size: var(--t-sm);
@@ -296,7 +296,7 @@
   flex: 1;
   min-width: 0;
   margin: 4px;
-  padding: 7px 10px;
+  padding: 8px 10px;
   border: 1px solid var(--ink-300);
   border-radius: var(--r-sm);
   outline: none;
@@ -392,7 +392,7 @@
   margin: 0;
   font-size: var(--t-md);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   color: var(--ink-950);
 }
 
@@ -492,7 +492,7 @@
   font-size: var(--t-base);
   font-weight: 600;
   line-height: 1.35;
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
   color: var(--ink-950);
 }
 
@@ -511,9 +511,9 @@
 .found {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   height: 24px;
-  padding: 0 9px;
+  padding: 0 8px;
   border: 1px solid var(--line);
   border-radius: var(--r-full);
   background: var(--ink-50);
@@ -545,7 +545,7 @@
 .recent__foot span {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 @media (prefers-reduced-motion: reduce) {

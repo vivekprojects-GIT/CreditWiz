@@ -33,12 +33,12 @@ export function Cover({ icon: Icon, image, badge = false, label, video = false, 
       ) : shown ? (
         <img className="cover__badge" src={shown} alt="" loading="lazy" onError={() => setFailed(true)} />
       ) : (
-        <Icon className="cover__icon" strokeWidth={1.5} />
+        <Icon className="cover__icon" strokeWidth={2.2} />
       )}
       {label && size !== 'tile' && <span className="cover__label">{label}</span>}
       {video && size !== 'tile' && (
         <span className="cover__play">
-          <Play size={15} strokeWidth={2.4} fill="currentColor" />
+          <Play size={15} strokeWidth={2.2} fill="currentColor" />
         </span>
       )}
       {duration && size !== 'tile' && <span className="cover__time">{duration}</span>}

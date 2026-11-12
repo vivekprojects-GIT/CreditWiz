@@ -6,10 +6,9 @@ from pydantic import BaseModel, Field
 
 from ..context.models import UserContext
 from ..journeys.models import AssetCard, FollowUp, Intent, TaskContext
-from ..prompts.models import Draft
 
-Pillar = Literal["prompts", "marketplace", "learning", "community"]
-PILLARS: tuple[Pillar, ...] = ("prompts", "marketplace", "learning", "community")
+Pillar = Literal["marketplace", "learning"]
+PILLARS: tuple[Pillar, ...] = ("marketplace", "learning")
 Source = Literal["claude", "rules"]
 # What the conversation gate made of a request. Only a task goes on to the
 # privacy check, the model and the pillars.
@@ -35,7 +34,7 @@ class SubQuery(BaseModel):
 
 
 class PillarHit(BaseModel):
-    # agent:<id> | prompt:<id> | learning:<id> | asset:<id> | page:<path>
+    # agent:<id> | learning:<id>
     ref: str
     kind: str
     title: str
@@ -44,10 +43,6 @@ class PillarHit(BaseModel):
     href: str
     # Why it matched, from the catalogue, never from a model.
     why: str = ""
-    # How the pillar's agent judged it against the request: "strong" or
-    # "partial" (the closest thing, or part of what was asked). None when the
-    # model was not asked (the data policy) or its call failed.
-    fit: Literal["strong", "partial"] | None = None
     # A line of facts: rating and uses, provider and length, status.
     meta: str = ""
 
@@ -62,12 +57,10 @@ class PillarGroup(BaseModel):
     hits: list[PillarHit]
     ms: int
     # How the pillar's agent found them: "hybrid" is meaning (Chroma) and
-    # exact words (BM25) fused by rank, "keyword" is BM25 alone while the
+    # exact words (BM25), closest in meaning first, "keyword" is BM25 alone while the
     # vector index is unavailable, "words" is word matching, for a pillar
     # with no agent yet.
     retrieval: Literal["hybrid", "keyword", "words"] = "words"
-    # True when the model read the shortlist against the request and ordered it.
-    reranked: bool = False
 
 
 class Plan(BaseModel):
@@ -129,8 +122,6 @@ class AskResponse(BaseModel):
     recommended: list[AssetCard] = []
     # What each pillar found, in the order they were asked.
     pillars: list[PillarGroup] = []
-    # A prompt written from validated ones, when they asked for one.
-    draft: Draft | None = None
     # For help, and for a request nothing in Nexus matched: what Nexus
     # can do, each with a request to try.
     capabilities: list[Capability] = []

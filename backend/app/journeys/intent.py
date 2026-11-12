@@ -14,32 +14,8 @@ from .models import Intent, Journey
 
 # Checked in this order: the first intent with a cue in the query wins, and
 # Find is what someone wants when they say none of these. Cues are whole words
-# or phrases, so "wallet share" is not a request to share something.
+# or phrases, so "of course" inside a longer word does not count.
 _CUES: tuple[tuple[Intent, tuple[str, ...]], ...] = (
-    (
-        "contribute",
-        (
-            "contribute",
-            "share a",
-            "share my",
-            "share our",
-            "share what",
-            "submit",
-            "publish",
-            "suggest",
-            "propose",
-            "upload",
-            "request a new",
-            # Asking for a prompt to be written is contributing one.
-            "write a prompt",
-            "write me a prompt",
-            "draft a prompt",
-            "draft me a prompt",
-            "create a prompt",
-            "build a prompt",
-            "new prompt",
-        ),
-    ),
     (
         "learn",
         (
@@ -61,10 +37,6 @@ _CUES: tuple[tuple[Intent, tuple[str, ...]], ...] = (
     (
         "improve",
         ("improve", "faster", "quicker", "better", "automate", "speed up", "streamline", "save time", "reduce"),
-    ),
-    (
-        "ask",
-        ("who knows", "who can", "who owns", "expert", "ask", "question", "advice", "allowed", "policy"),
     ),
 )
 
@@ -97,7 +69,7 @@ def classify(query: str) -> tuple[Intent, str]:
 
 # Words that say where to look or how to ask, never which job it is.
 ROUTING_STEMS = frozenset(
-    "find help prompt template agent tool cours training video tutorial expert communit forum".split()
+    "find help agent tool cours training video tutorial".split()
 )
 
 

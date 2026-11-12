@@ -1,26 +1,15 @@
 import { ApiError, getJson, postJson } from './api'
 import type { UserContext } from './context'
-import type { Draft } from './prompts'
 
 /** Why someone came to Nexus. Decided by the backend from what they typed. */
-export type Intent = 'find' | 'learn' | 'improve' | 'ask' | 'contribute'
+export type Intent = 'find' | 'learn' | 'improve'
 
-export const INTENTS: Intent[] = ['find', 'learn', 'improve', 'ask', 'contribute']
+export const INTENTS: Intent[] = ['find', 'learn', 'improve']
 
 export const INTENT_LABEL: Record<Intent, string> = {
   find: 'Find',
   learn: 'Learn',
   improve: 'Improve',
-  ask: 'Ask',
-  contribute: 'Contribute',
-}
-
-export const INTENT_HINT: Record<Intent, string> = {
-  find: 'The systems and data you work from.',
-  learn: 'Get better at the job.',
-  improve: 'Do it faster, with AI.',
-  ask: 'People and answers.',
-  contribute: 'Share what works.',
 }
 
 export const KIND_LABEL: Record<string, string> = {
@@ -28,14 +17,11 @@ export const KIND_LABEL: Record<string, string> = {
   learning: 'Learning',
   system: 'System of record',
   data_product: 'Data product',
-  prompt: 'Prompt',
-  expert: 'Expert',
-  community: 'Community',
   use_case: 'Use case',
 }
 
 /** Blank fields have not been confirmed by the owning team. */
-export interface Trust {
+interface Trust {
   owner_team: string
   owner_name: string
   purpose: string
@@ -77,12 +63,12 @@ export interface JourneysHome {
   journeys: JourneySummary[]
 }
 
-export interface JourneyStep {
+interface JourneyStep {
   title: string
   detail: string
 }
 
-export interface SystemRole {
+interface SystemRole {
   system: string
   does: string
 }
@@ -98,7 +84,7 @@ export interface JourneyPage {
   assets: AssetCard[]
 }
 
-export interface FollowUp {
+interface FollowUp {
   label: string
   query: string
 }
@@ -113,7 +99,7 @@ export const SENSITIVITY_LABEL: Record<Sensitivity, string> = {
 }
 
 /** A client or deal the request names. Lives for the conversation only. */
-export interface Subject {
+interface Subject {
   name: string
   kind: 'client' | 'deal'
 }
@@ -137,9 +123,9 @@ export interface TaskContext {
   ordering: string
 }
 
-export type PillarName = 'prompts' | 'marketplace' | 'learning' | 'community'
+export type PillarName = 'marketplace' | 'learning'
 
-export interface SubQuery {
+interface SubQuery {
   pillar: PillarName
   query: string
   /** True when the planner rewrote the request for this pillar. */
@@ -156,7 +142,6 @@ export interface PillarHit {
   why: string
   meta: string
   /** How the agent judged it against the request; absent when the model was not asked. */
-  fit?: 'strong' | 'partial' | null
 }
 
 export interface PillarGroup {
@@ -166,10 +151,9 @@ export interface PillarGroup {
   query: string
   hits: PillarHit[]
   ms: number
-  /** How the pillar's agent found them: meaning and exact words fused, exact words alone, or word matching. */
+  /** How the pillar's agent found them: meaning and exact words (closest in meaning first), exact words alone, or word matching. */
   retrieval: 'hybrid' | 'keyword' | 'words'
   /** True when the model read the shortlist against the request and ordered it. */
-  reranked: boolean
 }
 
 /** How the answer was put together: the graph's own account of itself. */
@@ -194,10 +178,10 @@ export interface Plan {
 }
 
 /** What the conversation gate made of a request. Only a task is planned and searched. */
-export type ConversationKind = 'greeting' | 'small_talk' | 'thanks' | 'goodbye' | 'help' | 'task'
+type ConversationKind = 'greeting' | 'small_talk' | 'thanks' | 'goodbye' | 'help' | 'task'
 
 /** One of Nexus's five capabilities, with a request to try. */
-export interface Capability {
+interface Capability {
   intent: Intent
   label: string
   what: string
@@ -217,7 +201,6 @@ export interface AskResponse {
   /** The job's own toolkit, when the request is one of the person's jobs. */
   recommended: AssetCard[]
   pillars: PillarGroup[]
-  draft: Draft | null
   /** For help, and for a request nothing in Nexus matched. */
   capabilities: Capability[]
   reply: string
@@ -228,10 +211,8 @@ export interface AskResponse {
 }
 
 export const PILLAR_LABEL: Record<PillarName, string> = {
-  prompts: 'Prompt library',
   marketplace: 'Discover',
   learning: 'Learning',
-  community: 'Community',
 }
 
 const withPersona = (persona: string) => (persona ? `?persona=${encodeURIComponent(persona)}` : '')
@@ -266,7 +247,7 @@ export type HubEvent =
   | { type: 'toolkit'; recommended: AssetCard[]; provisional?: boolean }
   | { type: 'pillar_result'; group: PillarGroup; provisional?: boolean }
   | { type: 'response_delta'; delta: string }
-  | { type: 'response'; reply: string; reply_source: 'claude' | 'rules'; draft: Draft | null; follow_ups: FollowUp[] }
+  | { type: 'response'; reply: string; reply_source: 'claude' | 'rules'; follow_ups: FollowUp[] }
   | { type: 'complete'; response: AskResponse }
   | { type: 'error'; message: string }
 
@@ -345,7 +326,7 @@ export async function askHubStream(
   const res = await fetch('/api/ask/stream', {
     method: 'POST',
     credentials: 'same-origin',
-    headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json', 'X-CreditWiz-Request': '1' },
+    headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json', 'X-Nexus-Request': '1' },
     body: JSON.stringify({
       q,
       persona: persona || null,
@@ -358,7 +339,7 @@ export async function askHubStream(
   })
   if (!res.ok || !res.body) {
     const body = await res.json().catch(() => null)
-    if (res.status === 401) window.dispatchEvent(new Event('creditwiz:signed-out'))
+    if (res.status === 401) window.dispatchEvent(new Event('nexus:signed-out'))
     throw new ApiError(res.status, typeof body?.detail === 'string' ? body.detail : `Request failed (${res.status}). Please try again.`)
   }
   const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()

@@ -1,13 +1,19 @@
 import { BookOpen, Clock, GraduationCap, Layers } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
 import { fetchIntegrations, STATE_LABEL, type Integration } from '../../lib/integrations'
-import { duration, fetchItems, isBadge, thumbnail, type Item, type Provider } from '../../lib/learning'
+import { duration, fetchItems, isBadge, thumbnail, type Item } from '../../lib/learning'
 import { Cover } from '../Cover'
 import { CourseDrawer } from './CourseDrawer'
 
 const SHOWN = 8
+/** The three sources, MUFG's own first. Leap's guides and checklists have their own sections, so its shelf holds courses. */
+const SHELVES = [
+  { provider: 'Leap', integration: 'leap', type: 'course' },
+  { provider: 'Pluralsight', integration: 'pluralsight', type: '' },
+  { provider: 'Microsoft Learn', integration: 'microsoft_learn', type: '' },
+] as const
+type ShelfProvider = (typeof SHELVES)[number]['provider']
 
 /** Most relevant first: the person's role, then what they have started. */
 function ranked(items: Item[], persona: string) {
@@ -69,7 +75,7 @@ function Shelf({
   persona,
   onOpen,
 }: {
-  provider: Provider
+  provider: ShelfProvider
   items: Item[] | null
   status: Integration | undefined
   persona: string
@@ -83,15 +89,10 @@ function Shelf({
           From {provider}
         </h2>
         {status && (
-          <Link to="/integrations" className={`status ${live ? '' : status.state === 'blocked' ? 'status--beta' : 'status--deprecated'}`}>
-            {provider === 'Pluralsight' && !live ? (status.state === 'blocked' ? 'Blocked' : 'Sample catalogue') : STATE_LABEL[status.state]}
-          </Link>
+          <span className={`status ${live ? '' : status.state === 'blocked' ? 'status--beta' : 'status--deprecated'}`}>
+            {provider !== 'Microsoft Learn' && !live ? (status.state === 'blocked' ? 'Blocked' : 'Sample catalogue') : STATE_LABEL[status.state]}
+          </span>
         )}
-        <span className="shelf__sub">
-          {provider === 'Pluralsight'
-            ? 'Browse and plan here. Courses play on Pluralsight, signed in through MUFG.'
-            : 'Browse and read Microsoft Learn modules right here.'}
-        </span>
       </div>
       {items === null ? (
         <div className="shelf__grid">
@@ -115,19 +116,18 @@ function Shelf({
 }
 
 /**
- * Pluralsight and Microsoft Learn side by side: hub cards, details in a side
- * panel. Searching them is the Learning page's one search bar, which covers
- * the catalogue and both providers' own libraries.
+ * Leap, Pluralsight and Microsoft Learn, one shelf each: hub cards, details in a
+ * side panel. Searching them is the Learning page's one search bar.
  */
 export function ProviderShelves({ persona }: { persona: string }) {
-  const [items, setItems] = useState<Record<Provider, Item[] | null>>({ Pluralsight: null, 'Microsoft Learn': null })
+  const [items, setItems] = useState<Record<ShelfProvider, Item[] | null>>({ Leap: null, Pluralsight: null, 'Microsoft Learn': null })
   const [status, setStatus] = useState<Integration[]>([])
   const [open, setOpen] = useState<string | null>(null)
 
   useEffect(() => {
     const ctrl = new AbortController()
-    for (const provider of ['Pluralsight', 'Microsoft Learn'] as Provider[]) {
-      fetchItems({ source: provider, persona }, ctrl.signal)
+    for (const { provider, type } of SHELVES) {
+      fetchItems({ source: provider, type, persona }, ctrl.signal)
         .then((found) => setItems((prev) => ({ ...prev, [provider]: found })))
         .catch((e: unknown) => {
           if (!isAbort(e)) setItems((prev) => ({ ...prev, [provider]: [] }))
@@ -141,14 +141,16 @@ export function ProviderShelves({ persona }: { persona: string }) {
 
   return (
     <>
-      <Shelf provider="Pluralsight" items={items.Pluralsight} status={status.find((s) => s.id === 'pluralsight')} persona={persona} onOpen={setOpen} />
-      <Shelf
-        provider="Microsoft Learn"
-        items={items['Microsoft Learn']}
-        status={status.find((s) => s.id === 'microsoft_learn')}
-        persona={persona}
-        onOpen={setOpen}
-      />
+      {SHELVES.map(({ provider, integration }) => (
+        <Shelf
+          key={provider}
+          provider={provider}
+          items={items[provider]}
+          status={status.find((s) => s.id === integration)}
+          persona={persona}
+          onOpen={setOpen}
+        />
+      ))}
       <CourseDrawer itemId={open} onClose={() => setOpen(null)} />
     </>
   )

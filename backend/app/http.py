@@ -33,6 +33,8 @@ class Response:
     status: int
     text: str
     headers: dict[str, str] = field(default_factory=dict)
+    # Where the answer came from, after any redirects.
+    url: str = ""
 
     def json(self):
         return json.loads(self.text) if self.text.strip() else None
@@ -85,6 +87,7 @@ def send(
                 r.status,
                 r.read().decode("utf-8", "replace"),
                 {k.lower(): v for k, v in r.headers.items()},
+                r.geturl(),
             )
     except urllib.error.HTTPError as e:
         try:

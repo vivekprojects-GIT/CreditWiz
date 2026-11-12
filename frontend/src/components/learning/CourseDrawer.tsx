@@ -181,7 +181,7 @@ export function CourseDrawer({ itemId, onClose }: { itemId: string | null; onClo
               ) : null}
               {item.status !== 'completed' && (
                 <button type="button" className="btn-outline" disabled={busy} onClick={() => void mark('completed')}>
-                  <Check size={14} strokeWidth={2.6} /> Mark complete
+                  <Check size={14} strokeWidth={2.2} /> Mark complete
                 </button>
               )}
             </div>

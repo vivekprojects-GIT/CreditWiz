@@ -1,6 +1,6 @@
 import * as Popover from '@radix-ui/react-popover'
 import {
-  Bot,
+  Workflow,
   ChevronDown,
   Clock,
   GraduationCap,
@@ -9,16 +9,14 @@ import {
   MessagesSquare,
   Pencil,
   Search,
-  Sparkles,
   SquarePen,
   Trash2,
-  Users,
   type LucideIcon,
 } from 'lucide-react'
 import { useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { byDay, chatMatches, chatPreview, deleteChat, renameChat, useChats, type Chat } from '../../lib/chats'
-import { timeAgo } from '../../lib/community'
+import { timeAgo } from '../../lib/format'
 import '../../conversations.css'
 
 const RECENT = 3
@@ -31,10 +29,8 @@ function questions(n: number) {
 
 // Each place Nexus searches, as the answers name it.
 const PLACE_ICON: Record<string, LucideIcon> = {
-  Prompts: Sparkles,
-  Agents: Bot,
+  Agents: Workflow,
   Learning: GraduationCap,
-  Community: Users,
 }
 
 /**
@@ -269,7 +265,7 @@ export function RecentConversations({ userId }: { userId: string }) {
           trigger={
             <button type="button" className="recent__all-button">
               All conversations <span className="recent__count">{chats.length}</span>
-              <ChevronDown size={14} strokeWidth={2.4} aria-hidden="true" />
+              <ChevronDown size={14} strokeWidth={2.2} aria-hidden="true" />
             </button>
           }
         />

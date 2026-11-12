@@ -1,6 +1,6 @@
 """Shared user-context API. Every pillar uses these endpoints; none owns them.
 
-ALL 9 PILLARS  ──write──>  /api/context/events, /api/context/feedback
+EVERY PILLAR  ──write──>  /api/context/events, /api/context/feedback
                                     │
                            shared footprint store
                                     │

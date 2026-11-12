@@ -1,15 +1,12 @@
 import {
-  Bot,
+  Workflow,
   ChartColumn,
   ChevronRight,
   Database,
   GraduationCap,
   Layers,
   Lightbulb,
-  MessageSquareText,
   ShieldCheck,
-  UserRound,
-  Users,
   type LucideIcon,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -20,14 +17,11 @@ import { KIND_LABEL, type AssetCard } from '../../lib/journeys'
 
 const TBC = 'To be confirmed'
 
-export const KIND_ICON: Record<string, LucideIcon> = {
-  agent: Bot,
+const KIND_ICON: Record<string, LucideIcon> = {
+  agent: Workflow,
   learning: GraduationCap,
   system: Database,
   data_product: ChartColumn,
-  prompt: MessageSquareText,
-  expert: UserRound,
-  community: Users,
   use_case: Lightbulb,
 }
 
@@ -130,7 +124,7 @@ function AssetRow({
 
       <details className="asset__trust">
         <summary>
-          <ChevronRight className="asset__chev" size={16} strokeWidth={2.4} aria-hidden="true" />
+          <ChevronRight className="asset__chev" size={16} strokeWidth={2.2} aria-hidden="true" />
           <ShieldCheck size={16} strokeWidth={2.2} aria-hidden="true" /> Trust and access
         </summary>
         <dl className="trust">

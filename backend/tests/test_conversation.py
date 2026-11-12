@@ -27,7 +27,7 @@ def _recorded() -> int:
 @pytest.fixture
 def spies(monkeypatch):
     """Records every costly step the gate is meant to keep small talk out of."""
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     calls: list[str] = []
     monkeypatch.setattr(llm, "plan", lambda *a, **k: calls.append("model") or None)
@@ -36,10 +36,8 @@ def spies(monkeypatch):
     monkeypatch.setattr(llm, "converse", lambda *a, **k: calls.append("converse") or None)
     for module, name in (
         (guardrails, "check"),
-        (pillars, "prompts"),
         (pillars, "marketplace"),
         (pillars, "learning"),
-        (pillars, "community"),
     ):
         original = getattr(module, name)
 
@@ -166,7 +164,7 @@ def test_a_greeting_is_answered_with_no_search_no_model_and_no_record(spies):
     assert body["turn_id"] is None
     # Something to try next: the persona's own example requests.
     assert [f["query"] for f in body["follow_ups"]][:1] == ["Prepare for a client meeting"]
-    assert not {"model", "prompts", "marketplace", "learning", "community"} & set(spies)
+    assert not {"model", "marketplace", "learning"} & set(spies)
     assert _recorded() == before
 
 
@@ -189,7 +187,7 @@ def test_small_talk_costs_nothing_either(spies):
     for q in ("hy", "how r u", "lol", "tell me a joke", "thx", "cya"):
         body = _ask(q)
         assert body["kind"] != "task" and body["pillars"] == [], q
-    assert not {"model", "prompts", "marketplace", "learning", "community"} & set(spies)
+    assert not {"model", "marketplace", "learning"} & set(spies)
     assert _recorded() == before
 
 
@@ -197,7 +195,7 @@ def test_something_the_hub_has_nothing_for_gets_what_it_can_do(spies):
     body = _ask("xyzzy plugh")
     assert body["kind"] == "task"
     assert body["reply"].startswith("I didn't find anything in Nexus for that")
-    assert [c["intent"] for c in body["capabilities"]] == ["learn", "find", "improve", "ask", "contribute"]
+    assert [c["intent"] for c in body["capabilities"]] == ["learn", "find", "improve"]
     # A task, so the model was asked to read it; it returned nothing here.
     assert "model" in spies
     assert body["plan"]["plan_source"] == "rules"
@@ -206,7 +204,7 @@ def test_something_the_hub_has_nothing_for_gets_what_it_can_do(spies):
 @pytest.fixture
 def talk(monkeypatch):
     """A model that answers conversation, recording what it was told."""
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     heard: list[tuple] = []
 
@@ -246,7 +244,7 @@ def test_the_same_small_talk_is_answered_afresh_each_time(talk):
 
 
 def test_a_natural_reply_that_does_not_fit_falls_back_to_the_fixed_line(monkeypatch):
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(llm, "converse", lambda *a, **k: "- see https://example.com for jokes")
     body = _ask("hy")
@@ -254,7 +252,7 @@ def test_a_natural_reply_that_does_not_fit_falls_back_to_the_fixed_line(monkeypa
 
 
 def test_the_model_can_read_a_message_the_rules_missed_as_conversation(monkeypatch):
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(
         llm,
@@ -285,16 +283,16 @@ def test_a_specific_request_that_finds_nothing_says_so_plainly():
     assert body["reply"].startswith("I searched")
 
 
-def test_help_explains_the_five_capabilities_each_with_a_request_to_try(spies):
+def test_help_explains_the_three_capabilities_each_with_a_request_to_try(spies):
     body = _ask("What can you do?")
     caps = body["capabilities"]
     assert body["kind"] == "help"
-    assert [c["intent"] for c in caps] == ["learn", "find", "improve", "ask", "contribute"]
+    assert [c["intent"] for c in caps] == ["learn", "find", "improve"]
     # Each example, sent back, is read as the intent it illustrates.
     assert all(classify(c["example"])[0] == c["intent"] for c in caps)
     # A relationship manager's own requests are used where they fit.
-    assert "Who can help with a credit request?" in [c["example"] for c in caps]
-    assert not {"model", "prompts", "marketplace", "learning", "community"} & set(spies)
+    assert "Make my portfolio review faster" in [c["example"] for c in caps]
+    assert not {"model", "marketplace", "learning"} & set(spies)
 
 
 def test_the_request_after_a_greeting_is_routed_on_its_own(spies):
@@ -311,7 +309,7 @@ def test_the_request_after_a_greeting_is_routed_on_its_own(spies):
 
 
 def test_a_greeting_never_reaches_the_model_and_the_client_is_still_masked(monkeypatch):
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     sent: list[str] = []
     monkeypatch.setattr(llm, "plan", lambda request, *a: sent.append(request) or None)

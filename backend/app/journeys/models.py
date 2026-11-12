@@ -6,8 +6,8 @@
 
 An asset ref points at the record of truth for that asset: an agent in
 agents.json, a learning item in learning.json, or an entry in assets.json for
-the kinds that have no pillar of their own yet (systems, data products,
-prompts, experts, communities, use cases). Nothing is copied between them.
+the kinds that have no pillar of their own (systems, data products,
+use cases). Nothing is copied between them.
 
 A request is answered from two contexts kept apart on purpose:
 
@@ -21,10 +21,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-Intent = Literal["find", "learn", "improve", "ask", "contribute"]
-INTENTS: tuple[Intent, ...] = ("find", "learn", "improve", "ask", "contribute")
+Intent = Literal["find", "learn", "improve"]
+INTENTS: tuple[Intent, ...] = ("find", "learn", "improve")
 
-AssetKind = Literal["system", "data_product", "prompt", "expert", "community", "use_case"]
+AssetKind = Literal["system", "data_product", "use_case"]
 
 Sensitivity = Literal["public", "internal", "confidential", "client_confidential"]
 

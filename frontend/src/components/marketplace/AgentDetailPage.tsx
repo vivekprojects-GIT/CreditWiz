@@ -12,17 +12,14 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
 import { formatDate } from '../../lib/format'
-import { fetchAgentLearning, type Item } from '../../lib/learning'
 import { track, type EventType } from '../../lib/context'
-import { fetchKnowledgeSources, type KnowledgeSources } from '../../lib/knowledge'
-import { ACCESS_LABEL, STATUS_LABEL, fetchAgent, fetchRelated, type Agent } from '../../lib/marketplace'
+import { ACCESS_LABEL, STATUS_LABEL, fetchAgent, fetchRelated, launchLink, type Agent } from '../../lib/marketplace'
 import { usePersona } from '../../lib/personaContext'
 import { BackButton } from '../BackButton'
-import { ItemCard } from '../learning/ItemCard'
 import { NotFound } from '../SimplePages'
 import { AgentCard } from './AgentCard'
 import { FeedbackPrompt } from './FeedbackPrompt'
-import '../../knowledge.css'
+import '../../agent-documents.css'
 
 const PERSONA_LABEL: Record<string, string> = {
   business_user: 'Business users',
@@ -86,24 +83,10 @@ export function AgentDetailPage() {
   const { persona } = usePersona()
   const [agent, setAgent] = useState<Agent | null | undefined>(undefined)
   const [related, setRelated] = useState<Agent[]>([])
-  const [videos, setVideos] = useState<Item[]>([])
-  // The document types and systems its documents are listed by.
-  const [sources, setSources] = useState<KnowledgeSources | null | undefined>(undefined)
-
-  useEffect(() => {
-    const ctrl = new AbortController()
-    fetchKnowledgeSources(ctrl.signal)
-      .then(setSources)
-      .catch((err: unknown) => {
-        if (!isAbort(err)) setSources(null)
-      })
-    return () => ctrl.abort()
-  }, [])
 
   useEffect(() => {
     const ctrl = new AbortController()
     setAgent(undefined)
-    setVideos([])
     fetchAgent(id, ctrl.signal)
       .then((a) => {
         setAgent(a)
@@ -120,9 +103,6 @@ export function AgentDetailPage() {
     fetchRelated(id, ctrl.signal)
       .then(setRelated)
       .catch(() => setRelated([]))
-    fetchAgentLearning(id, persona, ctrl.signal)
-      .then(setVideos)
-      .catch(() => setVideos([]))
     return () => ctrl.abort()
     // persona intentionally excluded: viewing is logged once per agent load
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,7 +125,8 @@ export function AgentDetailPage() {
   // card said "Open" asked the user to request it on the next page.
   const access = agent.access.type
   const isSample = agent.source_kind === 'sample'
-  const canLaunch = !isSample && !!agent.access.launch_url
+  const launchUrl = launchLink(agent)
+  const canLaunch = !!launchUrl
   // The header's action column is shown only when there is something to do.
   // Open agents without a live link still get the column, to say the link is coming.
   const hasAction = access === 'open' || access === 'request' || access === 'restricted'
@@ -189,7 +170,7 @@ export function AgentDetailPage() {
               <span className={`status status--${agent.status}`}>{STATUS_LABEL[agent.status]}</span>
               <span className="agent__category">{agent.category}</span>
               {agent.version && <span className="agent__version">v{agent.version}</span>}
-              {forYou && <span className="acard__foryou">For your persona</span>}
+              {forYou && <span className="acard__foryou">For you</span>}
             </div>
             <h1 className="agent__name">{agent.name}</h1>
             <p className="agent__tagline">{agent.tagline}</p>
@@ -205,7 +186,7 @@ export function AgentDetailPage() {
                 </p>
               )}
               {access === 'open' && canLaunch && (
-                <ExtLink href={agent.access.launch_url} event="launch" agent={agent} className="btn btn--inline">
+                <ExtLink href={launchUrl} event="launch" agent={agent} className="btn btn--inline">
                   <Rocket size={18} /> Launch agent
                 </ExtLink>
               )}
@@ -308,16 +289,11 @@ export function AgentDetailPage() {
             with what it covers and a link to open it there, and holds no copy. */}
         <section className="panel" id="documents">
           <h2 className="panel__title">
-            <FileText size={20} strokeWidth={2.4} /> Documentation
+            <FileText size={20} strokeWidth={2.2} /> Documentation
           </h2>
-          <p className="panel__text">
-            Each document stays where the owning team keeps it. Open a link to read it there.
-          </p>
-          {sources === undefined && <div className="skeleton" style={{ height: 96 }} />}
-          {sources === null && <p className="muted">The document list could not load. Try again in a moment.</p>}
-          {sources && (
-            <div className="ks-table-wrap">
-              <table className="ks-table">
+          {agent.documents.length ? (
+            <div className="doc-table-wrap">
+              <table className="doc-table">
                 <thead>
                   <tr>
                     <th scope="col">Document</th>
@@ -326,42 +302,22 @@ export function AgentDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sources.document_types.map((type) => {
-                    const doc = agent.documents.find((d) => d.type === type.id)
-                    const system = sources.systems.find((s) => s.id === doc?.system)
-                    const covers = doc?.description || type.about
-                    return (
-                      <tr key={type.id}>
-                        <th scope="row">
-                          <span className="ks-abbr">{type.abbreviation}</span>
-                          <span className="ks-name">{type.name || <span className="tbc">To be confirmed</span>}</span>
-                        </th>
-                        <td data-label="What it covers">{covers || <span className="tbc">To be confirmed</span>}</td>
-                        {/* Where it lives and the link read as one thing: one cell, not
-                            two that both said "To be confirmed". */}
-                        <td data-label="Open it">
-                          {doc?.url ? (
-                            <ExtLink
-                              href={doc.url}
-                              event={type.id === 'hld' || type.id === 'lld' ? 'architecture_click' : 'documentation_click'}
-                              agent={agent}
-                              className="linkbtn"
-                            >
-                              <ExternalLink size={14} strokeWidth={2.2} />{' '}
-                              {system ? `Open in ${system.name}` : `Open ${type.abbreviation}`}
-                            </ExtLink>
-                          ) : (
-                            <span className="tbc">
-                              {system ? `In ${system.name}, link to be confirmed` : 'Link to be confirmed'}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {agent.documents.map((doc) => (
+                    <tr key={doc.url}>
+                      <th scope="row">{doc.label}</th>
+                      <td data-label="What it covers">{doc.description || <span className="tbc">To be confirmed</span>}</td>
+                      <td data-label="Open it">
+                        <ExtLink href={doc.url} event="documentation_click" agent={agent} className="linkbtn">
+                          <ExternalLink size={14} strokeWidth={2.2} /> Open {doc.label}
+                        </ExtLink>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
+          ) : (
+            <p className="tbc">Document links to be confirmed</p>
           )}
         </section>
 
@@ -369,7 +325,7 @@ export function AgentDetailPage() {
         <section className="panel access" id="request-access">
           <div className="access__route">
             <h2 className="panel__title">
-              <ShieldCheck size={20} strokeWidth={2.4} /> Get access
+              <ShieldCheck size={20} strokeWidth={2.2} /> Get access
             </h2>
             <span className={`access__type access__type--${access}`}>{ACCESS_LABEL[agent.access.type]}</span>
             <p className="panel__text">{agent.access.how}</p>
@@ -394,7 +350,7 @@ export function AgentDetailPage() {
                 href={`mailto:${agent.owner.email}?subject=${encodeURIComponent(agent.name)}`}
                 onClick={() => track('marketplace', 'collaborate', { subject_id: agent.id })}
               >
-                <MessageSquare size={16} strokeWidth={2.4} /> Contact the owner
+                <MessageSquare size={16} strokeWidth={2.2} /> Contact the owner
               </a>
             ) : (
               <p className="access__pending">Contact details appear once the owning team confirms this listing.</p>
@@ -408,30 +364,6 @@ export function AgentDetailPage() {
             <div className="agent-grid">
               {related.map((a) => (
                 <AgentCard key={a.id} agent={a} source="related" compact />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Learning comes last: the agent first, then what helps you use it. */}
-        {(videos?.length ?? 0) > 0 && (
-          <section className="panel">
-            <div className="section-head section-head--tight">
-              <div>
-                <h2 className="panel__title" style={{ margin: 0 }}>
-                  Learning for this agent
-                </h2>
-                <p className="section-sub">
-                  Related material selected by Learning. Use your account's Learning page for progress and required steps.
-                </p>
-              </div>
-              <Link to="/learning" className="textlink">
-                All learning
-              </Link>
-            </div>
-            <div className="video-row">
-              {videos.map((v) => (
-                <ItemCard key={v.id} item={v} fromAgentId={agent.id} compact />
               ))}
             </div>
           </section>

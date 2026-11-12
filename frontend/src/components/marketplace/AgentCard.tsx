@@ -17,9 +17,9 @@ interface Props {
 }
 
 function AccessIcon({ type }: { type: Agent['access']['type'] }) {
-  if (type === 'open') return <Unlock size={14} strokeWidth={2.4} />
-  if (type === 'request') return <UserCheck size={14} strokeWidth={2.4} />
-  return <Lock size={14} strokeWidth={2.4} />
+  if (type === 'open') return <Unlock size={14} strokeWidth={2.2} />
+  if (type === 'request') return <UserCheck size={14} strokeWidth={2.2} />
+  return <Lock size={14} strokeWidth={2.2} />
 }
 
 export function AgentCard({ agent, why, reasons, source, compact, hideForYou }: Props) {
@@ -45,7 +45,7 @@ export function AgentCard({ agent, why, reasons, source, compact, hideForYou }: 
         <div className="acard__top">
           <span className="acard__kicker">
             {domain}
-            <span className="acard__dot">•</span>
+            <span className="acard__dot" aria-hidden="true">•</span>
             <span className={`status status--${agent.status}`}>{STATUS_LABEL[agent.status]}</span>
           </span>
           {forYou && (
@@ -82,7 +82,7 @@ export function AgentCard({ agent, why, reasons, source, compact, hideForYou }: 
         </span>
       </div>
       <span className="acard__go">
-        View agent <ArrowRight size={16} strokeWidth={2.4} />
+        View agent <ArrowRight size={16} strokeWidth={2.2} />
       </span>
     </Link>
   )

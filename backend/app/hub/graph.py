@@ -5,8 +5,8 @@
                '-- task -> follow_up -> guardrails -> understand
                        |-- the model reads it as conversation -> respond -> END
                        '-- governance -> route
-                       -> prompts | marketplace | learning | community   fan-out (Send)
-                       -> synthesize                                      fan-in
+                       -> marketplace | learning   fan-out (Send)
+                       -> synthesize               fan-in
                        -> save -> END
 
 Conversation never reaches a pillar or the planner: respond answers it
@@ -18,7 +18,7 @@ the conversation's earlier request before anything else runs (followup.py), so
 the privacy check, the plan, every search and the usage log see the request as
 it was meant.
 
-The model plans every task, judges each agent's shortlist and writes the
+The model plans every task and writes the
 reply. While it reads the request, the rules' reading of the intents streams
 at once. Nothing is searched until the model's plan says where, so the page
 never shows results that are about to be replaced.
@@ -62,8 +62,6 @@ from ..journeys.reply import follow_ups  # noqa: E402
 from ..journeys.router import summary  # noqa: E402
 from ..journeys.store import CardBuilder  # noqa: E402
 from ..journeys.store import store as journey_store  # noqa: E402
-from ..prompts.draft import goal_of, is_authoring  # noqa: E402
-from ..prompts.models import Draft  # noqa: E402
 from . import conversation, followup, governance, guardrails, pillars, planner, synthesis, telemetry  # noqa: E402
 from .models import AskRequest, Capability, PillarGroup  # noqa: E402
 
@@ -103,7 +101,6 @@ class HubState(TypedDict, total=False):
     plan: planner.PlanDraft
     gate: governance.Gate
     toolkit: list[AssetCard]
-    draft: Draft | None
     reply_source: str
     reply_reason: str
     follow_ups: list[FollowUp]
@@ -236,8 +233,8 @@ def understand(state: HubState) -> dict:
 
 
 def govern(state: HubState) -> dict:
-    plan, guard, ents = state["plan"], state["guard"], state["entitlements"]
-    g = governance.gate(plan, guard, state["journeys"], state["request"].journey, ents.withheld_prompts)
+    plan, guard = state["plan"], state["guard"]
+    g = governance.gate(plan, guard, state["journeys"], state["request"].journey)
     user = state["user_context"]
     cards = CardBuilder() if g.journey else None
     task_context = TaskContext(
@@ -267,10 +264,8 @@ def govern(state: HubState) -> dict:
 # cases belong to no pillar: they come with finding, unless the request named
 # the kind of thing it wants.
 _PILLAR_KINDS: dict[str, set[str]] = {
-    "prompts": {"prompt"},
     "marketplace": {"agent"},
     "learning": {"learning"},
-    "community": {"expert", "community"},
 }
 _PILLAR_KIND = set().union(*_PILLAR_KINDS.values())
 
@@ -278,7 +273,7 @@ _PILLAR_KIND = set().union(*_PILLAR_KINDS.values())
 def _toolkit(g: governance.Gate, plan: planner.PlanDraft, maturity: str) -> list[AssetCard]:
     """The job's own toolkit, cut to what was asked for, then ordered for the
     intents and the person's maturity. Asking for an agent brings the job's
-    agents, not its courses and experts too."""
+    agents, not its courses too."""
     if g.journey is None:
         return []
     intents = plan.intents
@@ -330,18 +325,6 @@ def _pillar(name: str, search: Callable[[HubState, list[str]], pillars.Run]) -> 
     return node
 
 
-def _rerank_query(state: HubState) -> str | None:
-    """What a pillar's agent may give the model to judge its shortlist with:
-    the request as the data policy lets the model read it, whole, since a
-    pillar's search words alone ("credit memo") say less about fit than the
-    sentence they came from."""
-    return state["guard"].model_view
-
-
-def _prompts(state: HubState, queries: list[str]) -> pillars.Run:
-    return pillars.prompts(queries, state["entitlements"], state["toolkit"], _rerank_query(state))
-
-
 def _marketplace(state: HubState, queries: list[str]) -> pillars.Run:
     return pillars.marketplace(
         queries,
@@ -349,16 +332,11 @@ def _marketplace(state: HubState, queries: list[str]) -> pillars.Run:
         state["persona"].id,
         state["gate"].journey,
         state["toolkit"],
-        _rerank_query(state),
     )
 
 
 def _learning(state: HubState, queries: list[str]) -> pillars.Run:
-    return pillars.learning(queries, state["entitlements"], state["persona"].id, state["toolkit"], _rerank_query(state))
-
-
-def _community(state: HubState, queries: list[str]) -> pillars.Run:
-    return pillars.community(queries, state["entitlements"], state["gate"].journey, state["toolkit"])
+    return pillars.learning(queries, state["entitlements"], state["persona"].id, state["toolkit"])
 
 
 def synthesize(state: HubState) -> dict:
@@ -406,16 +384,10 @@ def synthesize(state: HubState) -> dict:
             searched=state["selected_pillars"],
             on_delta=lambda delta: emit({"type": "response_delta", "delta": delta}),
         )
-    # A prompt written for them, when they asked for one to be written.
-    draft = None
-    if "contribute" in plan.intents and is_authoring(state["conversation"].task_query):
-        user = state["user_context"]
-        draft = pillars.draft_for(goal_of(guard.masked), state["entitlements"], user.job_title, user.department)
     return {
         "final_response": text,
         "reply_source": source,
         "reply_reason": why,
-        "draft": draft,
         "capabilities": capabilities,
         # Offered from the job's whole toolkit: the reasons they did not ask
         # about are exactly what the answer left out.
@@ -448,10 +420,8 @@ def save(state: HubState) -> dict:
 # -------------------------------------------------------------------- graph
 
 PILLAR_NODES: dict[str, Callable[[HubState, list[str]], pillars.Run]] = {
-    "prompts": _prompts,
     "marketplace": _marketplace,
     "learning": _learning,
-    "community": _community,
 }
 
 

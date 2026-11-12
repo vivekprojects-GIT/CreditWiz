@@ -13,7 +13,7 @@ from pathlib import Path
 from .models import Asset, AssetCard, AssetRef, Journey, PersonaJourneys, Trust
 
 _DATA_DIR = Path(
-    os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
+    os.environ.get("NEXUS_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
 )
 _RELOAD_SECONDS = 5.0
 

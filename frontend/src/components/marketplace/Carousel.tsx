@@ -19,15 +19,14 @@ export function Carousel({ data, extra }: { data: CarouselData; extra?: ReactNod
           <h2 className="carousel__title" id={`carousel-${data.id}`}>
             {data.title}
           </h2>
-          {data.subtitle && <p className="carousel__subtitle">{data.subtitle}</p>}
         </div>
         {extra && <div className="carousel__extra">{extra}</div>}
         <div className="carousel__nav">
           <button type="button" className="carousel__btn" aria-label={`Scroll ${data.title} left`} onClick={() => scrollBy(-1)}>
-            <ChevronLeft size={20} strokeWidth={2.4} />
+            <ChevronLeft size={20} strokeWidth={2.2} />
           </button>
           <button type="button" className="carousel__btn" aria-label={`Scroll ${data.title} right`} onClick={() => scrollBy(1)}>
-            <ChevronRight size={20} strokeWidth={2.4} />
+            <ChevronRight size={20} strokeWidth={2.2} />
           </button>
         </div>
       </div>

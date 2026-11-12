@@ -309,7 +309,6 @@ def test_a_course_says_why_it_is_suggested_wherever_it_is_opened():
 
     assert why("model-risk-management-essentials") == "Mapped to your compliance user role."
     assert why("mslearn-draft-analyze-present") == "Part of the Business users path, one of your role's learning paths."
-    assert why("how-to-build-a-kyc-agent") == "Covers kyc, which your role works with."
     # Nothing ties it to the role, so no reason is made up.
     assert why("apache-kafka-getting-started") == ""
 
@@ -327,13 +326,12 @@ def test_demo_accounts_start_part_way_through_a_pluralsight_course():
 
 
 def test_the_integrations_page_names_what_microsoft_sign_in_needs(monkeypatch):
-    for name in ("ENTRA_TENANT_ID", "ENTRA_CLIENT_ID", "ENTRA_CLIENT_SECRET", "VIVA_ENGAGE_GRAPH_TOKEN", "VIVA_ENGAGE_TOKEN"):
+    for name in ("ENTRA_TENANT_ID", "ENTRA_CLIENT_ID", "ENTRA_CLIENT_SECRET"):
         monkeypatch.delenv(name, raising=False)
     status = {i["id"]: i for i in client.get("/api/integrations").json()}
     assert status["entra"]["state"] == "not_configured"
     assert {n["setting"] for n in status["entra"]["needs"] if n["setting"]} >= {"ENTRA_TENANT_ID", "ENTRA_CLIENT_ID", "ENTRA_CLIENT_SECRET"}
-    assert status["viva_engage"]["state"] == "not_configured"
-    assert any("Community.Read.All" in n["what"] for n in status["viva_engage"]["needs"])
+    assert "viva_engage" not in status
     assert status["microsoft_learn"]["state"] == "live"
     assert client.get("/api/auth/options").json()["microsoft"] is False
 
@@ -349,8 +347,6 @@ def entra_app(monkeypatch):
     monkeypatch.setenv("ENTRA_CLIENT_ID", "client-123")
     monkeypatch.setenv("ENTRA_CLIENT_SECRET", "secret-xyz")
     monkeypatch.delenv("ENTRA_REDIRECT_URI", raising=False)
-    for name in ("VIVA_ENGAGE_GRAPH_TOKEN", "VIVA_ENGAGE_TOKEN"):
-        monkeypatch.delenv(name, raising=False)
 
 
 def _id_token(**claims) -> str:
@@ -362,7 +358,7 @@ def _id_token(**claims) -> str:
 
 def _start_sign_in():
     signed_out = TestClient(app)
-    start = signed_out.get("/api/auth/microsoft/login", params={"next": "/community"}, follow_redirects=False)
+    start = signed_out.get("/api/auth/microsoft/login", params={"next": "/learning"}, follow_redirects=False)
     assert start.status_code == 302
     query = parse_qs(urlparse(start.headers["location"]).query)
     return signed_out, start, query
@@ -373,17 +369,17 @@ def test_sign_in_with_microsoft_starts_with_pkce(entra_app):
     location = start.headers["location"]
     assert location.startswith(f"https://login.microsoftonline.com/{TENANT}/oauth2/v2.0/authorize?")
     assert query["code_challenge_method"] == ["S256"] and query["client_id"] == ["client-123"]
-    assert "https://graph.microsoft.com/Community.Read.All" in query["scope"][0]
+    assert "https://graph.microsoft.com/User.Read" in query["scope"][0]
     assert query["redirect_uri"] == ["http://localhost:5175/api/auth/microsoft/callback"]
-    assert "creditwiz_entra_state" in start.headers["set-cookie"]
+    assert "nexus_entra_state" in start.headers["set-cookie"]
 
 
-def test_without_an_app_registration_sign_in_goes_to_the_integrations_page():
+def test_without_an_app_registration_sign_in_goes_back_home():
     response = TestClient(app).get("/api/auth/microsoft/login", follow_redirects=False)
-    assert response.status_code == 302 and response.headers["location"] == "/integrations?entra=not_configured"
+    assert response.status_code == 302 and response.headers["location"] == "/?entra=not_configured"
 
 
-def _microsoft(state_nonce, engage_error=None):
+def _microsoft(state_nonce):
     calls = []
 
     def send(service, method, url, **kwargs):
@@ -393,9 +389,7 @@ def _microsoft(state_nonce, engage_error=None):
             if form["grant_type"] == "authorization_code":
                 token = _id_token(aud="client-123", tid=TENANT, nonce=state_nonce, exp=time.time() + 600, oid="oid-42", name="Dana Cruz")
                 return http.Response(200, json.dumps({"access_token": "graph-access", "refresh_token": "refresh-1", "expires_in": 3600, "id_token": token}))
-            if engage_error:
-                raise http.ExternalError("Microsoft Entra ID", 400, engage_error)
-            return http.Response(200, json.dumps({"access_token": "engage-access", "expires_in": 3600}))
+            raise AssertionError(f"unexpected grant {form['grant_type']}")
         if url.startswith("https://graph.microsoft.com/v1.0/me"):
             assert kwargs["headers"]["Authorization"] == "Bearer graph-access"
             return http.Response(
@@ -413,36 +407,24 @@ def test_the_microsoft_round_trip_signs_the_person_in_with_their_directory_profi
     send, calls = _microsoft(entra._pending[state][1])
     monkeypatch.setattr(http, "send", send)
     done = browser.get("/api/auth/microsoft/callback", params={"code": "auth-code", "state": state}, follow_redirects=False)
-    assert done.status_code == 302 and done.headers["location"] == "/community"
+    assert done.status_code == 302 and done.headers["location"] == "/learning"
 
     me = browser.get("/api/me").json()
     assert (me["display_name"], me["job_title"], me["persona"]["id"]) == ("Dana Cruz", "Compliance Analyst", "compliance_user")
-    assert entra.signed_in("entra-oid-42") and entra.token_for("entra-oid-42", "engage") == "engage-access"
-    browser.headers["X-CreditWiz-Request"] = "1"
+    assert entra.signed_in("entra-oid-42") and entra.token_for("entra-oid-42", "graph") == "graph-access"
+    browser.headers["X-Nexus-Request"] = "1"
     status = {i["id"]: i for i in browser.get("/api/integrations").json()}
-    assert status["entra"]["state"] == "live" and status["viva_engage"]["state"] == "live"
-    assert ("POST", f"https://login.microsoftonline.com/{TENANT}/oauth2/v2.0/token", "refresh_token") in calls
+    assert status["entra"]["state"] == "live"
+    assert ("POST", f"https://login.microsoftonline.com/{TENANT}/oauth2/v2.0/token", "authorization_code") in calls
 
     browser.post("/api/auth/logout")
     assert not entra.signed_in("entra-oid-42")
 
 
-def test_a_missing_viva_engage_consent_is_named_on_the_integrations_page(entra_app, monkeypatch):
-    browser, _, query = _start_sign_in()
-    state = query["state"][0]
-    consent = "AADSTS65001: The user or administrator has not consented to use the application"
-    send, _ = _microsoft(entra._pending[state][1], engage_error=consent)
-    monkeypatch.setattr(http, "send", send)
-    browser.get("/api/auth/microsoft/callback", params={"code": "auth-code", "state": state}, follow_redirects=False)
-    status = {i["id"]: i for i in browser.get("/api/integrations").json()}
-    assert status["entra"]["state"] == "live"
-    assert status["viva_engage"]["state"] == "blocked" and "AADSTS65001" in status["viva_engage"]["blocking"]
-
-
 def test_a_callback_that_does_not_match_its_sign_in_is_refused(entra_app):
     browser, _, _ = _start_sign_in()
     done = browser.get("/api/auth/microsoft/callback", params={"code": "auth-code", "state": "forged"}, follow_redirects=False)
-    assert done.headers["location"] == "/integrations?entra=failed"
+    assert done.headers["location"] == "/?entra=failed"
     assert browser.get("/api/me").status_code == 401
 
 
@@ -450,3 +432,51 @@ def test_an_id_token_for_another_application_is_refused(entra_app):
     token = _id_token(aud="someone-else", tid=TENANT, nonce="n", exp=time.time() + 600, oid="x")
     with pytest.raises(ValueError, match="another application"):
         entra.claims(token, "n")
+
+
+LEARN_UNIT = "https://learn.microsoft.com/training/modules/explore-generative-ai/2-what-is-generative-ai"
+LEARN_PLAYER = "https://learn.microsoft.com/_themes/docs.theme/master/en-us/_themes/global/video-embed-one-stream.html?id=abc"
+
+
+def test_a_units_video_plays_in_the_reader_where_the_page_has_it(monkeypatch):
+    """The video is Microsoft's own player, placed after the paragraph it follows
+    on Learn. A link that does not land on a Microsoft player is never embedded."""
+    page_html = (
+        '<p>Generative AI is transforming the approach to <b>productivity</b>.</p>'
+        ' <div class="embeddedvideo"><iframe src="https://go.microsoft.com/fwlink/?linkid=1&amp;x=2" frameborder="0"></iframe></div>'
+        '<p>More.</p><div class="embeddedvideo"><iframe src="https://go.microsoft.com/fwlink/?linkid=9"></iframe></div>'
+        '<p>Last.</p><div class="embeddedvideo"><iframe src="https://videos.example/v"></iframe></div>'
+    )
+    asked = []
+
+    def send(service, method, url, **kwargs):
+        asked.append(url)
+        if url == LEARN_UNIT:
+            return http.Response(200, page_html, url=url)
+        if url == "https://go.microsoft.com/fwlink/?linkid=1&x=2":
+            return http.Response(200, "", url=LEARN_PLAYER)
+        if url == "https://go.microsoft.com/fwlink/?linkid=9":
+            return http.Response(200, "", url="https://somewhere.example/video")
+        raise AssertionError(url)
+
+    monkeypatch.setattr(http, "send", send)
+    monkeypatch.setattr(mslearn._session, "call", lambda tool, args: UNIT)
+    page = mslearn.page(LEARN_UNIT)
+    assert page.videos == [LEARN_PLAYER]
+    assert page.markdown == "Generative AI is transforming the approach to productivity.\n\n[[video:0]]"
+    assert "https://videos.example/v" not in asked
+
+
+def test_a_unit_still_reads_when_its_videos_cannot_be_found(monkeypatch):
+    def down(service, method, url, **kwargs):
+        raise http.ExternalError(service)
+
+    monkeypatch.setattr(http, "send", down)
+    monkeypatch.setattr(mslearn._session, "call", lambda tool, args: UNIT)
+    page = mslearn.page(LEARN_UNIT)
+    assert page.videos == []
+    assert page.markdown == "Generative AI is transforming the approach to productivity."
+
+
+def test_a_video_goes_to_the_top_when_its_paragraph_is_not_in_the_text():
+    assert mslearn.place_videos("One.\n\nTwo.", ["Not in the text"]) == "[[video:0]]\n\nOne.\n\nTwo."

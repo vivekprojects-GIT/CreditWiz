@@ -7,11 +7,11 @@ Each pillar owns its experience. Nexus owns shared user context, interaction dat
 ```text
                               AI HUB
                                 │
- ┌──────────┬──────────┬────────┴─────┬──────────┬──────────┐
- │          │          │              │          │          │
-Marketplace Learning  Community    Prompts    Skills    other pillars…
- │          │          │              │          │          │
- └──────────┴──────────┴──────┬───────┴──────────┴──────────┘
+              ┌───────────────┴───────────────┐
+              │                               │
+         Marketplace                      Learning
+              │                               │
+              └───────────────┬───────────────┘
                               ▼
                   SHARED USER CONTEXT LAYER
                               │
@@ -119,7 +119,6 @@ Worked example, deliberately out of scope for the MVP:
 ```text
 Learning     → reads "Building KYC Agents"
 Marketplace  → searches "document validation"
-Prompts      → opens a KYC extraction prompt
 Architecture → views the document ingestion pattern
         ↓
 one user context, not four profiles

@@ -17,7 +17,7 @@ export function JourneyGrid({ journeys }: { journeys: JourneySummary[] }) {
             </span>
             <span className="jcard__summary">{j.summary}</span>
             <span className="jcard__systems">{j.systems.join(' · ')}</span>
-            <span className="jcard__count">{j.asset_count} things that help</span>
+            <span className="jcard__count">{j.asset_count} {j.asset_count === 1 ? 'thing that helps' : 'things that help'}</span>
           </Link>
         </li>
       ))}

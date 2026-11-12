@@ -2,7 +2,7 @@ import { getJson, postJson } from './api'
 export type ItemType = 'video' | 'course' | 'confluence' | 'guide' | 'documentation' | 'quick-reference' | 'best-practice'
 export type LearningStatus = 'not_started' | 'in_progress' | 'completed'
 
-export interface LearningPath {
+interface LearningPath {
   id: string
   title: string
   blurb: string
@@ -66,7 +66,7 @@ export interface Item {
 export const PROVIDERS = ['Pluralsight', 'Microsoft Learn'] as const
 export type Provider = (typeof PROVIDERS)[number]
 
-export interface LearnLink {
+interface LearnLink {
   title: string
   url: string
 }
@@ -83,11 +83,13 @@ export interface LearnPage {
   objectives: string[]
   prerequisites: string
   units: LearnLink[]
+  /** Microsoft's player pages for a unit's videos; a [[video:n]] line in the markdown says where the nth plays. */
+  videos: string[]
   markdown: string
 }
 
 /** A result from a provider's own library, beyond Nexus's catalogue. */
-export interface ProviderResult {
+interface ProviderResult {
   title: string
   /** A Microsoft Learn page (reads in Nexus), or where the course opens on Pluralsight. */
   url: string
@@ -123,7 +125,7 @@ export interface ItemDetail extends Item {
   related_agent_names: Record<string, string>
 }
 
-export interface Section {
+interface Section {
   id: string
   title: string
   subtitle: string
@@ -139,7 +141,7 @@ export interface LearningHome {
   item_count: number
 }
 
-export interface TopicCoverage {
+interface TopicCoverage {
   topic: string
   completed: number
   total: number
@@ -170,12 +172,6 @@ export const fetchItem = (id: string, signal?: AbortSignal) => getJson<ItemDetai
 
 export const fetchMyLearning = (signal?: AbortSignal) => getJson<MyLearning>('/api/learning/my-learning', signal)
 
-/** Learning owns this capability; the marketplace agent page only consumes it. */
-export const fetchAgentLearning = (agentId: string, persona: string, signal?: AbortSignal) =>
-  getJson<Item[]>(
-    `/api/learning/for-agent/${encodeURIComponent(agentId)}${persona ? `?persona=${encodeURIComponent(persona)}` : ''}`,
-    signal,
-  )
 
 /** Learning state, owned by the Learning pillar. Separate from hub footprints. */
 export async function recordProgress(item_id: string, status: LearningStatus, progress?: number) {
@@ -183,8 +179,8 @@ export async function recordProgress(item_id: string, status: LearningStatus, pr
 }
 
 /** Rate an item you have opened. Pass null to withdraw your rating. */
-export async function rateItem(item_id: string, stars: number | null) {
-  return postJson<Item>('/api/learning/ratings', { item_id, stars })
+export async function rateItem(item_id: string, rating: number | null) {
+  return postJson<Item>('/api/learning/ratings', { item_id, rating })
 }
 
 /** Deep link to an item, remembering where the user came from so Back works. */

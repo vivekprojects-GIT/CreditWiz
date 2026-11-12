@@ -13,7 +13,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-_DATA_DIR = Path(os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[1] / "data"))
+_DATA_DIR = Path(os.environ.get("NEXUS_DATA_DIR", Path(__file__).resolve().parents[1] / "data"))
 
 _ALIASES = {
     "business user": "business_user",

@@ -9,9 +9,8 @@ sees a token. Configure from MUFG's app registration:
     ENTRA_REDIRECT_URI    a redirect URI on the registration (Web platform);
                           defaults to the local address below
 
-The registration needs these delegated permissions, consented for the tenant:
-Microsoft Graph User.Read and Community.Read.All, and Viva Engage (Yammer)
-user_impersonation.
+The registration needs the delegated Microsoft Graph permission User.Read,
+consented for the tenant.
 
 Tokens are held in this process's memory against Nexus user: never in the
 database, a log or the browser. A restart means signing in again.
@@ -42,13 +41,12 @@ router = APIRouter(prefix="/api/auth/microsoft", tags=["session"])
 SERVICE = "Microsoft Entra ID"
 LOGIN = "https://login.microsoftonline.com"
 GRAPH = "https://graph.microsoft.com/v1.0"
-GRAPH_SCOPES = "https://graph.microsoft.com/User.Read https://graph.microsoft.com/Community.Read.All"
-ENGAGE_SCOPES = "https://www.yammer.com/.default"
+GRAPH_SCOPES = "https://graph.microsoft.com/User.Read"
 SIGN_IN_SCOPES = f"openid profile email offline_access {GRAPH_SCOPES}"
 DEFAULT_REDIRECT = "http://localhost:5175/api/auth/microsoft/callback"
-STATE_COOKIE = "creditwiz_entra_state"
+STATE_COOKIE = "nexus_entra_state"
 PENDING_SECONDS = 600
-Resource = Literal["graph", "engage"]
+Resource = Literal["graph"]
 _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 
 
@@ -100,7 +98,7 @@ def _redeem(form: dict) -> dict:
 
 
 def token_for(user_id: str | None, resource: Resource) -> str | None:
-    """An access token for Graph or Viva Engage, as this person; refreshed when it
+    """An access token for Graph, as this person; refreshed when it
     is about to expire. None when they have not signed in with Microsoft."""
     with _lock:
         grant = _grants.get(user_id or "")
@@ -109,8 +107,7 @@ def token_for(user_id: str | None, resource: Resource) -> str | None:
         return None
     if held and held[1] - 60 > time.time():
         return held[0]
-    scopes = ENGAGE_SCOPES if resource == "engage" else GRAPH_SCOPES
-    data = _redeem({"grant_type": "refresh_token", "refresh_token": grant.refresh_token, "scope": f"{scopes} offline_access"})
+    data = _redeem({"grant_type": "refresh_token", "refresh_token": grant.refresh_token, "scope": f"{GRAPH_SCOPES} offline_access"})
     with _lock:
         grant.tokens[resource] = (data["access_token"], time.time() + int(data.get("expires_in", 3600)))
         if data.get("refresh_token"):
@@ -178,9 +175,9 @@ def upsert_user(found: dict, me: dict) -> str:
 
 
 @router.get("/login")
-def login(next: str = "/community"):
+def login(next: str = "/"):
     if not configured():
-        return RedirectResponse("/integrations?entra=not_configured", status_code=302)
+        return RedirectResponse("/?entra=not_configured", status_code=302)
     state, nonce, verifier = secrets.token_urlsafe(24), secrets.token_urlsafe(24), secrets.token_urlsafe(48)
     target = next if next.startswith("/") and not next.startswith("//") else "/"
     now = time.time()
@@ -215,7 +212,7 @@ def callback(request: Request, code: str = "", state: str = "", error: str = "",
 
     def fail(reason: str) -> RedirectResponse:
         integrations.record_error("entra", auth.current_id.get(), reason)
-        response = RedirectResponse("/integrations?entra=failed", status_code=302)
+        response = RedirectResponse("/?entra=failed", status_code=302)
         response.delete_cookie(STATE_COOKIE, path="/api/auth/microsoft")
         return response
 
@@ -259,13 +256,6 @@ def callback(request: Request, code: str = "", state: str = "", error: str = "",
             tokens={"graph": (tokens["access_token"], time.time() + int(tokens.get("expires_in", 3600)))},
         )
     integrations.clear_error("entra", uid)
-    # Viva Engage takes a token of its own. Asking for it now shows a missing
-    # permission on the Integrations page straight away, not on the first post.
-    try:
-        token_for(uid, "engage")
-        integrations.clear_error("viva_engage", uid)
-    except http.ExternalError as e:
-        integrations.record_error("viva_engage", uid, integrations.explain(e))
     response = RedirectResponse(target, status_code=302)
     auth.start_session(uid, response)
     response.delete_cookie(STATE_COOKIE, path="/api/auth/microsoft")

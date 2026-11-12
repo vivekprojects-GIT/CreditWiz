@@ -30,19 +30,17 @@ from .models import Pillar
 from .planner import NAMED, PlanDraft
 
 LABEL: dict[str, str] = {
-    "prompts": "the prompt library",
     "marketplace": "Discover",
     "learning": "Learning",
-    "community": "Community",
 }
-MAX_PILLARS = 4
+MAX_PILLARS = 2
 _MAX_QUERY = 200
 _URL = re.compile(r"https?://\S+")
 # Words that say which pillar to ask, not what the request is about. Routing
 # has already used them; left in, they would count against every item in a
-# "half of the words" match, so "find a prompt for a covenant scan" would miss
-# the covenant prompts. Only the kinds the request was routed to count as
-# catalogue words: in "a course on prompt engineering", "prompt" is the topic.
+# "half of the words" match, so "find an agent for adverse media" would miss
+# the screening agents. Only the kinds the request was routed to count as
+# catalogue words: in "a course on agent design", "agent" is the topic.
 _FIND_WORDS = re.compile(r"\b(?:find|show me|looking for|search for|look up)\b", re.IGNORECASE)
 _KIND_WORDS = dict(NAMED)
 # How a request opens, before it says what it is about.
@@ -87,7 +85,7 @@ class Gate:
 def _clean(query: str, names: tuple[str, ...], pillars: list[Pillar], cue: str = "") -> str:
     """What a pillar is asked: no links, no client details, and none of the
     words that only chose the intent or the pillars, unless those are all the
-    request has. "I need a prompt for a credit memo" asks the prompt library
+    request has. "I need an agent for a credit memo" asks Discover
     for "credit memo", and "make my portfolio review faster" asks for
     "portfolio review"."""
     text = for_retrieval(" ".join(_URL.sub(" ", query).split()), names)
@@ -106,7 +104,6 @@ def gate(
     guard: Guard,
     journeys: list[Journey],
     earlier: str | None,
-    withheld_prompts: int,
 ) -> Gate:
     notes: list[str] = []
     by_id = {j.id: j for j in journeys}
@@ -148,8 +145,6 @@ def gate(
         if asked[p].reformulated and subqueries[p] != retrieval:
             reformulated.add(p)
 
-    if withheld_prompts and "prompts" in pillars:
-        notes.append("High-risk prompts are shown only to their own desk.")
     notes.append("Every result passed Nexus's access rules for your directory groups.")
     pending = "" if guard.policy_confirmed else ", a prototype default to be confirmed by MUFG's data policy"
     kind = _CLASS[sensitivity]

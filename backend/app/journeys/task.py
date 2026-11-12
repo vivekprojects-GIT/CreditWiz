@@ -86,12 +86,6 @@ def find_subjects(query: str) -> list[Subject]:
     return found
 
 
-def extract_subject(query: str) -> Subject | None:
-    """The request's subject: the first name in a client position."""
-    subjects = find_subjects(query)
-    return subjects[0] if subjects else None
-
-
 def classify_sensitivity(query: str, subject: Subject | None) -> tuple[Sensitivity, str]:
     if subject is not None:
         return (

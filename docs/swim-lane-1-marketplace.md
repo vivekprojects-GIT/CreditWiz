@@ -18,19 +18,17 @@ First deliverable for review with Ganesh. Scope follows the brief: make the ~10 
 
 Also real, so the demo journey never dead-ends:
 
-- **Documents are links, not copies.** Each agent lists its documents by type (BRD, ASD, HLD, LLD) with a link to where each lives: Confluence, SharePoint, JIRA, ServiceNow or a document store (`Agent.documents`; the types and systems are in `backend/data/knowledge-sources.json` and shown at Knowledge > Sources). Nexus keeps no copy, and a link not yet given says "Link to be confirmed".
-- **Related learning on every agent, owned by the Learning pillar.** The agent page consumes `GET /api/learning/for-agent/{id}`; the Learning pillar owns the content and the recommendation logic. Swim Lane 1 does not implement a learning recommender. Each opens the exact video at `/learning/videos/{id}?from={agent}` with a working player, "Up next", the agents covered, and a **Back to {agent}** button. The Learning pillar itself is a real catalogue filtered by path.
+- **Documents are links, not copies.** Each agent lists its documents as links, each with a label (BRD, HLD, Runbook), the link and what it covers (`Agent.documents`). Nexus keeps no copy, and an agent with no links yet says they are to be confirmed.
 - **Back everywhere.** Agent, docs, architecture and video pages carry a Back control that returns to the previous in-app page (search results keep their query because it lives in the URL) or to a sensible parent when the page was opened directly.
 - Videos are real, public YouTube sessions from IBM Technology, AWS Developers, Google Cloud, GitHub, CAMS, RapidAML, Litera, Webio and FinCrime Agent, embedded with the privacy-enhanced player and credited on the page. When Nexus records its own sessions, replace `youtube_id` per entry, or set `video_url` for an internally hosted file.
 
 Also included, because the brief asked for scaffolding only:
 
-- **Footprints go to a shared hub layer, not to this pillar.** Interaction events and feedback are written to `POST /api/context/events` and `/api/context/feedback`, owned by Nexus and used by every pillar. Swim Lane 1 is one producer among nine; Learning already writes to the same store. Nothing reads it for ranking. See [shared-user-context.md](shared-user-context.md).
-- **No-match path.** When nothing matches, the page offers "Submit an intake request", "Learn how to build an agent" and "Ask the community".
+- **Footprints go to a shared hub layer, not to this pillar.** Interaction events and feedback are written to `POST /api/context/events` and `/api/context/feedback`, owned by Nexus and used by every pillar. Swim Lane 1 is one producer of two; Learning already writes to the same store. Nothing reads it for ranking. See [shared-user-context.md](shared-user-context.md).
 
 ## What is deliberately not built
 
-Cross-pillar personalisation is a horizontal hub capability, not part of this lane. Also out: Agent 365, AWS Agent Registry, GitHub, Confluence, prompt store and skill store integrations. Vector database. Dynamic behavioural personalisation. Cross-pillar recommendations. Super Agent. Full collaboration workflow (the "Collaborate with owner" action links into the Community pillar and stops there).
+Cross-pillar personalisation is a horizontal hub capability, not part of this lane. Also out: Agent 365, AWS Agent Registry, GitHub, Confluence, prompt store and skill store integrations. Vector database. Dynamic behavioural personalisation. Cross-pillar recommendations. Super Agent.
 
 ## Data source: static JSON metadata
 
@@ -76,7 +74,8 @@ Semantic retrieval  → embed that text once; ChromaDB similarity, filtered in t
 Keyword retrieval   → BM25 over the same agent text, same allow-list: exact
                       names, acronyms, IDs (top 6)
         ↓
-Fuse by rank        → Reciprocal Rank Fusion (k=60): the two scales never meet
+Order               → by semantic similarity, closest in meaning first; an agent only
+                      the keyword index found follows, by its keyword score
         ↓
 Relevance gate      → keep if semantically close (>= 0.45 and >= 65% of best)
                       OR a strong keyword hit (>= 50% of the best keyword score)
@@ -85,14 +84,14 @@ Explain             → "Why this matched: covers document extraction and identi
                        plus a coverage %: of the extracted domains and capabilities, how many this agent has
 ```
 
-Ranking is rank fusion of two retrievers, nothing else. There is no per-field
+Ranking is semantic similarity, nothing else: no fusion step, no reranker. There is no per-field
 weighting, no popularity, and no persona multiplier in typed search: the query is the
 question, so the query decides. Understanding the request informs the
 retrieval; it does not rank it, and Claude never picks an agent.
 
 Intent understanding has two engines behind one interface:
 
-- **Claude** when `ANTHROPIC_API_KEY` is set (in `backend/.env`). The request goes to `claude-sonnet-5` by default (about 3 seconds; `CREDITWIZ_SEARCH_MODEL=claude-opus-5` is more thorough but takes about 30 seconds) with a structured output schema (`SearchIntent`). Recorded in the search footprint as `meta.engine`.
+- **Claude** when `ANTHROPIC_API_KEY` is set (in `backend/.env`). The request goes to `claude-sonnet-5` by default (about 3 seconds; `NEXUS_SEARCH_MODEL=claude-opus-5` is more thorough but takes about 30 seconds) with a structured output schema (`SearchIntent`). Recorded in the search footprint as `meta.engine`.
 - **Local lexicon** otherwise. A concept lexicon (onboarding / KYC, AML screening, contracts, disputes, collections, asset tracing, policy, communication, engineering, and so on) expands the query. Recorded in the search footprint as `meta.engine`.
 
 Any Claude failure falls back to the local lexicon for understanding; any
@@ -106,7 +105,7 @@ keeps a rule-based curation score whose per-component breakdown is returned by
 `GET /api/marketplace/curation`, so every carousel position is arithmetic a
 reviewer can check. See [discovery-and-curation.md](discovery-and-curation.md).
 
-Set `CREDITWIZ_DISABLE_LLM=1` to force the local engine even when a key is present.
+Set `NEXUS_DISABLE_LLM=1` to force the local engine even when a key is present.
 
 ## How persona discovery works
 

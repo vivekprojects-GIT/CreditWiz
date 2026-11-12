@@ -5,7 +5,7 @@ import time
 
 from fastapi.testclient import TestClient
 
-from app.hub import llm, pillars, planner, synthesis
+from app.hub import llm, pillars
 from app.main import app
 
 client = TestClient(app)
@@ -48,18 +48,13 @@ def test_each_pillar_arrives_the_moment_it_finishes(monkeypatch):
         return search
 
     monkeypatch.setattr(pillars, "marketplace", taking(0.5))
-    monkeypatch.setattr(pillars, "prompts", taking(0.05))
-    monkeypatch.setattr(pillars, "learning", taking(0.25))
-    events = _events("Find an agent, a prompt and a course on covenant monitoring")
-    assert [e["group"]["pillar"] for e in events if e["type"] == "pillar_result"] == [
-        "prompts",
-        "learning",
-        "marketplace",
-    ]
+    monkeypatch.setattr(pillars, "learning", taking(0.05))
+    events = _events("Find an agent and a course on covenant monitoring")
+    assert [e["group"]["pillar"] for e in events if e["type"] == "pillar_result"] == ["learning", "marketplace"]
 
 
 def test_the_reply_streams_in_pieces_with_the_client_put_back(monkeypatch):
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(
         llm,
@@ -71,7 +66,7 @@ def test_the_reply_streams_in_pieces_with_the_client_put_back(monkeypatch):
             needs=[],
             sensitivity="client_confidential",
             sensitivity_reason="Names a client.",
-            subqueries=[llm.PlannedQuery(pillar="prompts", query="client meeting brief", reformulated=True)],
+            subqueries=[llm.PlannedQuery(pillar="marketplace", query="client meeting brief", reformulated=True)],
         ),
     )
 
@@ -84,14 +79,14 @@ def test_the_reply_streams_in_pieces_with_the_client_put_back(monkeypatch):
         return text
 
     monkeypatch.setattr(llm, "write", write)
-    events = _events("Find a pitch prompt and a course to prepare for the Starbucks meeting")
+    events = _events("Find an agent and a course to prepare for the Starbucks meeting")
     streamed = "".join(e["delta"] for e in events if e["type"] == "response_delta")
     assert streamed.endswith("before you see Starbucks.") and "[CLIENT]" not in streamed
     assert events[-1]["response"]["reply"] == streamed
 
 
 def test_the_intents_arrive_while_the_model_plans_and_nothing_unvetted_is_shown(monkeypatch):
-    monkeypatch.setenv("CREDITWIZ_DISABLE_LLM", "0")
+    monkeypatch.setenv("NEXUS_DISABLE_LLM", "0")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
 
     def slow_plan(*args):
@@ -103,34 +98,32 @@ def test_the_intents_arrive_while_the_model_plans_and_nothing_unvetted_is_shown(
             needs=[],
             sensitivity="internal",
             sensitivity_reason="",
-            subqueries=[llm.PlannedQuery(pillar="prompts", query="covenant monitoring", reformulated=False)],
+            subqueries=[llm.PlannedQuery(pillar="learning", query="sanctions screening", reformulated=False)],
         )
 
     monkeypatch.setattr(llm, "plan", slow_plan)
     monkeypatch.setattr(llm, "write", lambda *args, **kwargs: None)
     # The rules' reading of the intents streams at once, while the model plans.
-    events = _events("Find a prompt and a course on covenant monitoring")
+    events = _events("Find an agent and a course on sanctions screening")
     assert events[1]["type"] == "task_understood" and events[1]["provisional"] is True
     # Nothing is searched until the model's plan says where.
     planned = next(i for i, e in enumerate(events) if e["type"] == "task_understood" and e["planned_by"] == "claude")
     assert not any(e["type"] in ("pillar_result", "toolkit") for e in events[:planned])
     assert not any(e.get("provisional") for e in events if e["type"] != "task_understood")
-    assert any(
-        h["title"] == "Covenant compliance monitor" for e in events if e["type"] == "pillar_result" for h in e["group"]["hits"]
-    )
+    assert any(e["group"]["hits"] for e in events if e["type"] == "pillar_result" and e["group"]["pillar"] == "learning")
     # The final answer is the model's plan, not the first reading, and asks
     # the place for each of its two intents.
     assert events[-1]["response"]["plan"]["plan_source"] == "claude"
-    assert events[-1]["response"]["plan"]["selected_pillars"] == ["prompts", "learning"]
+    assert events[-1]["response"]["plan"]["selected_pillars"] == ["marketplace", "learning"]
 
 
 def test_without_a_model_there_is_no_first_reading_to_replace():
-    events = _events("Who can help with a credit request?")
+    events = _events("How do I raise a credit request?")
     assert not any(e.get("provisional") for e in events)
 
 
 def test_the_jobs_toolkit_arrives_only_after_the_agents_have_searched():
-    events = _events("make my portfolio review faster")
+    events = _events("Prepare for a client meeting")
     types = [e["type"] for e in events]
     assert "toolkit" in types and "pillar_result" in types
     assert types.index("toolkit") > max(i for i, t in enumerate(types) if t == "pillar_result")

@@ -9,15 +9,12 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from . import auth, data, entra, identity, integrations
 from .account import router as account_router
-from .community.router import router as community_router
 from .context.router import router as context_router
 from .journeys.router import router as journeys_router
-from .knowledge.router import router as knowledge_router
 from .learning.router import router as learning_router
 from .marketplace.router import router as marketplace_router
 from .marketplace.store import store as marketplace_store
 from .hub.router import router as hub_router
-from .prompts.router import router as prompts_router
 from .models import (
     CurrentUser,
     Domain,
@@ -47,21 +44,16 @@ async def lifespan(app):
     counts = semantic_index.sync(agent_store.all_agents)
     if any(counts.values()):
         logging.getLogger("mufg.semantic").info("Semantic index synced: %s", counts)
-    # The Prompts & Skills and Learning agents: their catalogues, then what
-    # people contributed through Create, rebuilt from the contributions table.
+    # The Learning agent's catalogue.
     from .learning import agent as learning_agent
-    from .prompts import agent as prompts_agent
-    from .prompts.contributions import reindex
 
-    synced = {"prompts": prompts_agent.sync(), "learning": learning_agent.sync()}
-    synced.update({f"{name} contributions": c for name, c in reindex().items()})
-    for name, c in synced.items():
-        if c and (c["added"] or c["updated"] or c["removed"]):
-            logging.getLogger("mufg.retrieval").info("%s index synced: %s", name, c)
+    c = learning_agent.sync()
+    if c and (c["added"] or c["updated"] or c["removed"]):
+        logging.getLogger("mufg.retrieval").info("learning index synced: %s", c)
     # Build the ONNX sessions now, not on the first user's search: Discover's,
-    # and the one the agents share. Costs nothing if an index is unavailable.
+    # and the Learning agent's. Costs nothing if an index is unavailable.
     semantic_index.search("warm up the embedding session", limit=1)
-    prompts_agent.agent.semantic.search("warm up the embedding session", frozenset({"-"}), limit=1)
+    learning_agent.agent.semantic.search("warm up the embedding session", frozenset({"-"}), limit=1)
     yield
 
 
@@ -74,11 +66,8 @@ app.include_router(integrations.router)
 app.include_router(account_router)
 app.include_router(marketplace_router)
 app.include_router(learning_router)
-app.include_router(community_router)
 app.include_router(context_router)
 app.include_router(journeys_router)
-app.include_router(knowledge_router)
-app.include_router(prompts_router)
 app.include_router(hub_router)
 
 
@@ -86,13 +75,13 @@ def allowed_origins() -> list[str]:
     """Origins allowed to make state-changing calls.
 
     The hosting platform assigns the public URL at deploy time, so it cannot be
-    written into CREDITWIZ_ORIGINS ahead of time. Render exposes it as
+    written into NEXUS_ORIGINS ahead of time. Render exposes it as
     RENDER_EXTERNAL_URL; trust that in addition to whatever is configured.
     """
     origins = [
         o.strip()
         for o in os.environ.get(
-            "CREDITWIZ_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+            "NEXUS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
         ).split(",")
         if o.strip()
     ]
@@ -124,16 +113,16 @@ async def session_boundary(request: Request, call_next):
         return await call_next(request)
     if request.method not in ("GET", "HEAD"):
         origin = request.headers.get("origin")
-        if request.headers.get("X-CreditWiz-Request") != "1":
+        if request.headers.get("X-Nexus-Request") != "1":
             return JSONResponse(
-                {"detail": "Request blocked: missing X-CreditWiz-Request header"},
+                {"detail": "Request blocked: missing X-Nexus-Request header"},
                 status_code=403,
             )
         if origin and not origin_allowed(origin):
             return JSONResponse(
                 {
                     "detail": f"Request blocked: origin {origin} is not allowed. "
-                    "Set CREDITWIZ_ORIGINS to include it."
+                    "Set NEXUS_ORIGINS to include it."
                 },
                 status_code=403,
             )
@@ -298,7 +287,7 @@ def _typeahead_agents(needle: str) -> list[SearchResult]:
     marketplace page below answered the same question correctly.
 
     So: exact-ish matches first because they are precise, then the same hybrid
-    retrieval and fusion the marketplace page runs, filling what is left. A
+    retrieval and relevance gate the marketplace page runs, filling what is left. A
     single generic word like "agent" clears no relevance floor and is meant not
     to -- the name matches carry it.
 
@@ -372,20 +361,6 @@ def _learning_hits(needle: str) -> list[SearchResult]:
     ]
 
 
-TYPEAHEAD_PROMPTS = 5
-
-
-def _prompt_hits(needle: str) -> list[SearchResult]:
-    """Validated prompts for a query, with the prompt library's own matching."""
-    from .prompts.store import search as search_prompts
-    from .prompts.store import store as prompt_store
-
-    return [
-        SearchResult(kind="prompt", title=p.title, href=f"/library/prompts/{p.id}")
-        for _, p in search_prompts(needle, prompt_store.library.prompts)[:TYPEAHEAD_PROMPTS]
-    ]
-
-
 @app.get("/api/search", response_model=SearchResponse)
 def search(q: str = Query(default="", max_length=200)) -> SearchResponse:
     needle = q.strip().lower()
@@ -393,7 +368,7 @@ def search(q: str = Query(default="", max_length=200)) -> SearchResponse:
         return SearchResponse(query=q, results=[])
     agent_hits = _typeahead_agents(needle)
     return SearchResponse(
-        query=q, results=(agent_hits + _prompt_hits(needle) + _learning_hits(needle))[:20]
+        query=q, results=(agent_hits + _learning_hits(needle))[:20]
     )
 
 
@@ -408,7 +383,7 @@ def static_root() -> Path:
     dev server without a build still starts."""
     return Path(
         os.environ.get(
-            "CREDITWIZ_STATIC_DIR",
+            "NEXUS_STATIC_DIR",
             Path(__file__).resolve().parents[2] / "frontend" / "dist",
         )
     ).resolve()

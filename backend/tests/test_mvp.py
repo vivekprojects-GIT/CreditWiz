@@ -13,7 +13,7 @@ from app.main import app
 from app.marketplace.store import store
 
 client = TestClient(app)
-HEADERS = {"X-CreditWiz-Request": "1"}
+HEADERS = {"X-Nexus-Request": "1"}
 
 
 def login(uid):
@@ -37,7 +37,7 @@ def _use_catalog(tmp_path, monkeypatch, raw):
     data_dir = tmp_path / "data"
     data_dir.mkdir(exist_ok=True)
     (data_dir / "learning.json").write_text(json.dumps(raw), encoding="utf-8")
-    monkeypatch.setenv("CREDITWIZ_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("NEXUS_DATA_DIR", str(data_dir))
     learning_store.invalidate()
 
 
@@ -121,7 +121,6 @@ def test_learning_acl_applies_to_catalog_detail_progress_search_paths_and_previe
     )
     assert hidden not in c.get("/api/search?q=document").text
     assert hidden not in c.get("/api/learning").text
-    assert hidden not in c.get("/api/learning/for-agent/contract-analyzer").text
     assert c.get("/api/learning?persona=developer").status_code == 403
     assert c.get("/api/marketplace/home?persona=developer").status_code == 403
     assert (
@@ -153,7 +152,7 @@ def test_agent_acl_covers_all_discovery_and_resources(monkeypatch):
         "/api/learning/items",
         "/api/marketplace/curation",
     ):
-        # Exact quoted id: the learning item "contract-analyzer-in-5" would
+        # Exact quoted id: a longer id that starts with it (an item about the agent) would
         # otherwise match as a substring and fail this for the wrong reason.
         assert '"contract-analyzer"' not in c.get(route).text
     for suffix in ("", "/related"):
@@ -207,7 +206,8 @@ def test_paths_are_ordered_and_prerequisites_enforced():
 
 
 def test_recommendations_fill_after_completed_candidates_are_removed():
-    for _ in range(3):
+    # Two rounds: the catalogue holds enough role picks to refill once.
+    for _ in range(2):
         recs = client.get("/api/learning/recommended").json()
         assert recs
         for item in recs:
@@ -233,7 +233,7 @@ import sys
 for _ in range(10):
  record('u-1001','kyc-document-checklist',sys.argv[1],20,{'pillar':'learning','type':'learning_complete','subject_id':'kyc-document-checklist'})
 """
-    env = {**os.environ, "CREDITWIZ_VAR_DIR": str(tmp_path)}
+    env = {**os.environ, "NEXUS_VAR_DIR": str(tmp_path)}
     processes = [
         subprocess.Popen(
             [sys.executable, "-c", code, status],
@@ -308,7 +308,7 @@ def test_password_login_production_disables_demo_and_limits_attempts(monkeypatch
             "UPDATE users SET password_hash=? WHERE id='u-1001'",
             (auth.password_hash("correct-password-123"),),
         )
-    monkeypatch.setenv("CREDITWIZ_ENV", "production")
+    monkeypatch.setenv("NEXUS_ENV", "production")
     c = TestClient(app, base_url="https://testserver", headers=HEADERS)
     assert c.get("/api/auth/options").json() == {"demo": False, "microsoft": False, "users": []}
     assert c.post("/api/auth/demo", json={"user_id": "u-1001"}).status_code == 404
@@ -407,14 +407,10 @@ def test_account_provisioning_revokes_old_sessions():
     assert c.get("/api/me").status_code == 401
     assert validate() == {
         "agents": 18,
-        "learning_items": 58,
+        "learning_items": 48,
         "paths": 11,
         "journeys": 16,
-        "prompts": 60,
-        "templates": 4,
-        "assets": 21,
-        "knowledge_systems": 5,
-        "document_types": 4,
+        "assets": 8,
     }
 
 
@@ -431,7 +427,7 @@ def test_single_origin_deployment_serves_the_spa_and_keeps_api_404s_json(
     (build / "index.html").write_text("<!doctype html><title>Nexus</title>")
     (build / "assets" / "app-abc123.js").write_text("console.log(1)")
     (tmp_path / "secret.txt").write_text("must not be served")
-    monkeypatch.setenv("CREDITWIZ_STATIC_DIR", str(build))
+    monkeypatch.setenv("NEXUS_STATIC_DIR", str(build))
 
     # A client-side route falls back to index.html rather than 404ing.
     page = client.get("/learning/me")
@@ -455,7 +451,7 @@ def test_deploy_origin_allowlist_includes_the_platform_url(monkeypatch):
     """The public URL is assigned at deploy time, so it cannot be pre-configured."""
     from app.main import allowed_origins
 
-    monkeypatch.setenv("CREDITWIZ_ORIGINS", "http://localhost:5173")
+    monkeypatch.setenv("NEXUS_ORIGINS", "http://localhost:5173")
     monkeypatch.setenv("RENDER_EXTERNAL_URL", "https://mufg-ai-hub.onrender.com/")
     origins = allowed_origins()
     assert "https://mufg-ai-hub.onrender.com" in origins
@@ -503,18 +499,18 @@ def test_csrf_accepts_any_loopback_origin_in_development_only(monkeypatch):
     loopback port is fine. Production keeps the strict allowlist."""
     from app.main import origin_allowed
 
-    monkeypatch.setenv("CREDITWIZ_ORIGINS", "http://localhost:5173")
-    monkeypatch.setenv("CREDITWIZ_ENV", "development")
+    monkeypatch.setenv("NEXUS_ORIGINS", "http://localhost:5173")
+    monkeypatch.setenv("NEXUS_ENV", "development")
     assert origin_allowed("http://localhost:5174")
     assert origin_allowed("http://127.0.0.1:3000")
     assert origin_allowed("http://[::1]:5173")
     assert not origin_allowed("https://evil.example")
 
-    monkeypatch.setenv("CREDITWIZ_ENV", "production")
+    monkeypatch.setenv("NEXUS_ENV", "production")
     assert origin_allowed("http://localhost:5173")  # still on the list
     assert not origin_allowed("http://localhost:5174")
 
     # And the refusal says what to fix, not just that it failed.
     c = TestClient(app, headers={**HEADERS, "Origin": "https://evil.example"})
     r = c.post("/api/auth/demo", json={"user_id": "u-1001"})
-    assert r.status_code == 403 and "CREDITWIZ_ORIGINS" in r.json()["detail"]
+    assert r.status_code == 403 and "NEXUS_ORIGINS" in r.json()["detail"]

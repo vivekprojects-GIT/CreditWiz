@@ -2,9 +2,8 @@
 
     index.py   one Chroma collection and one BM25 index per agent, over the
                same text per record, fed by each agent's sources
-    agent.py   query -> embedding -> hybrid -> relevance gate -> rerank
+    agent.py   query -> embedding -> hybrid -> relevance gate
 
 Discover keeps its own (marketplace/semantic.py, keyword.py, search.py),
-untouched. The Prompts & Skills agent (prompts/agent.py) and the Learning
-agent (learning/agent.py) run this.
+untouched. The Learning agent (learning/agent.py) runs this.
 """

@@ -101,7 +101,6 @@ def _response(req: AskRequest, s: dict, took: int) -> AskResponse:
         ),
         recommended=s["toolkit"][:RECOMMENDED],
         pillars=[results[p] for p in s["selected_pillars"] if p in results],
-        draft=s.get("draft"),
         capabilities=s.get("capabilities") or [],
         reply=s["final_response"],
         reply_source=s["reply_source"],
@@ -147,7 +146,6 @@ def _events(node: str, update: dict) -> list[dict]:
                 "type": "response",
                 "reply": update["final_response"],
                 "reply_source": update["reply_source"],
-                "draft": None,
                 "follow_ups": [f.model_dump(mode="json") for f in update["follow_ups"]],
             }
         ]
@@ -157,7 +155,6 @@ def _events(node: str, update: dict) -> list[dict]:
                 "type": "response",
                 "reply": update["final_response"],
                 "reply_source": update["reply_source"],
-                "draft": update["draft"].model_dump(mode="json") if update.get("draft") else None,
                 "follow_ups": [f.model_dump(mode="json") for f in update["follow_ups"]],
             }
         ]

@@ -4,9 +4,8 @@ import {
   Landmark,
   Network,
   ShieldCheck,
-  Sparkles,
+  Compass,
   SquarePen,
-  Users,
   type LucideIcon,
 } from 'lucide-react'
 import { Fragment, useEffect, useRef, useState } from 'react'
@@ -26,11 +25,10 @@ const TOPIC_ICONS: [RegExp, LucideIcon][] = [
   [/contract|summar|document/i, FileText],
   [/fatca|w-8|tax|classif/i, Landmark],
   [/course|learn|training/i, GraduationCap],
-  [/who can|expert/i, Users],
 ]
 
 function topicIcon(text: string): LucideIcon {
-  return TOPIC_ICONS.find(([pattern]) => pattern.test(text))?.[1] ?? Sparkles
+  return TOPIC_ICONS.find(([pattern]) => pattern.test(text))?.[1] ?? Compass
 }
 
 interface Props {
@@ -39,7 +37,6 @@ interface Props {
   firstName: string
   initials: string
   persona: string
-  personaLabel: string
   examples: string[]
 }
 
@@ -54,7 +51,7 @@ interface Props {
  * composer, and a conversation's title opens all of them; ?chat= says which
  * one is open, ?q= starts a new one with that question (home's ask bar).
  */
-export function SuperAgentChat({ userId, firstName, initials, persona, personaLabel, examples }: Props) {
+export function SuperAgentChat({ userId, initials, persona, examples }: Props) {
   const [params, setParams] = useSearchParams()
   const chatId = params.get('chat') ?? ''
   const chat = useChats(userId).find((c) => c.id === chatId)
@@ -161,13 +158,7 @@ export function SuperAgentChat({ userId, firstName, initials, persona, personaLa
             </button>
           </div>
         ) : (
-          <>
-            <p className="chat__kicker">
-              <HubMark /> Super Agent
-            </p>
-            <h1 className="chat__title">How can I help, {firstName}?</h1>
-            <p className="chat__sub">One request, every pillar: the agents, prompts, learning and experts for your task.</p>
-          </>
+          <h1 className="chat__title">Super Agent</h1>
         )}
 
         {talking && (
@@ -199,7 +190,6 @@ export function SuperAgentChat({ userId, firstName, initials, persona, personaLa
             onChange={setDraft}
             onSend={send}
             busy={busy}
-            personaLabel={personaLabel}
             placeholder="Describe the task you need help with"
             autoFocus={talking}
           />
@@ -210,7 +200,7 @@ export function SuperAgentChat({ userId, firstName, initials, persona, personaLa
                 return (
                   <button key={q} type="button" className="suggest suggest--start" onClick={() => send(q)}>
                     <span className="suggest__icon">
-                      <Icon size={16} strokeWidth={2} aria-hidden="true" />
+                      <Icon size={16} strokeWidth={2.2} aria-hidden="true" />
                     </span>
                     {q}
                   </button>

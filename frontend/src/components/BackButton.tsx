@@ -22,7 +22,7 @@ export function BackButton({ fallback, label = 'Back' }: Props) {
       className="backbtn"
       onClick={() => (hasHistory ? navigate(-1) : navigate(fallback, { replace: true, state: location.state }))}
     >
-      <ArrowLeft size={16} strokeWidth={2.4} />
+      <ArrowLeft size={16} strokeWidth={2.2} />
       {label}
     </button>
   )

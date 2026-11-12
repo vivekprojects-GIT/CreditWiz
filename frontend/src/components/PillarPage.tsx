@@ -147,7 +147,7 @@ export function PillarPage() {
             {current.blurb} This area is coming soon.
           </p>
           <Link className="mcard__link" to={base}>
-            Back to {pillar.short_title} <ArrowRight strokeWidth={2.4} />
+            Back to {pillar.short_title} <ArrowRight strokeWidth={2.2} />
           </Link>
         </section>
       ) : null}
@@ -161,7 +161,7 @@ export function PillarPage() {
               <span className="scard__title">{s.title}</span>
               <span className="scard__blurb">{s.blurb}</span>
               <span className="scard__go">
-                Open <ArrowRight size={18} strokeWidth={2.4} />
+                Open <ArrowRight size={18} strokeWidth={2.2} />
               </span>
             </Link>
           ))}

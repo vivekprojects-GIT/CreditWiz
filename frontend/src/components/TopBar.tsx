@@ -1,8 +1,7 @@
-import { Bell, LogOut, Menu, Plus, Search, Settings, User } from 'lucide-react'
+import { Bell, LogOut, Menu, Search, Settings, User } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fetchNotifications, isAbort, searchHub, postJson, announceSessionChange } from '../lib/api'
-import { useCreate } from '../lib/create'
 import type { CurrentUser, Notification, SearchResult } from '../lib/types'
 import { useClickOutside } from '../lib/useClickOutside'
 
@@ -23,7 +22,6 @@ function timeAgo(iso: string): string {
 
 export function TopBar({ user, onMenu }: Props) {
   const navigate = useNavigate()
-  const create = useCreate()
 
   // Its height, for what sticks beneath it (a conversation's header), at any width.
   const bar = useRef<HTMLElement>(null)
@@ -79,8 +77,7 @@ export function TopBar({ user, onMenu }: Props) {
   }
 
   // The suggestions come from Nexus's own catalogs, as fast as typing. The
-  // last row searches everywhere: Pluralsight, Microsoft Learn and Community
-  // too, which are too slow, and too rate-limited, to ask on every keystroke.
+  // last row searches everywhere: Pluralsight and Microsoft Learn too, which are too slow, and too rate-limited, to ask on every keystroke.
   function searchEverywhere() {
     const q = query.trim()
     setSearchOpen(false)
@@ -149,7 +146,7 @@ export function TopBar({ user, onMenu }: Props) {
     try {
       await postJson('/api/auth/logout', {})
       announceSessionChange()
-      window.dispatchEvent(new Event('creditwiz:signed-out'))
+      window.dispatchEvent(new Event('nexus:signed-out'))
     } catch (e) {
       setActionError(e instanceof Error ? e.message : 'Could not sign out')
     }
@@ -246,10 +243,6 @@ export function TopBar({ user, onMenu }: Props) {
             {actionError}
           </span>
         )}
-        <button type="button" className="btn btn--inline btn--create" onClick={() => create.open({ kind: 'choose' })}>
-          <Plus size={18} strokeWidth={2.4} aria-hidden="true" />
-          <span>Create new</span>
-        </button>
         <div className="menu-anchor" ref={notesRef}>
           <button
             type="button"
@@ -259,7 +252,7 @@ export function TopBar({ user, onMenu }: Props) {
             aria-expanded={notesOpen}
             onClick={() => setNotesOpen((o) => !o)}
           >
-            <Bell strokeWidth={2} size={26} />
+            <Bell strokeWidth={2.2} size={26} />
             {unread > 0 && <span className="iconbtn__badge">{unread}</span>}
           </button>
           {notesOpen && (
@@ -324,13 +317,13 @@ export function TopBar({ user, onMenu }: Props) {
                 </span>
               </div>
               <Link to="/settings" className="menu__item" role="menuitem" onClick={() => setAcctOpen(false)}>
-                <User size={18} strokeWidth={2} /> View profile
+                <User size={18} strokeWidth={2.2} /> View profile
               </Link>
               <Link to="/settings" className="menu__item" role="menuitem" onClick={() => setAcctOpen(false)}>
-                <Settings size={18} strokeWidth={2} /> Settings
+                <Settings size={18} strokeWidth={2.2} /> Settings
               </Link>
               <button type="button" className="menu__item" role="menuitem" onClick={() => void signOut()}>
-                <LogOut size={18} strokeWidth={2} /> Sign out
+                <LogOut size={18} strokeWidth={2.2} /> Sign out
               </button>
             </div>
           )}

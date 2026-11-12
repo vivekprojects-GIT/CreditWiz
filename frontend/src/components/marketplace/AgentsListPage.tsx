@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { isAbort } from '../../lib/api'
-import { fetchAgents, fetchMarketplaceHome, type Agent, type Persona } from '../../lib/marketplace'
+import { fetchAgents, fetchMarketplaceHome, type Agent } from '../../lib/marketplace'
 import { usePersona } from '../../lib/personaContext'
 import { PageBand } from '../PageBand'
 import { AgentCard } from './AgentCard'
@@ -19,7 +19,6 @@ function AgentsListContent() {
   const [params, setParams] = useSearchParams()
   const [agents, setAgents] = useState<Agent[] | null>(null)
   const [domains, setDomains] = useState<string[]>([])
-  const [personas, setPersonas] = useState<Persona[]>([])
   const [error, setError] = useState<string | null>(null)
 
   const domain = params.get('domain') ?? ''
@@ -31,7 +30,6 @@ function AgentsListContent() {
     fetchMarketplaceHome('', ctrl.signal)
       .then((h) => {
         setDomains(h.domains)
-        setPersonas(h.personas)
       })
       .catch(() => {})
     return () => ctrl.abort()
@@ -57,7 +55,6 @@ function AgentsListContent() {
     setParams(next, { replace: true })
   }
 
-  const personaLabel = personas.find((p) => p.id === persona)?.label ?? 'my persona'
 
   return (
     <div className="content">
@@ -71,7 +68,6 @@ function AgentsListContent() {
       <PageBand
         kicker="AI Marketplace"
         title="All agents"
-        lead="Every agent available to you, with its owner, status and how to get access."
         aside={agents ? <span className="band__count">{agents.length} shown</span> : undefined}
         compact
       />
@@ -100,7 +96,7 @@ function AgentsListContent() {
         </select>
         <label className="filters__check">
           <input type="checkbox" checked={onlyMine} onChange={(e) => setFilter('mine', e.target.checked ? '1' : '')} />
-          Only agents for {personaLabel.toLowerCase()}s
+          Only agents for my role
         </label>
         {(domain || category || onlyMine) && (
           <button type="button" className="results__clear" onClick={() => setParams({}, { replace: true })}>
@@ -121,11 +117,14 @@ function AgentsListContent() {
       )}
       {agents && agents.length === 0 && <div className="state">No agents match those filters.</div>}
       {agents && agents.length > 0 && (
-        <div className="agent-grid">
-          {agents.map((a) => (
-            <AgentCard key={a.id} agent={a} source="list" />
-          ))}
-        </div>
+        <>
+          <h2 className="sr-only">Agents</h2>
+          <div className="agent-grid">
+            {agents.map((a) => (
+              <AgentCard key={a.id} agent={a} source="list" />
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

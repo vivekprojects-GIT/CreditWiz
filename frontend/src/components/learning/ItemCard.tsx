@@ -59,7 +59,7 @@ export function ItemCard({ item, fromAgentId, compact }: { item: Item; fromAgent
           {item.required && <span className="icard__required">Required</span>}
           {item.status === 'completed' && (
             <span className="icard__done">
-              <Check size={12} strokeWidth={3} /> Completed
+              <Check size={12} strokeWidth={2.2} /> Completed
             </span>
           )}
           {item.status === 'in_progress' && <span className="icard__pct">{item.progress ? `${item.progress}%` : 'Started'}</span>}
@@ -74,7 +74,7 @@ export function ItemCard({ item, fromAgentId, compact }: { item: Item; fromAgent
         <span className="icard__foot">
           {!isVideo && time && (
             <span className="icard__time">
-              <Clock size={12} strokeWidth={2.4} /> {time}
+              <Clock size={12} strokeWidth={2.2} /> {time}
             </span>
           )}
           <RatingSummary average={item.rating_average} count={item.rating_count} />

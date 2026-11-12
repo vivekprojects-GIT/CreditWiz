@@ -1,6 +1,6 @@
 """Marketplace data source: a static JSON metadata file.
 
-MVP: backend/data/agents.json (or the directory named by CREDITWIZ_DATA_DIR).
+MVP: backend/data/agents.json (or the directory named by NEXUS_DATA_DIR).
 Two record shapes are accepted and normalised into the canonical `Agent` model:
 
 1. The canonical template (data/agent-metadata-template.json), snake_case.
@@ -25,7 +25,7 @@ from .. import personas as hub_personas
 from .models import Agent, CarouselDef, Persona
 
 _DATA_DIR = Path(
-    os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
+    os.environ.get("NEXUS_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
 )
 _RELOAD_SECONDS = 5.0
 

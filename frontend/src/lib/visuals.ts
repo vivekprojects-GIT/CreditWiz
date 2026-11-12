@@ -1,5 +1,6 @@
 import {
-  Bot,
+  PenLine,
+  Workflow,
   BookOpen,
   CreditCard,
   FileText,
@@ -18,7 +19,6 @@ import {
   Settings2,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   UserPlus,
   Wallet,
   type LucideIcon,
@@ -51,9 +51,9 @@ const SUBJECT: [RegExp, LucideIcon][] = [
   [/learn|train|course/i, BookOpen],
   [/document|report|memo|summar/i, FileText],
   [/data|analyt/i, Layers],
-  [/prompt|write|draft/i, Sparkles],
+  [/prompt|write|draft/i, PenLine],
 ]
 
-export function subjectIcon(subject: string, fallback: LucideIcon = Bot): LucideIcon {
+export function subjectIcon(subject: string, fallback: LucideIcon = Workflow): LucideIcon {
   return SUBJECT.find(([pattern]) => pattern.test(subject))?.[1] ?? fallback
 }

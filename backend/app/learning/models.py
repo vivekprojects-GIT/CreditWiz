@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..content_validation import safe_link
 
@@ -56,7 +56,7 @@ class Item(BaseModel):
     youtube_id: str = ""
     poster_url: str = ""
     source: str = ""
-    # Catalogue courses (Pluralsight, LinkedIn Learning, Udemy Business, MUFG
+    # Catalogue courses (Pluralsight, Leap, Microsoft Learn, MUFG
     # Learning): the provider's own id for provenance, who teaches it, its
     # lessons and what it teaches. Empty for hub-native content.
     provider_ref: str = ""
@@ -177,9 +177,12 @@ class ProgressIn(BaseModel):
 
 
 class RatingIn(BaseModel):
+    # Unknown fields are refused, so a misspelt field cannot silently clear a rating.
+    model_config = ConfigDict(extra="forbid")
+
     item_id: str
     # null clears the learner's own rating
-    stars: int | None = Field(default=None, ge=1, le=5)
+    rating: int | None = Field(default=None, ge=1, le=5)
 
 
 class TopicCoverage(BaseModel):

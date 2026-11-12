@@ -26,17 +26,13 @@ class Access(BaseModel):
 class AgentDocument(BaseModel):
     """A link to one of the agent's documents, where the owning team keeps it.
 
-    Nexus links to documents and keeps no copies (Swim Lane 1: the types of
-    document and where each lives, not the documents themselves)."""
+    Nexus links to documents and keeps no copies."""
 
-    # A document type from data/knowledge-sources.json: brd, asd, hld, lld.
-    type: str = Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-    # The system it lives in, from the same file. Blank until confirmed.
-    system: str = ""
-    # Blank until the owning team gives the link.
-    url: str = ""
-    # What this document covers, in the owning team's words, so a reader
-    # knows what they will open. Blank shows the document type's description.
+    # What the document is, as the owning team calls it: BRD, HLD, Runbook.
+    label: str = Field(min_length=1, max_length=60)
+    # Where it opens. The address itself says which system it lives in.
+    url: str = Field(min_length=1)
+    # What it covers, in the owning team's words, so a reader knows what they will open.
     description: str = Field(default="", max_length=300)
 
     _links = field_validator("url")(safe_link)
@@ -77,7 +73,7 @@ class Agent(BaseModel):
     # resources
     documentation_url: str = ""
     architecture_url: str = ""
-    # Its documents by type, as links to where each lives. Empty until given.
+    # Its documents, as links to where each lives. Empty until given.
     documents: list[AgentDocument] = []
     # lifecycle
     created_at: str
@@ -143,19 +139,12 @@ class MarketplaceHome(BaseModel):
     domains: list[str]
     carousels: list[Carousel]
     agent_count: int
-    example_queries: list[str]
 
 
 class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=500)
     persona: str | None = None
     domain: str | None = None
-
-
-class RerankedOrder(BaseModel):
-    """How the reranker ordered the candidates it was given."""
-
-    order: list[str] = []
 
 
 class AgentMatch(BaseModel):
@@ -169,7 +158,7 @@ class AgentMatch(BaseModel):
     # that is a relative ranking value, so a percentage from it would either
     # always read 100 for the winner or imply a confidence we cannot justify.
     coverage: int | None = None
-    # The two signals behind the fused `score`, for the trace and for anyone
+    # The two signals behind the order (`score` is the similarity), for the trace and for anyone
     # asking why an agent ranked where it did. Either may be absent.
     similarity: float | None = None
     keyword: float | None = None
@@ -188,10 +177,6 @@ class SearchIntent(BaseModel):
 class SearchResponse(BaseModel):
     query: str
     intent: SearchIntent
-    # What ordered these results. Retrieval no longer has an "engine" to
-    # report -- the query is embedded as typed -- so this names the reranker:
-    # "claude" when it ordered them, "fusion" when RRF's order stands.
-    engine: Literal["claude", "fusion"]
     results: list[AgentMatch]
     no_match: bool
     next_steps: list[dict[str, str]] = []

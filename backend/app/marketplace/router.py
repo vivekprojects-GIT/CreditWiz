@@ -20,15 +20,6 @@ from .store import store
 
 router = APIRouter(prefix="/api/marketplace", tags=["marketplace"])
 
-EXAMPLE_QUERIES = [
-    "I need an agent that can review customer onboarding documents",
-    "Screen a new customer against sanctions lists",
-    "Summarise a supplier contract and flag unusual clauses",
-    "Find assets for a charged-off account",
-    "Draft an arrears reminder that follows conduct rules",
-    "Review my pull request for security issues",
-]
-
 NEXT_STEPS = [
     {"label": "Browse all agents", "href": "/marketplace/agents"},
     {"label": "Learn how to build an agent", "href": "/learning?path=builders"},
@@ -90,7 +81,6 @@ def marketplace_home(
         domains=store.domains(),
         carousels=carousels,
         agent_count=len(store.agents),
-        example_queries=EXAMPLE_QUERIES,
     )
 
 
@@ -191,12 +181,11 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     audience = load_profile().groups
     permitted = {agent.id for agent in agents}
 
-    # The flow is: query -> embedding -> hybrid -> rerank -> context.
+    # The flow is: query -> embedding -> hybrid -> context.
     #
-    # No interpretation step ahead of retrieval. The query is embedded as
-    # typed, so what you search for is what you asked for, and the same words
-    # return the same agents every time. A model reads the request once, at the
-    # rerank, where it judges candidates against it rather than rewriting it.
+    # No model reads the request. The query is embedded as typed, so what you
+    # search for is what you asked for, and the same words return the same
+    # agents in the same order every time: closest in meaning first.
     #
     # `intent` below is the local lexicon and is used ONLY to explain results.
     # It costs a fraction of a millisecond, never calls a model, and never
@@ -239,12 +228,6 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     )
     relaxed = False
 
-    fused_order = [m.agent.id for m in results]
-    rerank_started = time.perf_counter()
-    results, reranker = search.rerank(req.query, results)
-    engine = reranker
-    rerank_ms = round((time.perf_counter() - rerank_started) * 1000)
-    results = results[: len(fused_order)]
     # Trace enough to reconstruct why this ranking happened: how the request was
     # interpreted, what retrieval proposed, and what came out. Without the
     # candidates it is impossible to tell afterwards whether an agent was missed
@@ -260,7 +243,6 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
                 | set(intent.domains)
             ),
             "meta": {
-                "engine": engine,
                 "results": [m.agent.id for m in results],
                 "scores": {m.agent.id: m.score for m in results},
                 "intent": {
@@ -281,15 +263,7 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
                         sorted(matched.items(), key=lambda kv: -kv[1])[:5]
                     ),
                 },
-                "fusion": "rrf",
-                # The order fusion produced, before the reranker saw it. Without
-                # both, a changed ordering cannot be attributed to either stage.
-                "fused_order": fused_order,
-                "rerank": {
-                    "by": reranker,
-                    "ms": rerank_ms,
-                    "changed": fused_order != [m.agent.id for m in results],
-                },
+                "order": "semantic",
                 "filters": {
                     "domains": intent.domains,
                     # True when the understood domains excluded everything and
@@ -305,7 +279,6 @@ def nlp_search(req: SearchRequest) -> SearchResponse:
     return SearchResponse(
         query=req.query,
         intent=intent,
-        engine=engine,
         results=results,
         no_match=not results,
         next_steps=NEXT_STEPS if not results else [],
@@ -344,22 +317,7 @@ def metadata_template() -> dict:
     return store.metadata_template()
 
 
-# ---------------------------------------------------------------- learning
+# --------------------------------------------------------------- documents
 #
 # No documentation or architecture pages are served: an agent's documents are
 # links to where each lives (Agent.documents), and Nexus keeps no copies.
-
-from ..learning.models import ItemWithProgress
-from ..learning.router import for_agent as learning_for_agent
-
-
-@router.get(
-    "/agents/{agent_id}/learning",
-    response_model=list[ItemWithProgress],
-    deprecated=True,
-)
-def agent_learning(agent_id: str) -> list[ItemWithProgress]:
-    """Deprecated. Learning owns learning recommendations: GET /api/learning/for-agent/{agent_id}."""
-    if store.agent(agent_id) is None:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    return learning_for_agent(agent_id)

@@ -116,14 +116,15 @@ vector carries its agent's `audience_groups`, and the search passes the
 caller's groups as a Chroma `$contains` filter; BM25 scores only permitted ids
 for the same reason. Retrieving globally and dropping afterwards is safe but
 lossy -- an agent the caller cannot see takes one of the six candidate slots
-and a permitted one falls off the end. The post-fusion drop still runs, so a
+and a permitted one falls off the end. The drop after ordering still runs, so a
 retrieval fault cannot surface an agent someone may not see.
 
 Typed search is **hybrid retrieval**: a semantic index (meaning) and a BM25
-keyword index (exact names, acronyms, IDs) over the same agent text, fused by
-rank with Reciprocal Rank Fusion. Rank fusion is the point: an earlier hybrid
-blended raw scores and let lexical noise outvote a correct semantic top hit;
-cosine in 0..1 and BM25 in 0..10 never meet as magnitudes here. The request is enriched first -- the typed words plus the
+keyword index (exact names, acronyms, IDs) over the same agent text. Results are
+ordered by semantic similarity; the keyword score is used only by the relevance
+gate, to let an exact-word hit be shown. There is no fusion step and no
+reranker, and the two scores are never added together: an earlier hybrid
+blended raw scores and let lexical noise outvote a correct semantic top hit. The request is enriched first -- the typed words plus the
 extracted summary, domains and capabilities, as one text -- because bare words
 embed weakly ("code" alone lands at 0.26 against the Code Review Assistant).
 That is query expansion done once before a single retrieval; understanding
@@ -138,7 +139,7 @@ searchable text, so a restart re-embeds nothing and an edit re-embeds only the
 agent that changed. `sync()` covers the whole lifecycle in one idempotent pass:
 add, re-embed, delete.
 
-Neither cosine nor RRF has a notion of "nothing is relevant" -- both always
+Neither retriever has a notion of "nothing is relevant" -- both always
 return something -- so a relevance gate decides what is shown:
 
 ```text
@@ -167,9 +168,8 @@ a reviewer can verify by hand. Typed search does not need that table; a
 persona preview of the carousel does.
 
 The embedding model (ONNX MiniLM, via Chroma's default embedding function) is
-baked into the Docker image. Otherwise it downloads from HuggingFace on first
-use, which on a free-tier instance with no disk means a download on every cold
-start. Measured resident memory with the index loaded: 137 MB.
+downloaded from HuggingFace on first use and cached locally after that.
+Measured resident memory with the index loaded: 137 MB.
 
 ## Two ranking modes, two different questions
 
@@ -218,15 +218,7 @@ Three points for the same category, two per shared domain, one per shared capabi
 
 Full write-up: [learning-pillar.md](learning-pillar.md). Learning also tracks progress, which the Marketplace does not.
 
-The Marketplace does **not** own a learning recommender. It consumes one.
-
-```text
-Agent Detail Page  (Marketplace)
-        ↓  consumes
-GET /api/learning/for-agent/{agent_id}?persona=
-        ↓
-Learning pillar owns the content AND the recommendation logic
-```
+The Marketplace does **not** own a learning recommender, and the agent page no longer shows learning for the agent: the section and its endpoint were removed for MVP Zero. Learning recommendations live on the Learning pages only.
 
 Learning applies the same explainable curation idea the Marketplace uses for agents, over its own metadata. A `persona_paths` map in `backend/data/learning.json` says which paths matter to which persona.
 

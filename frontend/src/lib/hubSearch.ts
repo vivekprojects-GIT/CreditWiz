@@ -21,7 +21,7 @@ function stem(word: string): string {
 }
 
 /** The words of a query worth matching, as stems. */
-export function queryStems(q: string): string[] {
+function queryStems(q: string): string[] {
   const words = q.toLowerCase().match(/[a-z0-9]+/g) ?? []
   return [...new Set(words.filter((w) => w.length > 2 && !STOP.has(w)).map(stem))]
 }

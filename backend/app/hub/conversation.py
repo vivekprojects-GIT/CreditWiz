@@ -227,28 +227,22 @@ def read(query: str) -> Gate:
 # ------------------------------------------------------------------ answers
 
 # The order Nexus's capabilities are introduced in.
-_ORDER: tuple[Intent, ...] = ("learn", "find", "improve", "ask", "contribute")
+_ORDER: tuple[Intent, ...] = ("learn", "find", "improve")
 _LABEL: dict[Intent, str] = {
     "learn": "Learn",
     "find": "Find",
     "improve": "Improve",
-    "ask": "Ask",
-    "contribute": "Contribute",
 }
 _WHAT: dict[Intent, str] = {
-    "learn": "Courses, videos and guides for the skills your role needs.",
-    "find": "Validated prompts, approved agents, and the systems your work happens in.",
+    "learn": "Courses and guides for the skills your role needs.",
+    "find": "Approved agents, and the systems your work happens in.",
     "improve": "Ways to do a task you already do faster, with AI.",
-    "ask": "The experts, communities and answers behind a topic.",
-    "contribute": "Share a prompt, a skill video or an agent idea, reviewed before it goes live.",
 }
 # Used where the persona's own examples do not cover an intent.
 _EXAMPLE: dict[Intent, str] = {
     "learn": "Find a course on IFRS 9",
-    "find": "Find a prompt for a covenant scan",
+    "find": "Find an agent for sanctions screening",
     "improve": "Make my portfolio review faster",
-    "ask": "Who can help with sanctions screening?",
-    "contribute": "Write a prompt that summarises an annual review pack",
 }
 _SUGGESTED = 4
 
@@ -322,11 +316,11 @@ def answer(gate: Gate, first_name: str, examples: list[str]) -> tuple[str, list[
     you = f", {first_name}" if first_name else ""
     suggestions = [
         FollowUp(label=e, query=e)
-        for e in (examples or [_EXAMPLE[i] for i in ("find", "learn", "ask")])[:_SUGGESTED]
+        for e in (examples or [_EXAMPLE[i] for i in ("find", "learn", "improve")])[:_SUGGESTED]
     ]
     if gate.kind == "help":
         return (
-            "I'm the Nexus assistant, and I can help with five kinds of things across Nexus. "
+            "I'm the Nexus assistant, and I can help with three kinds of things across Nexus. "
             "Describe the task in your own words, or try one of these.",
             [],
             capabilities(examples),
@@ -340,7 +334,7 @@ def answer(gate: Gate, first_name: str, examples: list[str]) -> tuple[str, list[
             return f"Glad to hear it{you}. What can I help you with today?", suggestions, []
         if gate.topic == "fun":
             return (
-                "I'll leave the jokes to your colleagues. I'm better at finding the right prompt, "
+                "I'll leave the jokes to your colleagues. I'm better at finding the right "
                 "agent or course for the work in front of you. What are you working on?",
                 suggestions,
                 [],

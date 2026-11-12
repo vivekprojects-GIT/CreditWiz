@@ -39,7 +39,7 @@ GOVERNANCE
 RESOURCES
 ├─ documentation_url                                             optional
 ├─ architecture_url                                              optional
-└─ documents[]: type, system, url (links only, no copies)        optional
+└─ documents[]: label, url, description (links, no copies)      optional
 
 LIFECYCLE
 ├─ created_at          ISO date                                 required
@@ -83,7 +83,7 @@ Mapping rules: `agentId → id`, `domain → business_domains`, `useCases → us
 ## Where it lives
 
 ```text
-Agent list from Ganesh / Vinay
+Agent list from Ganesh
         ↓
 Populate the template
         ↓

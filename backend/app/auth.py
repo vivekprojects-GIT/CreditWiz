@@ -16,15 +16,15 @@ from pydantic import BaseModel, Field
 from . import database
 
 router = APIRouter(prefix="/api/auth", tags=["session"])
-current_id: ContextVar[str | None] = ContextVar("creditwiz_user", default=None)
-COOKIE = "creditwiz_session"
+current_id: ContextVar[str | None] = ContextVar("nexus_user", default=None)
+COOKIE = "nexus_session"
 SESSION_SECONDS = 8 * 60 * 60
 
 
 def production() -> bool:
-    mode = os.environ.get("CREDITWIZ_ENV", "development").strip().lower()
+    mode = os.environ.get("NEXUS_ENV", "development").strip().lower()
     if mode not in {"development", "production"}:
-        raise RuntimeError("CREDITWIZ_ENV must be development or production")
+        raise RuntimeError("NEXUS_ENV must be development or production")
     return mode == "production"
 
 
@@ -52,11 +52,11 @@ def seed_users() -> None:
             if not conn.execute(
                 "SELECT 1 FROM users WHERE password_hash != '' AND active=1"
             ).fetchone():
-                email = os.environ.get("CREDITWIZ_BOOTSTRAP_EMAIL", "").strip().lower()
-                password = os.environ.get("CREDITWIZ_BOOTSTRAP_PASSWORD", "")
+                email = os.environ.get("NEXUS_BOOTSTRAP_EMAIL", "").strip().lower()
+                password = os.environ.get("NEXUS_BOOTSTRAP_PASSWORD", "")
                 if not email or len(password) < 12:
                     raise RuntimeError(
-                        "Provision a local account or configure CREDITWIZ_BOOTSTRAP_EMAIL and a password of at least 12 characters."
+                        "Provision a local account or configure NEXUS_BOOTSTRAP_EMAIL and a password of at least 12 characters."
                     )
                 profile = {
                     "id": "administrator",

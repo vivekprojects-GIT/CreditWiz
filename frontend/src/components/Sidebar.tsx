@@ -1,4 +1,4 @@
-import { CircleHelp, Home, Plug, Sparkles } from 'lucide-react'
+import { Compass, Home } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { PillarGlyph } from '../lib/icons'
@@ -70,7 +70,7 @@ export function Sidebar({ pillars, open = false, onClose }: Props) {
         </NavLink>
         {/* The Super Agent: one conversation across every pillar, on a page of its own. */}
         <NavLink to="/super-agent" className={cls('nav__item nav__item--home')}>
-          <Sparkles className="nav__icon" strokeWidth={2.2} />
+          <Compass className="nav__icon" strokeWidth={2.2} />
           <span className="nav__label">Super Agent</span>
         </NavLink>
 
@@ -78,22 +78,10 @@ export function Sidebar({ pillars, open = false, onClose }: Props) {
 
         {pillars.map((p) => (
           <NavLink key={p.id} to={pillarBasePath(p)} className={cls('nav__item')}>
-            <PillarGlyph icon={p.icon} className="nav__icon" strokeWidth={2} />
+            <PillarGlyph icon={p.icon} className="nav__icon" strokeWidth={2.2} />
             <span className="nav__label">{p.short_title}</span>
           </NavLink>
         ))}
-
-        <div className="nav__spacer" />
-        <div className="nav__divider" />
-
-        <NavLink to="/integrations" className={cls('nav__item nav__item--util')}>
-          <Plug className="nav__icon" strokeWidth={2} />
-          <span className="nav__label">Integrations</span>
-        </NavLink>
-        <NavLink to="/help" className={cls('nav__item nav__item--util')}>
-          <CircleHelp className="nav__icon" strokeWidth={2} />
-          <span className="nav__label">Help &amp; support</span>
-        </NavLink>
       </nav>
       </aside>
     </>

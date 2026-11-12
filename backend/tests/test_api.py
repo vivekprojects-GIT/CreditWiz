@@ -9,12 +9,11 @@ def test_health():
     assert client.get("/api/health").json() == {"status": "ok"}
 
 
-def test_home_has_nine_pillars_with_three_priority():
+def test_home_has_the_discover_and_learning_pillars():
     body = client.get("/api/home").json()
     assert body["user"]["first_name"] == "Sai"
-    assert len(body["pillars"]) == 9
-    priority = [p["id"] for p in body["pillars"] if p["priority"]]
-    assert priority == ["marketplace", "learning", "community"]
+    assert [p["id"] for p in body["pillars"]] == ["marketplace", "learning"]
+    assert all(p["priority"] for p in body["pillars"])
 
 
 def test_search_matches_title_and_kind():
@@ -63,7 +62,7 @@ def test_hub_search_answers_a_sentence_about_learning():
     sentence = "how do I screen someone for sanctions"
     results = client.get("/api/search", params={"q": sentence}).json()["results"]
     learning = [r["title"] for r in results if r["kind"] == "learning"]
-    assert "Conduct Sanctions Screening with These Simple Steps" in learning
+    assert "Screening dispositions cheat sheet" in learning
 
     # A word every item on this hub carries is not a subject: asking about
     # agents in general must not return the whole catalog.

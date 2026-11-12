@@ -69,7 +69,7 @@ export function Player({ item, onProgress }: { item: Item; onProgress?: (pct: nu
         aria-label={`Play ${item.title}`}
       >
         <span className="player__play-icon">
-          <Play size={30} strokeWidth={2} fill="currentColor" />
+          <Play size={30} strokeWidth={2.2} fill="currentColor" />
         </span>
         <span className="player__play-label">Play video</span>
       </button>
@@ -77,7 +77,7 @@ export function Player({ item, onProgress }: { item: Item; onProgress?: (pct: nu
         <div className="player__blocked" role="alert">
           <p>This embed could not load. It may be blocked on this network.</p>
           <a className="btn btn--inline" href={watchUrl} target="_blank" rel="noreferrer">
-            Open on YouTube <ExternalLink size={15} strokeWidth={2.4} />
+            Open on YouTube <ExternalLink size={15} strokeWidth={2.2} />
           </a>
         </div>
       )}

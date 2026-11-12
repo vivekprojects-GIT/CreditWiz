@@ -18,7 +18,6 @@ function LearningSection({ section }: { section: LearningHome['sections'][number
   return (
     <section className={`lsection lsection--${section.id}`}>
       <h2 className="section-title">{section.title}</h2>
-      <p className="section-sub">{section.subtitle}</p>
       {section.items.length ? (
         <div className="item-grid">
           {section.items.map((i) => (
@@ -127,7 +126,6 @@ export function LearningPage() {
       </nav>
       <PageBand
         compact
-        kicker={derived.label}
         title={title}
         // Only a selected path keeps a lead: it describes that path. The generic
         // line under the title is gone now that the search bar says what to do.
@@ -223,7 +221,7 @@ export function LearningPage() {
           {!mode && !pathId && <ProviderShelves persona={derived.id} />}
           {(!mode || mode === 'paths') && !pathId && (
             <section>
-              <h2 className="section-title">Paths for {home?.persona_label}</h2>
+              <h2 className="section-title">Paths for your role</h2>
               <div className="path-grid">
                 {home?.role_paths.map((p) => (
                   <article className="pathcard" key={p.id}>

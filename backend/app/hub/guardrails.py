@@ -36,14 +36,12 @@ from ..journeys.store import store as journey_store
 from ..learning.models import Item
 from ..marketplace.models import Agent
 from ..permissions import visible
-from ..prompts.models import Desk, Prompt
-from ..prompts.store import store as prompt_store
 
 ModelAccess = Literal["as_typed", "masked", "none"]
 SENSITIVITIES: tuple[Sensitivity, ...] = ("public", "internal", "client_confidential", "confidential")
 
 _DATA_DIR = Path(
-    os.environ.get("CREDITWIZ_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
+    os.environ.get("NEXUS_DATA_DIR", Path(__file__).resolve().parents[2] / "data")
 )
 _EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b")
 _ACCOUNT = re.compile(r"\b\d(?:[ -]?\d){7,}\b")
@@ -89,10 +87,6 @@ class Entitlements:
     groups: list[str]
     learning: list[Item]
     assets: list[Asset]
-    prompts: list[Prompt]
-    desk: Desk | None
-    # High-risk prompts from other desks, left out.
-    withheld_prompts: int
 
 
 def entitlements() -> Entitlements:
@@ -100,19 +94,12 @@ def entitlements() -> Entitlements:
     from ..marketplace.store import store as agent_store
 
     profile = load_profile()
-    library = prompt_store.library
-    desk = prompt_store.desk_for(profile.job_title)
-    # The library's own rule for High: restricted to a cleared team.
-    prompts = [p for p in library.prompts if p.risk != "High" or (desk is not None and p.desk == desk.id)]
     _, items = _load()
     return Entitlements(
         agents=[a for a in agent_store.agents if visible(a)],
         groups=list(profile.groups),
         learning=items,
         assets=[a for a in journey_store.all_assets.values() if visible(a)],
-        prompts=prompts,
-        desk=desk,
-        withheld_prompts=len(library.prompts) - len(prompts),
     )
 
 

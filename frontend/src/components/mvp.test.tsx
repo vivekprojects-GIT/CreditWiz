@@ -25,7 +25,7 @@ function shell(ui: React.ReactNode, path = '/') {
 }
 const response = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
-const mkt = { persona: 'business_user', personas: [], domains: [], carousels: [], agent_count: 10, example_queries: [] }
+const mkt = { persona: 'business_user', personas: [], domains: [], carousels: [], agent_count: 10 }
 function item(id = 'guide') {
   return {
     id,
@@ -84,7 +84,7 @@ describe('MVP user flows', () => {
     expect(screen.queryByText(/feedback has been saved/)).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
     expect(await screen.findByRole('status')).toBeTruthy()
-    expect(fetch.mock.calls[0][1]?.headers).toMatchObject({ 'X-CreditWiz-Request': '1' })
+    expect(fetch.mock.calls[0][1]?.headers).toMatchObject({ 'X-Nexus-Request': '1' })
   })
 
   it('catalog filters fetch the requested type and keep the landing recommendations separate', async () => {
@@ -143,12 +143,12 @@ describe('MVP user flows', () => {
   it('an expired session raises the shared sign-out event', async () => {
     const { getJson, ApiError } = await import('../lib/api')
     const expired = vi.fn()
-    window.addEventListener('creditwiz:signed-out', expired)
+    window.addEventListener('nexus:signed-out', expired)
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(response({ detail: 'Sign in' }, 401))
     await act(async () => {
       await expect(getJson('/api/home')).rejects.toBeInstanceOf(ApiError)
     })
     expect(expired).toHaveBeenCalledOnce()
-    window.removeEventListener('creditwiz:signed-out', expired)
+    window.removeEventListener('nexus:signed-out', expired)
   })
 })

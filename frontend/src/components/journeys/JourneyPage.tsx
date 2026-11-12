@@ -5,7 +5,6 @@ import { ApiError, isAbort } from '../../lib/api'
 import { track } from '../../lib/context'
 import {
   fetchJourney,
-  INTENT_HINT,
   INTENT_LABEL,
   INTENTS,
   type Intent,
@@ -77,7 +76,7 @@ export function JourneyPage() {
         <span>{journey.title}</span>
       </nav>
 
-      <PageBand compact kicker={`${journey.persona_label} · Your work`} title={journey.title} lead={journey.summary}>
+      <PageBand compact kicker="Your work" title={journey.title} lead={journey.summary}>
         <nav className="pathbar pathbar--onband" aria-label="What you are here to do">
           <Link className={`pathbar__item${intent ? '' : ' is-active'}`} to={{ search: '' }} replace>
             Everything
@@ -103,18 +102,10 @@ export function JourneyPage() {
                 <h2 className="journey__group-title" id={`group-${i}`}>
                   {INTENT_LABEL[i]}
                 </h2>
-                <span className="journey__hint">{INTENT_HINT[i]}</span>
               </div>
               <AssetList assets={journey.assets.filter((a) => a.intent === i)} journeyId={journey.id} />
             </section>
           ))}
-          {groups.includes('contribute') && (
-            <p className="journey__note">
-              <strong>How contributions are reviewed</strong>
-              Share a prompt, a use case or a correction. It is reviewed through MUFG&rsquo;s existing workflow tool, not
-              inside Nexus. Which tool is to be confirmed.
-            </p>
-          )}
         </div>
 
         <aside className="journey__side">

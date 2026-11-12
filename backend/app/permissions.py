@@ -15,12 +15,6 @@ def visible(record) -> bool:
     )
 
 
-def require_visible(record):
-    if record is None or not visible(record):
-        raise HTTPException(404, "Content unavailable")
-    return record
-
-
 def resolve_persona(value: str | None = None):
     profile = load_profile()
     derived = derive_persona(profile).id

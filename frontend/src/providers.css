@@ -1,7 +1,7 @@
 /* ==========================================================================
    Providers: Pluralsight and Microsoft Learn, browsed as hub cards, with a
    course's details in a side panel and Learn modules read in the hub.
-   Global, because the side panel opens from Learning, Community and Home.
+   Global, because the side panel opens from Learning and Home.
    ========================================================================== */
 
 .provider {
@@ -11,7 +11,7 @@
   padding: 0 8px;
   border-radius: 4px;
   font-size: var(--t-xs);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.01em;
   white-space: nowrap;
   color: var(--ink-700);
@@ -52,12 +52,6 @@
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--ink-950);
-}
-
-.shelf__sub {
-  flex-basis: 100%;
-  color: var(--ink-500);
-  font-size: var(--t-sm);
 }
 
 .shelf__grid {
@@ -210,7 +204,7 @@
 
 .psearch__hit {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   padding: var(--s-3);
   border-radius: var(--r-md);
   color: inherit;
@@ -344,25 +338,23 @@
 .drawer__meta span {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .drawer__why {
   margin: 0 0 var(--s-4);
   padding: var(--s-2) var(--s-3);
-  border-left: 3px solid var(--info-fg);
-  background: var(--info-bg);
+  border-left: 3px solid var(--ink-300);
+  background: var(--surface-sunk);
   color: var(--ink-800);
   font-size: var(--t-sm);
 }
 .drawer__why-label {
   display: block;
   margin-bottom: 2px;
-  color: var(--info-fg);
+  color: var(--ink-600);
   font-size: var(--t-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-weight: 600;
 }
 
 .drawer__progress {
@@ -429,7 +421,7 @@
   display: flex;
   justify-content: space-between;
   gap: var(--s-3);
-  padding: 7px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--ink-100);
   font-size: var(--t-sm);
   counter-increment: unit;
@@ -448,7 +440,7 @@
 
 .drawer__units li.is-current a {
   color: var(--ink-950);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .drawer__more {
@@ -534,4 +526,21 @@
   margin: var(--s-4) 0 var(--s-6);
   padding-bottom: var(--s-5);
   border-bottom: 1px solid var(--line);
+}
+
+/* A Learn unit's video: Microsoft's player, in the flow of the text. */
+.reader__video {
+  aspect-ratio: 16 / 9;
+  margin: var(--s-4) 0;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--ink-100);
+}
+
+.reader__video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }

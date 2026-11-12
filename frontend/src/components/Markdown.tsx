@@ -41,26 +41,11 @@ function blocks(source: string): Block[] {
   return out
 }
 
-export function slugify(text: string) {
+function slugify(text: string) {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-}
-
-/** The `##` headings of a page, for its "On this page" list. */
-export function headingsOf(source: string) {
-  const out: { id: string; text: string }[] = []
-  let fenced = false
-  for (const line of source.split('\n')) {
-    if (line.startsWith('```')) fenced = !fenced
-    const m = fenced ? null : /^## (.+)$/.exec(line)
-    if (m) {
-      const text = m[1].replace(/[*_`]/g, '')
-      out.push({ id: slugify(text), text })
-    }
-  }
-  return out
 }
 
 function textOf(node: ReactNode): string {

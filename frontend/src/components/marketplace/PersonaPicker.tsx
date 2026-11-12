@@ -1,26 +1,28 @@
 import { useHub } from '../../lib/hub'
-import { ChevronDown, Eye, UserRound } from 'lucide-react'
+import { ChevronDown, Eye } from 'lucide-react'
 import type { Persona } from '../../lib/marketplace'
 import { usePersona } from '../../lib/personaContext'
 
 /**
- * Persona badge for the "Recommended for you" row: which persona the row is tuned
- * for, and a demo-only "preview as" control. Profile details live in the account menu.
+ * The demo-only "preview as" control on the "Recommended for you" row, for admins.
+ * Nobody is shown their own persona: it is how Nexus tunes the row, not something to read.
  */
 export function PersonaPreview({ personas }: { personas: Persona[] }) {
   const { user } = useHub()
   const { persona, derived, isPreview, setPreview } = usePersona()
   const current = personas.find((p) => p.id === persona)
+  if (!user.is_admin) return null
 
   return (
     <div className={`pbadge${isPreview ? ' is-preview' : ''}`}>
-      <span className="pbadge__chip">
-        {isPreview ? <Eye size={15} strokeWidth={2.4} /> : <UserRound size={15} strokeWidth={2.4} />}
-        <span className="pbadge__label">{isPreview ? 'Previewing as' : 'Your persona'}</span>
-        <strong>{current?.label ?? persona}</strong>
-      </span>
-      {user.is_admin &&
-        (isPreview ? (
+      {isPreview && (
+        <span className="pbadge__chip">
+          <Eye size={15} strokeWidth={2.2} />
+          <span className="pbadge__label">Previewing as</span>
+          <strong>{current?.label ?? persona}</strong>
+        </span>
+      )}
+      {(isPreview ? (
           <button type="button" className="pbadge__reset" onClick={() => setPreview(null)}>
             Back to {derived.label}
           </button>

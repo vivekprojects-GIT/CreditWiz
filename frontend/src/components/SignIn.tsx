@@ -36,10 +36,11 @@ export function SignIn({ onSignIn }: { onSignIn: () => void }) {
   return (
     <main className="signin">
       <div className="signin__brand">
-        MUFG <span>Nexus</span>
+        <img className="signin__logo" src="/mufg-logo.svg" alt="MUFG" />
+        <span className="signin__product">Nexus</span>
       </div>
-      <h1>Welcome to Nexus</h1>
-      <p>Discover agents and follow learning paths for your role.</p>
+      <h1>Sign in to Nexus</h1>
+      <p className="signin__lead">Approved AI agents and learning for the work you do</p>
       {options && (
         <div className="signin__microsoft">
           <button type="button" className="btn" disabled={!options.microsoft} onClick={() => signInWithMicrosoft('/')}>
@@ -47,7 +48,7 @@ export function SignIn({ onSignIn }: { onSignIn: () => void }) {
           </button>
           <p className="muted">
             {options.microsoft
-              ? 'Your MUFG account. Nexus then shows Viva Engage with your own permissions.'
+              ? 'Your MUFG account, with your own permissions.'
               : "Needs MUFG's app registration in Microsoft Entra ID. Until then, use a demo account."}
           </p>
           {failed && (

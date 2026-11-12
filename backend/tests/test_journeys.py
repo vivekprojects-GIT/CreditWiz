@@ -34,7 +34,7 @@ COMPLIANCE_JOURNEYS = [
 
 
 def _ask(q: str, **extra) -> dict:
-    response = client.post("/api/ask", json={"q": q, **RM, **extra}, headers={"X-CreditWiz-Request": "1"})
+    response = client.post("/api/ask", json={"q": q, **RM, **extra}, headers={"X-Nexus-Request": "1"})
     assert response.status_code == 200, response.text
     return response.json()
 
@@ -74,11 +74,11 @@ def test_each_role_sees_its_own_journeys_and_a_role_without_any_sees_none():
     body = client.get("/api/journeys", params=RM).json()
     assert body["persona_label"] == "Relationship Manager"
     assert [j["id"] for j in body["journeys"]] == RM_JOURNEYS
-    assert len(body["examples"]) == 4
+    assert len(body["examples"]) == 2
     # The default test user is a compliance analyst.
     mine = client.get("/api/journeys").json()
     assert [j["id"] for j in mine["journeys"]] == COMPLIANCE_JOURNEYS
-    assert len(mine["examples"]) == 4
+    assert len(mine["examples"]) == 3
     assert client.get("/api/journeys", params={"persona": "developer"}).json()["journeys"] == []
 
 
@@ -90,7 +90,7 @@ def test_a_journey_says_where_the_work_happens():
     page = client.get("/api/journeys/meeting-prep", params=RM).json()
     assert [s["system"] for s in page["systems"]] == ["Customer 360", "Market intelligence", "Salesforce"]
     intents = [a["intent"] for a in page["assets"]]
-    assert intents == sorted(intents, key=["find", "learn", "improve", "ask", "contribute"].index)
+    assert intents == sorted(intents, key=["find", "learn", "improve"].index)
 
 
 def test_unconfirmed_trust_is_left_blank_not_invented():
@@ -106,9 +106,6 @@ def test_unconfirmed_trust_is_left_blank_not_invented():
     ("query", "intent", "journey"),
     [
         ("Prepare for a client meeting", "find", "meeting-prep"),
-        ("Make my portfolio review faster", "improve", "portfolio-review"),
-        ("Who can help with a credit request?", "ask", "credit-request"),
-        ("Share a prompt I use for account plans", "contribute", "coverage-planning"),
         ("How do I raise a credit request?", "learn", "credit-request"),
         ("What's our wallet share with this client?", "find", "wallet-share"),
     ],
@@ -126,24 +123,15 @@ def test_the_home_search_reads_intent_and_the_job(query, intent, journey):
     [
         ("Where does a client's KYC review stand?", "find", "kyc-review"),
         ("Speed up sanctions screening", "improve", "sanctions-screening"),
-        ("Who can help with beneficial ownership?", "ask", "beneficial-ownership"),
         ("How do I verify a client's identity?", "learn", "identity-verification"),
     ],
 )
 def test_a_compliance_analysts_examples_land_on_their_jobs(query, intent, journey):
-    response = client.post("/api/ask", json={"q": query}, headers={"X-CreditWiz-Request": "1"})
+    response = client.post("/api/ask", json={"q": query}, headers={"X-Nexus-Request": "1"})
     body = response.json()
     assert body["task"]["intent"] == intent
     assert body["task"]["activity"]["id"] == journey
     assert body["recommended"][0]["intent"] == intent
-
-
-def test_a_community_whose_owner_is_unconfirmed_says_nothing_about_one():
-    page = client.get("/api/journeys/sanctions-screening").json()
-    community = next(a for a in page["assets"] if a["ref"] == "asset:compliance-ai")
-    assert community["action_url"] == "/community?c=compliance-ai"
-    assert community["trust"]["owner_team"] == ""
-    assert community["trust"]["guardrails"] == []
 
 
 def test_a_request_outside_any_journey_gets_intent_but_no_journey():
@@ -154,25 +142,28 @@ def test_a_request_outside_any_journey_gets_intent_but_no_journey():
 
 
 def test_the_reply_names_only_what_the_journey_recommends():
-    body = _ask("Who can help with a credit request?")
-    assert body["reply"] == "For help with credit requests, start with Credit risk partner."
-    # Asking who can help brings the job's people, not its agents too.
-    assert "Credit risk partner" in {a["title"] for a in body["recommended"]}
-    assert {a["kind"] for a in body["recommended"]} <= {"expert", "community"}
+    body = _ask("What systems do I need for a credit request?")
+    assert body["reply"] == (
+        "For credit requests, start with Credit system and Client profitability. "
+        "The work and the data stay in those systems; Nexus points you there."
+    )
+    # Asking for systems brings the job's systems, not its courses too.
+    assert {"Credit system", "Client profitability"} <= {a["title"] for a in body["recommended"]}
+    assert {a["kind"] for a in body["recommended"]} <= {"system", "data_product", "use_case"}
 
 
 def test_follow_ups_stay_on_the_same_job_with_a_new_reason():
-    body = _ask("Who can help with a credit request?")
+    body = _ask("How do I raise a credit request?")
     assert body["follow_ups"]
     for follow_up in body["follow_ups"]:
         nxt = _ask(follow_up["query"])
         assert nxt["task"]["activity"]["id"] == "credit-request"
-        assert nxt["task"]["intent"] != "ask"
+        assert nxt["task"]["intent"] != "learn"
 
 
 def test_a_follow_up_that_names_no_job_stays_on_the_last_one():
     body = _ask("And who owns it?", journey="credit-request")
-    assert body["task"]["intent"] == "ask"
+    assert body["task"]["intent"] == "find"
     assert body["task"]["activity"]["id"] == "credit-request"
     assert body["task"]["carried_over"] is True
 

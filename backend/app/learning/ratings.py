@@ -43,11 +43,11 @@ def summaries(user_id: str) -> dict[str, dict]:
     """Aggregate every item's ratings, plus this user's own, in one round trip."""
     with database.connect() as conn:
         totals = conn.execute(
-            "SELECT item_id, COUNT(*) AS n, SUM(stars) AS s "
+            "SELECT item_id, COUNT(*) AS n, SUM(rating) AS s "
             "FROM learning_ratings GROUP BY item_id"
         ).fetchall()
         mine = conn.execute(
-            "SELECT item_id, stars FROM learning_ratings WHERE user_id=?", (user_id,)
+            "SELECT item_id, rating FROM learning_ratings WHERE user_id=?", (user_id,)
         ).fetchall()
 
     votes = sum(r["n"] for r in totals)
@@ -67,19 +67,19 @@ def summaries(user_id: str) -> dict[str, dict]:
             "my_rating": None,
         }
     for row in mine:
-        out.setdefault(row["item_id"], empty())["my_rating"] = row["stars"]
+        out.setdefault(row["item_id"], empty())["my_rating"] = row["rating"]
     return out
 
 
-def record(user_id: str, item_id: str, stars: int) -> None:
+def record(user_id: str, item_id: str, rating: int) -> None:
     """One rating per user per item. Rating again replaces the previous one."""
     now = datetime.now(UTC).isoformat(timespec="milliseconds")
     with database.connect(write=True) as conn:
         conn.execute(
             "INSERT INTO learning_ratings VALUES (?,?,?,?,?) "
             "ON CONFLICT(user_id,item_id) DO UPDATE SET "
-            "stars=excluded.stars, updated_at=excluded.updated_at",
-            (user_id, item_id, stars, now, now),
+            "rating=excluded.rating, updated_at=excluded.updated_at",
+            (user_id, item_id, rating, now, now),
         )
 
 

@@ -1,8 +1,8 @@
-export type Tone = 'blue' | 'teal' | 'purple'
+type Tone = 'blue' | 'teal' | 'purple'
 
-export type PillarIcon = 'search' | 'library' | 'graduation' | 'clipboard' | 'shield' | 'database' | 'users' | 'chart' | 'settings'
+export type PillarIcon = 'search' | 'graduation'
 
-export interface Link {
+interface Link {
   label: string
   href: string
 }
@@ -32,7 +32,7 @@ export interface Pillar {
   search: PillarSearch | null
 }
 
-export interface PillarSearch {
+interface PillarSearch {
   placeholder: string
   action: string
   examples: string[]
@@ -63,7 +63,7 @@ export interface CurrentUser {
   persona: PersonaInfo
 }
 
-export interface Domain {
+interface Domain {
   id: string
   name: string
 }
@@ -75,7 +75,7 @@ export interface HomeData {
 }
 
 export interface SearchResult {
-  kind: 'solution' | 'agent' | 'prompt' | 'learning'
+  kind: 'solution' | 'agent' | 'learning'
   title: string
   href: string
 }
@@ -89,7 +89,7 @@ export interface Notification {
   read: boolean
 }
 
-/** First path segment a pillar owns, e.g. "/learning" or "/library". */
+/** First path segment a pillar owns, e.g. "/learning" or "/marketplace". */
 export function pillarBasePath(p: Pillar): string {
   return '/' + (p.cta_href.split('/')[1] ?? p.id)
 }

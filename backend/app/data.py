@@ -24,7 +24,7 @@ PILLARS = [
         cta_label="Explore marketplace",
         cta_href="/marketplace",
         search=PillarSearch(
-            placeholder='e.g. I need an agent that can review customer onboarding documents',
+            placeholder='Describe what you need',
             action='Find agents',
             examples=[],
         ),
@@ -47,41 +47,8 @@ PILLARS = [
         ],
     ),
     Pillar(
-        id="prompts",
-        number=2,
-        title="Prompts & Skills Library",
-        short_title="Prompts & Skills",
-        description="Find reusable prompts and skills.",
-        icon="library",
-        tone="blue",
-        cta_label="Open the library",
-        cta_href="/library",
-        search=PillarSearch(
-            placeholder='e.g. a pitch deck outline for an RFP',
-            action='Find prompts',
-            examples=['Pitch deck outline', 'Covenant scan', 'Stress test'],
-        ),
-        sections=[
-            Section(
-                title="Prompt library",
-                href="/library/prompts",
-                blurb="Validated prompts from three desks, each with its inputs, guidelines and a sample output.",
-            ),
-            Section(
-                title="Prompt templates",
-                href="/library/templates",
-                blurb="Four scaffolds that already carry the constraints review looks for.",
-            ),
-            Section(
-                title="My library",
-                href="/library/mine",
-                blurb="What you saved, and what you submitted for review.",
-            ),
-        ],
-    ),
-    Pillar(
         id="learning",
-        number=3,
+        number=2,
         title="AI Learning and Enablement",
         short_title="Learning",
         card_title="Learning",
@@ -102,15 +69,15 @@ PILLARS = [
         cta_label="Explore learning",
         cta_href="/learning",
         search=PillarSearch(
-            placeholder='Search the catalog, Pluralsight and Microsoft Learn',
+            placeholder='Search learning',
             action='Find learning',
-            examples=['Sanctions screening', 'KYC', 'Responsible AI'],
+            examples=[],
         ),
         sections=[
             Section(
                 title="Learning catalog",
                 href="/learning/catalog",
-                blurb="Courses, guides, videos and documentation.",
+                blurb="Courses, guides and documentation.",
             ),
             Section(
                 title="Role-based paths",
@@ -139,226 +106,6 @@ PILLARS = [
             ),
         ],
     ),
-    Pillar(
-        id="intake",
-        number=4,
-        title="AI Intake and Enablement",
-        short_title="AI Requests",
-        description="Submit an AI use case.",
-        icon="clipboard",
-        tone="purple",
-        cta_label="Start a request",
-        cta_href="/intake/new",
-        search=PillarSearch(
-            placeholder='e.g. automate chasing clients for missing documents',
-            action='Search requests',
-            examples=['Use case request', 'Start a request', 'Review queue'],
-        ),
-        sections=[
-            Section(
-                title="Start a request",
-                href="/intake/new",
-                blurb="Describe a use case and route it for review.",
-            ),
-            Section(
-                title="My requests",
-                href="/intake/mine",
-                blurb="Track the status of use cases you submitted.",
-            ),
-            Section(
-                title="Review queue",
-                href="/intake/queue",
-                blurb="For reviewers: use cases awaiting a decision.",
-            ),
-        ],
-    ),
-    Pillar(
-        id="governance",
-        number=5,
-        title="Governance and Trust Center",
-        short_title="Governance",
-        description="Find responsible AI guidance.",
-        icon="shield",
-        tone="teal",
-        cta_label="View guidance",
-        cta_href="/governance",
-        search=PillarSearch(
-            placeholder='e.g. can I use customer data with an external model?',
-            action='Search guidance',
-            examples=['Responsible AI', 'Model inventory', 'Data handling'],
-        ),
-        sections=[
-            Section(
-                title="Policies",
-                href="/governance/policies",
-                blurb="Acceptable use, data handling and model risk policies.",
-            ),
-            Section(
-                title="Responsible AI guidance",
-                href="/governance/responsible-ai",
-                blurb="Fairness, transparency and human-in-the-loop expectations.",
-            ),
-            Section(
-                title="Model inventory",
-                href="/governance/inventory",
-                blurb="Every approved model, its owner and its risk tier.",
-            ),
-        ],
-    ),
-    Pillar(
-        id="knowledge",
-        number=6,
-        title="Enterprise Knowledge and Context Foundation",
-        short_title="Knowledge",
-        description="Explore shared enterprise knowledge.",
-        icon="database",
-        tone="blue",
-        cta_label="Explore knowledge",
-        cta_href="/knowledge",
-        search=PillarSearch(
-            placeholder='e.g. where is beneficial ownership defined?',
-            action='Search knowledge',
-            examples=['Data glossary', 'Context packs', 'Runbook'],
-        ),
-        sections=[
-            Section(
-                title="Knowledge sources",
-                href="/knowledge/sources",
-                blurb="Connected repositories, wikis and document stores.",
-            ),
-            Section(
-                title="Context packs",
-                href="/knowledge/context-packs",
-                blurb="Curated context bundles for grounding agents.",
-            ),
-            Section(
-                title="Data glossary",
-                href="/knowledge/glossary",
-                blurb="Shared definitions for business terms.",
-            ),
-        ],
-    ),
-    Pillar(
-        id="community",
-        number=7,
-        title="Community and Collaboration",
-        short_title="Community",
-        card_title="Community",
-        description="Ask questions, share knowledge and find experts.",
-        icon="users",
-        tone="blue",
-        priority=True,
-        primary_links=[
-            Link(label="Forums", href="/community/forums"),
-            Link(label="SME directory", href="/community/experts"),
-            Link(label="FAQs", href="/community/faqs"),
-        ],
-        secondary_links=[
-            Link(label="Announcements", href="/community/announcements"),
-            Link(label="Success stories", href="/community/stories"),
-        ],
-        cta_label="Open community",
-        cta_href="/community",
-        search=PillarSearch(
-            placeholder='e.g. who is the expert on sanctions screening?',
-            action='Search community',
-            examples=['SME directory', 'FAQs', 'Success stories'],
-        ),
-        sections=[
-            Section(
-                title="Forums",
-                href="/community/forums",
-                blurb="Ask questions and share what you have learned.",
-            ),
-            Section(
-                title="SME directory",
-                href="/community/experts",
-                blurb="Find subject-matter experts by domain.",
-            ),
-            Section(
-                title="FAQs",
-                href="/community/faqs",
-                blurb="Answers to the most common questions.",
-            ),
-            Section(
-                title="Announcements",
-                href="/community/announcements",
-                blurb="What changed in Nexus this month.",
-            ),
-            Section(
-                title="Success stories",
-                href="/community/stories",
-                blurb="How teams are getting value from AI.",
-            ),
-        ],
-    ),
-    Pillar(
-        id="insights",
-        number=8,
-        title="Operational Intelligence and Value Realization",
-        short_title="Insights",
-        description="Explore adoption and value insights.",
-        icon="chart",
-        tone="teal",
-        cta_label="View insights",
-        cta_href="/insights",
-        search=PillarSearch(
-            placeholder='e.g. which agents saved the most hours this quarter?',
-            action='Search insights',
-            examples=['Adoption', 'Hours saved', 'Quality and safety'],
-        ),
-        sections=[
-            Section(
-                title="Adoption dashboard",
-                href="/insights/adoption",
-                blurb="Who is using what, and how often.",
-            ),
-            Section(
-                title="Value realisation",
-                href="/insights/value",
-                blurb="Hours saved, cases resolved and outcomes delivered.",
-            ),
-            Section(
-                title="Quality and safety",
-                href="/insights/quality",
-                blurb="Evaluation results and incident trends.",
-            ),
-        ],
-    ),
-    Pillar(
-        id="platform",
-        number=9,
-        title="Nexus Platform Enablement",
-        short_title="Platform",
-        description="Access platform support and services.",
-        icon="settings",
-        tone="purple",
-        cta_label="Open platform",
-        cta_href="/platform",
-        search=PillarSearch(
-            placeholder='e.g. how do I get API access to an agent?',
-            action='Search platform',
-            examples=['Access management', 'API keys', 'Integrations'],
-        ),
-        admin_only=True,
-        sections=[
-            Section(
-                title="Access management",
-                href="/platform/access",
-                blurb="Roles, groups and entitlements.",
-            ),
-            Section(
-                title="Integrations",
-                href="/platform/integrations",
-                blurb="Connected systems and API keys.",
-            ),
-            Section(
-                title="Settings",
-                href="/platform/settings",
-                blurb="Hub-wide configuration.",
-            ),
-        ],
-    ),
 ]
 
 NOTIFICATIONS = [
@@ -375,27 +122,5 @@ NOTIFICATIONS = [
         body="Work through your role's learning path and track your progress.",
         href="/learning/paths",
         created_at="2026-09-08T12:00:00Z",
-    ),
-    # Sample activity from the design reference's prompt library.
-    Notification(
-        id="library-collab-v1",
-        title="Sophia Merrill accepted your collaboration request",
-        body="On Corporate pitch structurer.",
-        href="/library/prompts/p1",
-        created_at="2026-09-15T08:00:00Z",
-    ),
-    Notification(
-        id="library-validated-v1",
-        title="Data Privacy Office validated your prompt",
-        body="Deal screening summary is now live.",
-        href="/library/mine",
-        created_at="2026-09-15T06:00:00Z",
-    ),
-    Notification(
-        id="library-review-v1",
-        title="Kevin Morrow left a 5-star review",
-        body="On a prompt you contributed.",
-        href="/library/mine",
-        created_at="2026-09-14T09:00:00Z",
     ),
 ]

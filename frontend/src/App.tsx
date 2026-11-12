@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
-import { CommunityPage } from './components/community/CommunityPage'
-import { CreateProvider } from './components/create/CreateProvider'
 import { HomePage } from './components/HomePage'
-import { IntegrationsPage } from './components/IntegrationsPage'
 import { LearnReaderPage } from './components/learning/LearnReaderPage'
 import { JourneyPage } from './components/journeys/JourneyPage'
 import { JourneysPage } from './components/journeys/JourneysPage'
-import { KnowledgeSourcesPage } from './components/knowledge/KnowledgeSourcesPage'
-import { LibraryPage } from './components/library/LibraryPage'
-import { MyLibraryPage } from './components/library/MyLibraryPage'
-import { PromptPage } from './components/library/PromptPage'
-import { TemplatesPage } from './components/library/TemplatesPage'
 import { LearningPage } from './components/learning/LearningPage'
 import { ItemPage } from './components/learning/ItemPage'
 import { MyLearningPage } from './components/learning/MyLearningPage'
@@ -22,7 +14,7 @@ import { PillarPage } from './components/PillarPage'
 import { SearchPage } from './components/SearchPage'
 import { SuperAgentPage } from './components/SuperAgentPage'
 import { Sidebar } from './components/Sidebar'
-import { HelpPage, NotFound, SettingsPage } from './components/SimplePages'
+import { NotFound, SettingsPage } from './components/SimplePages'
 import { TopBar } from './components/TopBar'
 import { SignIn } from './components/SignIn'
 import { ApiError, fetchHome, isAbort } from './lib/api'
@@ -83,10 +75,13 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
 
   return (
     <div className="shell">
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <ScrollToTop />
       <div className="frame">
         <Sidebar pillars={pillars} open={navOpen} onClose={() => setNavOpen(false)} />
-        <main className="main">
+        <main className="main" id="main" tabIndex={-1}>
           {state.status === 'loading' && <Skeleton />}
           {state.status === 'error' && (
             <div className="state state--error" role="alert">
@@ -101,12 +96,10 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
           {state.status === 'ready' && (
             <HubContext.Provider value={state.data}>
               <PersonaProvider key={state.data.user.id} derived={state.data.user.persona}>
-                <CreateProvider>
                 <TopBar user={state.data.user} onMenu={() => setNavOpen(true)} />
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/super-agent" element={<SuperAgentPage />} />
-                  <Route path="/help" element={<HelpPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/marketplace" element={<MarketplacePage />} />
                   <Route path="/marketplace/agents" element={<AgentsListPage />} />
@@ -123,24 +116,14 @@ function Shell({ state, retry }: { state: LoadState; retry: () => void }) {
                   <Route path="/learning/quick-reference" element={<LearningPage />} />
                   <Route path="/learning/me" element={<MyLearningPage />} />
                   <Route path="/learning/read" element={<LearnReaderPage />} />
-                  <Route path="/community" element={<CommunityPage />} />
-                  <Route path="/community/*" element={<CommunityPage />} />
-                  <Route path="/integrations" element={<IntegrationsPage />} />
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/learning/items/:id" element={<ItemPage />} />
                   <Route path="/learning/videos/:id" element={<ItemPage />} />
                   <Route path="/journeys" element={<JourneysPage />} />
                   <Route path="/journeys/:id" element={<JourneyPage />} />
-                  <Route path="/library" element={<LibraryPage />} />
-                  <Route path="/library/prompts" element={<LibraryPage />} />
-                  <Route path="/library/prompts/:id" element={<PromptPage />} />
-                  <Route path="/library/templates" element={<TemplatesPage />} />
-                  <Route path="/library/mine" element={<MyLibraryPage />} />
-                  <Route path="/knowledge/sources" element={<KnowledgeSourcesPage />} />
                   <Route path="/:base/*" element={<PillarPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-                </CreateProvider>
               </PersonaProvider>
             </HubContext.Provider>
           )}
@@ -155,13 +138,13 @@ export default function App() {
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     const signedOut = () => setState({ status: 'signed-out' })
-    window.addEventListener('creditwiz:signed-out', signedOut)
+    window.addEventListener('nexus:signed-out', signedOut)
     const storage = (event: StorageEvent) => {
       if (event.key === 'mufg.session-change') signedOut()
     }
     window.addEventListener('storage', storage)
     return () => {
-      window.removeEventListener('creditwiz:signed-out', signedOut)
+      window.removeEventListener('nexus:signed-out', signedOut)
       window.removeEventListener('storage', storage)
     }
   }, [])
